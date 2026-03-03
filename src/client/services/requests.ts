@@ -1,26 +1,52 @@
 import { Conversation } from "../../shared/types.js"
+import { supabase } from "../lib/supabase.js"
+
+// Authenticated fetch wrapper — attaches Bearer token, retries once on 401
+async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+
+    const headers = new Headers(options.headers)
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+
+    const response = await fetch(url, { ...options, headers })
+
+    if (response.status === 401) {
+        // Try refreshing the session once
+        const { data: { session: refreshed } } = await supabase.auth.refreshSession()
+        if (refreshed?.access_token) {
+            headers.set('Authorization', `Bearer ${refreshed.access_token}`)
+            return fetch(url, { ...options, headers })
+        }
+        // Refresh failed — sign out and reload
+        await supabase.auth.signOut()
+        window.location.reload()
+    }
+
+    return response
+}
 
 const createConvo = async () => {
-    const response = await fetch('/create')
+    const response = await authFetch('/create')
     const newConvo = await response.json()
     return newConvo
 }
 
 const getConvo = async(convoId: string) => {
-    const response = await fetch(`/convo/${convoId}`)
+    const response = await authFetch(`/convo/${convoId}`)
     const returnedConvo = await response.json()
     return returnedConvo
 }
 
 const getConvos = async() => {
-    const response = await fetch('/convos')
+    const response = await authFetch('/convos')
     const convoIdsTitles = await response.json()
     return convoIdsTitles
 }
 
 // Non-streaming fallback
 const sendMsg = async(convoId: string, userMsg: string) => {
-    const response = await fetch('/chat', {
+    const response = await authFetch('/chat', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userMsg, id: convoId })
@@ -37,7 +63,7 @@ const streamMsg = async(
     onDone: (conversation: Conversation) => void,
     onError: (error: string) => void
 ) => {
-    const response = await fetch('/chat/stream', {
+    const response = await authFetch('/chat/stream', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userMsg, id: convoId })

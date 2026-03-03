@@ -6,15 +6,36 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from './lib/supabase.js'
+import Login from './components/Login.js'
+import type { Session } from '@supabase/supabase-js'
+
 function App() {
+  const [session, setSession] = useState<Session | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [userMsg, setUserMsg] = useState("");
   const [selectedConvoId, setSelectedConvoId] = useState("");
   const [currConvo, setCurrConvo] = useState<Conversation | null>(null)
   const [sidebarConvos, setSidebarConvos] = useState<{convoId: string, convoTitle: string}[]>()
   const [isStreaming, setIsStreaming] = useState(false)
 
+  // Auth state listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setAuthLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   // useEffect for initializing current conversation to be a new one if user has no prior ex
   useEffect(() => {
+    if (!session) return
 
     // Use Service Layer method to set up sidebar of existing convos
     requestServices.getConvos().then((convoArray: {convoId: string, convoTitle: string}[]) => {
@@ -41,7 +62,7 @@ function App() {
       }
     })
 
-  }, [])
+  }, [session])
 
   // useRef creates a reference to a DOM element so we can interact with it directly
   // here we use it to target the bottom of the conversation for auto-scrolling
@@ -59,6 +80,16 @@ function App() {
     })
 
   }, [currConvo]);
+
+  // Auth loading spinner
+  if (authLoading) {
+    return <div className="h-screen flex items-center justify-center bg-background text-foreground"><p>Loading...</p></div>
+  }
+
+  // Not authenticated — show login
+  if (!session) {
+    return <Login />
+  }
 
   // Handle edge case of currConvo being null in between first render and first useEffect()
   if(currConvo === null){
@@ -157,9 +188,12 @@ function App() {
           flex-shrink-0 = don't let the sidebar shrink when the window is small
           This is just a visual placeholder for now — no functionality yet */}
       <div className="w-64 border-r border-border flex-shrink-0 flex flex-col bg-card">
-        {/* Sidebar header with title */}
-        <div className="p-4 border-b border-border">
+        {/* Sidebar header with title + logout */}
+        <div className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="sm:text-md text-lg md:text-xl font-semibold">Chat History</h2>
+          <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()}>
+            Logout
+          </Button>
         </div>
 
         {/* Placeholder area where chat session logs will go later

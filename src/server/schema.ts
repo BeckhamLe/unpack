@@ -8,12 +8,15 @@ export const conversations = pgTable('conversations', {
   // id column that takes type text (string)
   // title column that takes type text
   // .primaryKey() = unique identifier for each row
-  
+
   //convo id
   id: text('id').primaryKey(),
 
   // convo title
   title: text('title').notNull(),   // notNull() = can't be empty
+
+  // owner — nullable so existing test conversations still work
+  userId: text('user_id'),
 })
 
 // Messages table schema

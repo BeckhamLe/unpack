@@ -4,10 +4,11 @@ import dotenv from 'dotenv';
 import Anthropic from "@anthropic-ai/sdk";  // import anthropic sdk
 import { Storage } from "./storage.js"    // import storage interface and its methods
 import { Conversation, Message } from "src/shared/types.js";    // import Message and Conversation interfaces
-import { eq } from 'drizzle-orm'      // import Drizzle's version of = in SQL
+import { eq, and } from 'drizzle-orm'      // import Drizzle's version of = and AND in SQL
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js'  // imports drizzle function that creates drizzle ORM instance and type of database using drizzle/postgres
 import postgres from 'postgres'      // the Postgres driver; establishes network connection to supabase database
 import * as schema from './schema.js'   // imports everything from schema file
+import { requireAuth } from './middleware/auth.js'
 
 // configure dotenv 
 dotenv.config() 
@@ -134,45 +135,50 @@ class SupabaseStorage implements Storage {
     this.db = drizzle(client, {schema})     // gives typed methods to read and write data to database
   }
 
-  async addMessageToConversation (convoId: string, message: Message): Promise<Conversation> {
+  async addMessageToConversation (convoId: string, userId: string, message: Message): Promise<Conversation> {
+    // Verify ownership before allowing writes
+    const convo = await this.db
+      .select()
+      .from(schema.conversations)
+      .where(and(eq(schema.conversations.id, convoId), eq(schema.conversations.userId, userId)))
+
+    if (convo.length === 0) {
+      throw new Error("Conversation not found or access denied")
+    }
+
     // insert new message object into messages table
     await this.db
       .insert(schema.messages)
       .values({conversationId: convoId, role: message.role, content: message.content})
 
-    // Retrieve the updated conversation 
-    const updatedConvo = await this.getConversation(convoId)
-    
+    // Retrieve the updated conversation
+    const updatedConvo = await this.getConversation(convoId, userId)
+
     return updatedConvo // give to server
   }
 
-  async getConversation (convoId: string): Promise<Conversation> {
-    // returns back an array even if only one conversation is found (which is what we want)
-    // only returns Conversation object with id and title
-    const convo = 
+  async getConversation (convoId: string, userId: string): Promise<Conversation> {
+    // Filter by both convoId and userId to enforce ownership
+    const convo =
       await this.db
         .select()
         .from(schema.conversations)
-        .where(eq(schema.conversations.id, convoId))
+        .where(and(eq(schema.conversations.id, convoId), eq(schema.conversations.userId, userId)))
 
     if(convo.length === 0){
-      throw new Error("Conversation doesn't exists")
+      throw new Error("Conversation not found or access denied")
     }
 
     // returns back ordered array of messages associated with selected convo
-    const convoMsgs = 
-      await this.db 
+    const convoMsgs =
+      await this.db
         .select()
         .from(schema.messages)
         .where(eq(schema.messages.conversationId, convoId))
         .orderBy(schema.messages.id)
 
-    // Array of message objects that only have role and content
-    // transformed convoMsgs to exclude id and conversation_id fields
-    // casted the role since role sent and stored in the database is only either user or assistant
     const roleContentMsgs: Message[] = convoMsgs.map<Message>((msg) => ({role: msg.role as "user" | "assistant", content: msg.content}))
 
-    // Create new conversation object to put all data info retrieved from database into
     const returnedConvo: Conversation = {
       id: convo[0].id,
       title: convo[0].title,
@@ -182,35 +188,33 @@ class SupabaseStorage implements Storage {
     return returnedConvo
   }
 
-  async getConversations (): Promise<{ convoId: string; convoTitle: string; }[]> {
-   
-    // array of all existing conversation objects with their id and title
-    const convoIdTitleList = 
+  async getConversations (userId: string): Promise<{ convoId: string; convoTitle: string; }[]> {
+    // Only return conversations owned by this user
+    const convoIdTitleList =
       await this.db
         .select()
         .from(schema.conversations)
+        .where(eq(schema.conversations.userId, userId))
 
-    // Transformed array to switch aliases to match type name of interface
     const formattedList = convoIdTitleList.map<{ convoId: string; convoTitle: string; }>((convo) => ({convoId: convo.id, convoTitle: convo.title}))
-        
+
     return formattedList
   }
 
-  async createConversation (): Promise<Conversation> {
-    const newId = crypto.randomUUID()   // generate a random unique id for new conversation object
-    
+  async createConversation (userId: string): Promise<Conversation> {
+    const newId = crypto.randomUUID()
+
     await this.db
       .insert(schema.conversations)
-      .values({id: newId, title: newId})
+      .values({id: newId, title: newId, userId})
 
-    // create a new conversation object
     const newConvo: Conversation = {
       id: newId,
       title: newId,
       messages: []
     }
 
-    return newConvo   // return new convo for server to send to frontend
+    return newConvo
   }
 }
 
@@ -218,9 +222,10 @@ class SupabaseStorage implements Storage {
 const storage = new SupabaseStorage(process.env.DATABASE_URL!)
 
 // Streaming Chat Endpoint (primary)
-app.post('/chat/stream', async(req, res) => {
+app.post('/chat/stream', requireAuth, async(req, res) => {
   const userMsg = req.body.message
   const convoId = req.body.id
+  const userId = req.userId!
 
   // SSE headers — must disable buffering for chunks to arrive incrementally
   res.setHeader('Content-Type', 'text/event-stream')
@@ -230,7 +235,7 @@ app.post('/chat/stream', async(req, res) => {
   res.flushHeaders()
 
   try {
-    const updatedConvoUser = await storage.addMessageToConversation(convoId, { role: "user", content: userMsg })
+    const updatedConvoUser = await storage.addMessageToConversation(convoId, userId, { role: "user", content: userMsg })
 
     const stream = anthropic.messages.stream({
       model: "claude-haiku-4-5-20251001",
@@ -251,7 +256,7 @@ app.post('/chat/stream', async(req, res) => {
 
     stream.on('end', async () => {
       try {
-        const updatedConvo = await storage.addMessageToConversation(convoId, { role: "assistant", content: fullResponse })
+        const updatedConvo = await storage.addMessageToConversation(convoId, userId, { role: "assistant", content: fullResponse })
         res.write(`data: ${JSON.stringify({ type: "done", conversation: updatedConvo })}\n\n`)
       } catch {
         res.write(`data: ${JSON.stringify({ type: "error", message: "Failed to save response" })}\n\n`)
@@ -270,11 +275,12 @@ app.post('/chat/stream', async(req, res) => {
 })
 
 // Non-streaming Chat Endpoint (fallback)
-app.post('/chat', async(req, res) => {
+app.post('/chat', requireAuth, async(req, res) => {
   const userMsg = req.body.message
   const convoId = req.body.id
+  const userId = req.userId!
 
-  const updatedConvoUser = await storage.addMessageToConversation(convoId, { role: "user", content: userMsg})
+  const updatedConvoUser = await storage.addMessageToConversation(convoId, userId, { role: "user", content: userMsg})
 
   const apiMsg = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
@@ -286,7 +292,7 @@ app.post('/chat', async(req, res) => {
   const claudeResponse = apiMsg.content[0];
 
   if(claudeResponse.type === "text"){
-    const updatedConvoClaude = await storage.addMessageToConversation(convoId, {role: apiMsg.role, content: claudeResponse.text})
+    const updatedConvoClaude = await storage.addMessageToConversation(convoId, userId, {role: apiMsg.role, content: claudeResponse.text})
     res.json(updatedConvoClaude);
   } else{
     res.status(400).json({error: "Bad prompt"})
@@ -294,24 +300,24 @@ app.post('/chat', async(req, res) => {
 })
 
 // Get Conversation Endpoint
-app.get('/convo/:id', async (req, res) => {
-  const convoId = req.params.id   // conversation id in request
-  const convo = await storage.getConversation(convoId)
+app.get('/convo/:id', requireAuth, async (req, res) => {
+  const convoId = req.params.id as string
+  const convo = await storage.getConversation(convoId, req.userId!)
 
-  res.json(convo)    // send conversation that has same id in request to front end
+  res.json(convo)
 })
 
 // Get All Conversations Endpoint
-app.get('/convos', async (req, res) => {
-  const allConvos = await storage.getConversations()
-  
-  res.json(allConvos)    // send array of objects that have conversation id and title of all convos
+app.get('/convos', requireAuth, async (req, res) => {
+  const allConvos = await storage.getConversations(req.userId!)
+
+  res.json(allConvos)
 })
 
 // Create Conversation Endpoint
-app.get('/create', async (req, res) => {
-  const newConvo = await storage.createConversation()   // run storage function to create a new conversation and store it in memory
-  res.json(newConvo)                            // return that newly created convo to frontend
+app.get('/create', requireAuth, async (req, res) => {
+  const newConvo = await storage.createConversation(req.userId!)
+  res.json(newConvo)
 })
 
 // Endpoint to reset chat history
