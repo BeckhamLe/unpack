@@ -2,7 +2,7 @@
   "id": "TASK-002",
   "title": "Add Google OAuth via Supabase",
   "priority": "critical",
-  "status": "planned",
+  "status": "in-progress",
   "blocked_by": [],
   "blocks": ["TASK-004", "TASK-006"],
   "estimated_hours": 3,
