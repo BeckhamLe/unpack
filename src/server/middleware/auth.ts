@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import { createRemoteJWKSet, jwtVerify } from 'jose'
 
-const JWKS_URL = 'https://barvtbidfdmlhssporfb.supabase.co/auth/v1/.well-known/jwks.json'
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL!
+const JWKS_URL = `${SUPABASE_URL}/auth/v1/.well-known/jwks.json`
 const jwks = createRemoteJWKSet(new URL(JWKS_URL))
 
 // Extend Express Request to include userId
@@ -23,7 +24,10 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   const token = authHeader.slice(7)
 
   try {
-    const { payload } = await jwtVerify(token, jwks)
+    const { payload } = await jwtVerify(token, jwks, {
+      audience: 'authenticated',
+      issuer: `${SUPABASE_URL}/auth/v1`,
+    })
     req.userId = payload.sub
     next()
   } catch {

@@ -33,34 +33,28 @@ function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  // useEffect for initializing current conversation to be a new one if user has no prior ex
-  useEffect(() => {
-    if (!session) return
+  const initialized = useRef(false)
 
-    // Use Service Layer method to set up sidebar of existing convos
+  // One-time init: load conversations after first successful auth
+  useEffect(() => {
+    if (!session || initialized.current) return
+    initialized.current = true
+
     requestServices.getConvos().then((convoArray: {convoId: string, convoTitle: string}[]) => {
-      setSidebarConvos(convoArray)    // set sidebar with array of id and title objects of all conversations or empty array if no convos in memory
+      setSidebarConvos(convoArray)
 
       if(convoArray.length === 0){
-        // Use Service Layer method to create new convo and update currConvo state
         requestServices.createConvo().then((newConvo: Conversation) => {
           setCurrConvo(newConvo)
           setSelectedConvoId(newConvo.id)
-        })
-      } else if(convoArray.length > 0){
-        if(selectedConvoId === ""){
-          console.log(convoArray[0].convoId)
-          requestServices.getConvo(convoArray[0].convoId).then((returnedConvo) => {
-            setCurrConvo(returnedConvo)
-            setSelectedConvoId(returnedConvo.id)
-          })
-        } else {
-          requestServices.getConvo(selectedConvoId).then((returnedConvo) => {
-            setCurrConvo(returnedConvo)
-          })
-        }
+        }).catch(() => {})
+      } else {
+        requestServices.getConvo(convoArray[0].convoId).then((returnedConvo) => {
+          setCurrConvo(returnedConvo)
+          setSelectedConvoId(returnedConvo.id)
+        }).catch(() => {})
       }
-    })
+    }).catch(() => {})
 
   }, [session])
 
@@ -74,10 +68,10 @@ function App() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     
-    // Use Service Layer method to set up sidebar of existing convos
+    // Refresh sidebar with latest conversation list
     requestServices.getConvos().then((convoArray: {convoId: string, convoTitle: string}[]) => {
-      setSidebarConvos(convoArray)    // set sidebar with array of id and title objects of all conversations or empty array if no convos in memory
-    })
+      setSidebarConvos(convoArray)
+    }).catch(() => {})
 
   }, [currConvo]);
 

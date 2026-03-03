@@ -21,6 +21,7 @@ async function authFetch(url: string, options: RequestInit = {}): Promise<Respon
         // Refresh failed — sign out and reload
         await supabase.auth.signOut()
         window.location.reload()
+        throw new Error('Session expired')
     }
 
     return response

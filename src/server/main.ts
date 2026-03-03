@@ -202,6 +202,7 @@ class SupabaseStorage implements Storage {
   }
 
   async createConversation (userId: string): Promise<Conversation> {
+    if (!userId) throw new Error('userId is required')
     const newId = crypto.randomUUID()
 
     await this.db
@@ -226,6 +227,15 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
   const userMsg = req.body.message
   const convoId = req.body.id
   const userId = req.userId!
+
+  if (!convoId || typeof convoId !== 'string') {
+    res.status(400).json({ error: 'Missing conversation id' })
+    return
+  }
+  if (!userMsg || typeof userMsg !== 'string' || !userMsg.trim()) {
+    res.status(400).json({ error: 'Missing or empty message' })
+    return
+  }
 
   // SSE headers — must disable buffering for chunks to arrive incrementally
   res.setHeader('Content-Type', 'text/event-stream')
@@ -280,22 +290,35 @@ app.post('/chat', requireAuth, async(req, res) => {
   const convoId = req.body.id
   const userId = req.userId!
 
-  const updatedConvoUser = await storage.addMessageToConversation(convoId, userId, { role: "user", content: userMsg})
+  if (!convoId || typeof convoId !== 'string') {
+    res.status(400).json({ error: 'Missing conversation id' })
+    return
+  }
+  if (!userMsg || typeof userMsg !== 'string' || !userMsg.trim()) {
+    res.status(400).json({ error: 'Missing or empty message' })
+    return
+  }
 
-  const apiMsg = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 2048,
-    system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-    messages: updatedConvoUser.messages
-  })
+  try {
+    const updatedConvoUser = await storage.addMessageToConversation(convoId, userId, { role: "user", content: userMsg})
 
-  const claudeResponse = apiMsg.content[0];
+    const apiMsg = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2048,
+      system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+      messages: updatedConvoUser.messages
+    })
 
-  if(claudeResponse.type === "text"){
-    const updatedConvoClaude = await storage.addMessageToConversation(convoId, userId, {role: apiMsg.role, content: claudeResponse.text})
-    res.json(updatedConvoClaude);
-  } else{
-    res.status(400).json({error: "Bad prompt"})
+    const claudeResponse = apiMsg.content[0];
+
+    if(claudeResponse.type === "text"){
+      const updatedConvoClaude = await storage.addMessageToConversation(convoId, userId, {role: apiMsg.role, content: claudeResponse.text})
+      res.json(updatedConvoClaude);
+    } else{
+      res.status(400).json({error: "Bad prompt"})
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to process message' })
   }
 })
 
