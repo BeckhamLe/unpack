@@ -168,16 +168,58 @@ class SupabaseStorage implements Storage {
 // Create SupabaseStorage instance and pass url of database for postgres driver
 const storage = new SupabaseStorage(process.env.DATABASE_URL!)
 
-// Chat Endpoint
-app.post('/chat', async(req, res) => {
-  const userMsg = req.body.message   // user's message object from request
-  const convoId = req.body.id       // conversation id from request
+// Streaming Chat Endpoint (primary)
+app.post('/chat/stream', async(req, res) => {
+  const userMsg = req.body.message
+  const convoId = req.body.id
 
-  // create message object of user and their message
-  //pass object and conversation id to storage function to update convo with new msg in the memory instanace
-  const updatedConvoUser = await storage.addMessageToConversation(convoId, { role: "user", content: userMsg}) 
-  
-  // create the message and send to anthropic api
+  // SSE headers — must disable buffering for chunks to arrive incrementally
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.setHeader('X-Accel-Buffering', 'no')
+  res.flushHeaders()
+
+  try {
+    const updatedConvoUser = await storage.addMessageToConversation(convoId, { role: "user", content: userMsg })
+
+    const stream = anthropic.messages.stream({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 2048,
+      system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+      messages: updatedConvoUser.messages
+    })
+
+    let fullResponse = ""
+
+    stream.on('text', (chunk) => {
+      fullResponse += chunk
+      res.write(`data: ${JSON.stringify({ type: "chunk", text: chunk })}\n\n`)
+    })
+
+    stream.on('end', async () => {
+      const updatedConvo = await storage.addMessageToConversation(convoId, { role: "assistant", content: fullResponse })
+      res.write(`data: ${JSON.stringify({ type: "done", conversation: updatedConvo })}\n\n`)
+      res.end()
+    })
+
+    stream.on('error', (error) => {
+      res.write(`data: ${JSON.stringify({ type: "error", message: error.message })}\n\n`)
+      res.end()
+    })
+  } catch (error) {
+    res.write(`data: ${JSON.stringify({ type: "error", message: "Failed to process message" })}\n\n`)
+    res.end()
+  }
+})
+
+// Non-streaming Chat Endpoint (fallback)
+app.post('/chat', async(req, res) => {
+  const userMsg = req.body.message
+  const convoId = req.body.id
+
+  const updatedConvoUser = await storage.addMessageToConversation(convoId, { role: "user", content: userMsg})
+
   const apiMsg = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 2048,
@@ -185,15 +227,11 @@ app.post('/chat', async(req, res) => {
     messages: updatedConvoUser.messages
   })
 
-  const claudeResponse = apiMsg.content[0];   // content block of msg sent back from Claude
+  const claudeResponse = apiMsg.content[0];
 
-  // check if the content of claude's response is of type text
   if(claudeResponse.type === "text"){
-    // create message object of claude and their message
-    //pass object and conversation id to storage function to update convo with new msg in the memory instanace
     const updatedConvoClaude = await storage.addMessageToConversation(convoId, {role: apiMsg.role, content: claudeResponse.text})
-    res.json(updatedConvoClaude);             // send to front end conversation updated with new user and claude msg in json format
-
+    res.json(updatedConvoClaude);
   } else{
     res.status(400).json({error: "Bad prompt"})
   }

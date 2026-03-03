@@ -6,13 +6,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { searchForWorkspaceRoot } from "vite";
-
 function App() {
-  const [userMsg, setUserMsg] = useState("");   // state to keep track of user's current message
-  const [selectedConvoId, setSelectedConvoId] = useState("");   // state to hold id of conversation user is currently on 
-  const [currConvo, setCurrConvo] = useState<Conversation | null>(null)    // state to hold current conversation; initialized to be null to handle new users with no conversation history in memory
-  const [sidebarConvos, setSidebarConvos] = useState<{convoId: string, convoTitle: string}[]>()   // state to hold array of objects with id and title of existing convos
+  const [userMsg, setUserMsg] = useState("");
+  const [selectedConvoId, setSelectedConvoId] = useState("");
+  const [currConvo, setCurrConvo] = useState<Conversation | null>(null)
+  const [sidebarConvos, setSidebarConvos] = useState<{convoId: string, convoTitle: string}[]>()
+  const [isStreaming, setIsStreaming] = useState(false)
 
   // useEffect for initializing current conversation to be a new one if user has no prior ex
   useEffect(() => {
@@ -72,13 +71,45 @@ function App() {
   };
 
   const createMessage = (userMessage: string) => {
-    // don't send empty messages
-    if (!userMessage.trim()) return;
+    if (!userMessage.trim() || isStreaming) return;
 
-    setUserMsg("");                                                // clear the user's old text in the textarea
-    requestServices.sendMsg(selectedConvoId, userMessage).then((updatedConvo) => {
-      setCurrConvo(updatedConvo)
-    })
+    setUserMsg("");
+    setIsStreaming(true)
+
+    // Optimistically add user message + empty assistant message to UI
+    const userMsgObj: Message = { role: "user", content: userMessage }
+    const assistantMsgObj: Message = { role: "assistant", content: "" }
+    setCurrConvo(prev => prev ? {
+      ...prev,
+      messages: [...prev.messages, userMsgObj, assistantMsgObj]
+    } : prev)
+
+    requestServices.streamMsg(
+      selectedConvoId,
+      userMessage,
+      (chunk) => {
+        setCurrConvo(prev => {
+          if (!prev) return prev
+          const msgs = [...prev.messages]
+          const last = msgs[msgs.length - 1]
+          msgs[msgs.length - 1] = { ...last, content: last.content + chunk }
+          return { ...prev, messages: msgs }
+        })
+      },
+      (conversation) => {
+        setCurrConvo(conversation)
+        setIsStreaming(false)
+      },
+      (error) => {
+        setCurrConvo(prev => {
+          if (!prev) return prev
+          const msgs = [...prev.messages]
+          msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: msgs[msgs.length - 1].content || `Error: ${error}` }
+          return { ...prev, messages: msgs }
+        })
+        setIsStreaming(false)
+      }
+    )
   };
 
   const createNewConvo = () => {
@@ -252,24 +283,18 @@ function App() {
               placeholder="Type a message..."
               value={userMsg}
               onChange={handleUserMsgChange}
-              // onKeyDown listens for keyboard events on this element
-              // When Enter is pressed WITHOUT Shift, it sends the message
-              // Shift+Enter allows typing a new line instead
+              disabled={isStreaming}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();        // prevent the default newline behavior
-                  createMessage(userMsg);     // send the message instead
+                  e.preventDefault();
+                  createMessage(userMsg);
                 }
               }}
             />
-            {/* Shadcn Button — "default" variant uses the primary color from our theme
-                onClick sends the current message to the chat endpoint */}
-            <Button onClick={() => createMessage(userMsg)}>
-              Send
+            <Button onClick={() => createMessage(userMsg)} disabled={isStreaming}>
+              {isStreaming ? "..." : "Send"}
             </Button>
-            {/* "outline" variant = bordered button with transparent background
-                Visually less prominent than Send since reset is a less common action */}
-            <Button variant="outline">
+            <Button variant="outline" disabled={isStreaming}>
               Reset
             </Button>
           </div>

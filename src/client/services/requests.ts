@@ -1,38 +1,85 @@
-import { Message } from "@anthropic-ai/sdk/resources"
+import { Conversation } from "../../shared/types.js"
 
 const createConvo = async () => {
-    const response = await fetch('/create')   // send request to create and get the new conversation made
-    const newConvo = await response.json()        // wait for full body of response to arrive --> deserialize (convert object data structure from string -> object)
-
+    const response = await fetch('/create')
+    const newConvo = await response.json()
     return newConvo
 }
 
 const getConvo = async(convoId: string) => {
-    const response = await fetch(`/convo/${convoId}`)   // pass conversation id in endpoint url
-    const returnedConvo = await response.json()     // retrieved conversation server sends back
-
+    const response = await fetch(`/convo/${convoId}`)
+    const returnedConvo = await response.json()
     return returnedConvo
 }
 
 const getConvos = async() => {
     const response = await fetch('/convos')
-    const convoIdsTitles = await response.json()    // array of objects with conversation id and title of all convos
-
+    const convoIdsTitles = await response.json()
     return convoIdsTitles
 }
 
+// Non-streaming fallback
 const sendMsg = async(convoId: string, userMsg: string) => {
-    // Send a request to the chat endpoint in the server to send a message to claude and get back the response object from that
     const response = await fetch('/chat', {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userMsg, id: convoId })
     });
-
-    const updatedConvo = await response.json()  // retrieve updated convo object server sends back
-    return updatedConvo     // send to front end
+    const updatedConvo = await response.json()
+    return updatedConvo
 }
 
-export default { createConvo, getConvo, getConvos, sendMsg }
+// Streaming message — calls /chat/stream SSE endpoint
+const streamMsg = async(
+    convoId: string,
+    userMsg: string,
+    onChunk: (text: string) => void,
+    onDone: (conversation: Conversation) => void,
+    onError: (error: string) => void
+) => {
+    const response = await fetch('/chat/stream', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userMsg, id: convoId })
+    })
+
+    if (!response.ok || !response.body) {
+      onError("Failed to connect to stream")
+      return
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ""
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+
+      // Parse SSE lines from the buffer
+      const lines = buffer.split("\n")
+      buffer = lines.pop() || ""
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue
+        const json = line.slice(6)
+
+        try {
+          const event = JSON.parse(json)
+          if (event.type === "chunk") {
+            onChunk(event.text)
+          } else if (event.type === "done") {
+            onDone(event.conversation)
+          } else if (event.type === "error") {
+            onError(event.message)
+          }
+        } catch {
+          // skip malformed JSON lines
+        }
+      }
+    }
+}
+
+export default { createConvo, getConvo, getConvos, sendMsg, streamMsg }
