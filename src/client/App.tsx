@@ -113,7 +113,7 @@ function App() {
   };
 
   const createNewConvo = () => {
-    // Use Service Layer method to create new convo and update currConvo state
+    if (isStreaming) return
     requestServices.createConvo().then((newConvo: Conversation) => {
       setCurrConvo(newConvo)
       setSelectedConvoId(newConvo.id)
@@ -126,6 +126,7 @@ function App() {
   }
 
   const clickConvo = (convoId: string) => {
+    if (isStreaming) return
     requestServices.getConvo(convoId).then((returnedConvo) => {
       setCurrConvo(returnedConvo)
       setSelectedConvoId(returnedConvo.id)

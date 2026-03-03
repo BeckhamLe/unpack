@@ -192,19 +192,26 @@ app.post('/chat/stream', async(req, res) => {
 
     let fullResponse = ""
 
+    // Abort the Anthropic stream if the client disconnects
+    req.on('close', () => stream.abort())
+
     stream.on('text', (chunk) => {
       fullResponse += chunk
       res.write(`data: ${JSON.stringify({ type: "chunk", text: chunk })}\n\n`)
     })
 
     stream.on('end', async () => {
-      const updatedConvo = await storage.addMessageToConversation(convoId, { role: "assistant", content: fullResponse })
-      res.write(`data: ${JSON.stringify({ type: "done", conversation: updatedConvo })}\n\n`)
+      try {
+        const updatedConvo = await storage.addMessageToConversation(convoId, { role: "assistant", content: fullResponse })
+        res.write(`data: ${JSON.stringify({ type: "done", conversation: updatedConvo })}\n\n`)
+      } catch {
+        res.write(`data: ${JSON.stringify({ type: "error", message: "Failed to save response" })}\n\n`)
+      }
       res.end()
     })
 
-    stream.on('error', (error) => {
-      res.write(`data: ${JSON.stringify({ type: "error", message: error.message })}\n\n`)
+    stream.on('error', () => {
+      res.write(`data: ${JSON.stringify({ type: "error", message: "Stream interrupted" })}\n\n`)
       res.end()
     })
   } catch (error) {
