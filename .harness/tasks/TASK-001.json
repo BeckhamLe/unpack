@@ -2,7 +2,7 @@
   "id": "TASK-001",
   "title": "Add prompt caching",
   "priority": "critical",
-  "status": "in-progress",
+  "status": "done",
   "branch": "task/001-prompt-caching",
   "blocked_by": [],
   "blocks": ["TASK-003", "TASK-005", "TASK-006"],
