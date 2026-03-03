@@ -19,7 +19,7 @@ Unpack is a presentation-building chatbot (started Week 2) that guides users thr
 ## Priority Order (Agreed)
 
 1. **System prompt overhaul** — the product IS the conversation
-2. **Infrastructure** — table stakes for anyone to use it (Gemini, auth, streaming, error handling)
+2. **Infrastructure** — table stakes for anyone to use it (cost optimization, auth, streaming, error handling)
 3. **Validation** — user testing, prompt iteration, model evaluation
 4. **UI transformation** — structured output, stepper, cards, slide preview
 
@@ -30,7 +30,7 @@ Unpack is a presentation-building chatbot (started Week 2) that guides users thr
 ```
 | # | Task                                          | Priority | Depends On | Skills                          | Steps |
 |---|-----------------------------------------------|----------|------------|---------------------------------|-------|
-| 1 | Switch to Gemini API                          | critical | —          | API design                      | 3     |
+| 1 | Add prompt caching + optimize max_tokens       | critical | —          | API design                      | 3     |
 | 2 | Add Google OAuth via Supabase                 | critical | —          | Security, State mgmt, DB        | 5     |
 | 3 | Add streaming responses                       | high     | 1          | SSE, State mgmt, API design     | 4     |
 | 4 | UI polish (errors, loading, sidebar)           | high     | 2          | Error handling, React            | 3     |
@@ -57,22 +57,23 @@ Unpack is a presentation-building chatbot (started Week 2) that guides users thr
 
 ---
 
-## TASK-001: Switch to Gemini API
-**Priority:** critical | **Blocked by:** — | **Est:** 1.5 hrs
+## TASK-001: Add Prompt Caching + Optimize max_tokens
+**Priority:** critical | **Blocked by:** — | **Est:** 1 hr
 
-**Why:** Anthropic API key = Beckham pays for every user message. Gemini free tier = $0 cost.
+**Why:** System prompt is large and sent every request. Prompt caching gives ~90% cost savings on cached tokens. max_tokens caps response length for concise coaching.
 
 | Step | What | Files | Strategy |
 |------|------|-------|----------|
-| 1 | Swap deps: uninstall `@anthropic-ai/sdk`, install `@google/generative-ai`. Update `.env`. | package.json, .env | inline |
-| 2 | Rewrite Anthropic API call in main.ts to Gemini `generateContent()`. Map message format (`{role, content}[]` → `{role, parts}[]`). Keep system prompt as `systemInstruction`. | src/server/main.ts | sub-agent |
-| 3 | Smoke test: send message, get response, verify DB persistence. | — | inline |
+| 1 | Add `cache_control` breakpoint to system prompt in the Anthropic messages API call. Use ephemeral cache type on the system message. | src/server/main.ts | inline |
+| 2 | Set `max_tokens` to 300-400 for concise coaching responses. | src/server/main.ts | inline |
+| 3 | Smoke test: send message, verify concise response, check cache headers. | — | inline |
 
 **Acceptance criteria:**
-- App uses Gemini API, no Anthropic references remain
-- `.env` has `GOOGLE_API_KEY`, no `ANTHROPIC_API_KEY`
-- Chat flow works end-to-end
-- System prompt behavior preserved
+- System prompt uses prompt caching (`cache_control` on system message)
+- `max_tokens` set to 300-400
+- Responses are concise coaching-style
+- Chat flow still works end-to-end
+- DB persistence unaffected
 
 ---
 
@@ -81,7 +82,7 @@ Unpack is a presentation-building chatbot (started Week 2) that guides users thr
 
 > **Shaky skills: Security, State mgmt** — extra detail provided.
 
-**Prereq (Beckham manual):** Enable Google OAuth in Supabase dashboard. Configure Google Cloud Console. Add redirect URI.
+**Prereq (Beckham manual):** Enable Google OAuth in Supabase dashboard. Configure Google Cloud Console. Add redirect URI. Ensure `ANTHROPIC_API_KEY` is set in `.env`.
 
 | Step | What | Files | Strategy |
 |------|------|-------|----------|
@@ -103,11 +104,11 @@ Unpack is a presentation-building chatbot (started Week 2) that guides users thr
 ## TASK-003: Add Streaming Responses
 **Priority:** high | **Blocked by:** TASK-001 | **Est:** 2-2.5 hrs
 
-> **Shaky: State mgmt** — streaming changes how messages arrive. Key pattern: add empty assistant message immediately, stream chunks into it, save to DB after stream completes.
+> **Shaky: State mgmt** — streaming changes how messages arrive. Key pattern: add empty assistant message immediately, stream chunks into it, save to DB after stream completes. Anthropic SDK supports streaming natively.
 
 | Step | What | Files | Strategy |
 |------|------|-------|----------|
-| 1 | Research Gemini streaming API format (`generateContentStream()`). | — | inline |
+| 1 | Research Anthropic streaming API format (`messages.stream()` or `stream: true`). | — | inline |
 | 2 | Backend: new SSE endpoint `POST /chat/stream`. Stream chunks as SSE events. Save to DB on complete. Keep old `/chat` as fallback. | src/server/main.ts | sub-agent |
 | 3 | Frontend: `streamMessage()` function using fetch + ReadableStream. Process SSE chunks with `onChunk` callback. | src/client/services/requests.ts | sub-agent |
 | 4 | Frontend: streaming state in App.tsx. Append empty message, update on chunks, finalize on done. Disable send during streaming. Auto-scroll. | src/client/App.tsx | sub-agent |
@@ -170,7 +171,7 @@ Unpack is a presentation-building chatbot (started Week 2) that guides users thr
 |------|------|-------|----------|
 | 1 | Configure production build: `vite build` → `dist/`, Express serves static files. Verify `build` and `start` scripts. Test locally. | src/server/main.ts, package.json | inline |
 | 2 | Set up Railway (or Render). Create account, link repo. | — | inline |
-| 3 | Set env vars on platform: `GOOGLE_API_KEY`, `DATABASE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `NODE_ENV=production`. Configure build/start commands. | — | sub-agent |
+| 3 | Set env vars on platform: `ANTHROPIC_API_KEY`, `DATABASE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `NODE_ENV=production`. Configure build/start commands. | — | sub-agent |
 | 4 | Smoke test: OAuth login, streaming, DB persistence. Add deployed URL to Google OAuth origins + Supabase redirects. | — | sub-agent |
 
 **Acceptance criteria:**
@@ -189,13 +190,13 @@ Unpack is a presentation-building chatbot (started Week 2) that guides users thr
 |------|------|-------|----------|
 | 1 | Share URL with 2-3 software engineers. Ask them to build a presentation for their work. | — | inline |
 | 2 | Analyze feedback: friction points, missing questions, quality of output. | — | inline |
-| 3 | Iterate on prompt. Evaluate Gemini quality. Document findings. | src/server/main.ts | inline |
+| 3 | Iterate on prompt. Evaluate Haiku 4.5 quality. Document findings. | src/server/main.ts | inline |
 
 **Acceptance criteria:**
 - At least 2 real users tested
 - Feedback documented
 - At least one prompt iteration based on feedback
-- Gemini quality decision documented
+- Haiku 4.5 quality assessment documented
 
 ---
 
@@ -205,12 +206,12 @@ Unpack is a presentation-building chatbot (started Week 2) that guides users thr
 | Step | What | Files | Strategy |
 |------|------|-------|----------|
 | 1 | Design structured response schema: `phase`, `messageType`, `message`, `slides[]`, `qualityScore`. | — | inline |
-| 2 | Backend: Gemini function calling. Parse function call response. Handle text fallback. | src/server/main.ts | sub-agent |
+| 2 | Backend: Anthropic tool_use for structured output. Parse tool call response. Handle text fallback. | src/server/main.ts | sub-agent |
 | 3 | Extend Message type + DB schema. Add `metadata` JSON column. Update storage layer. | src/shared/types.ts, src/server/schema.ts, src/server/main.ts, src/server/storage.ts | sub-agent |
 | 4 | Frontend: ensure metadata flows through to rendering layer. Verify availability in message objects. | src/client/services/requests.ts, src/client/App.tsx | sub-agent |
 
 **Acceptance criteria:**
-- Gemini responds with structured data
+- Haiku 4.5 responds with structured data
 - Metadata stored in DB
 - Frontend receives metadata
 - Fallback handles non-structured responses
@@ -244,7 +245,7 @@ Unpack is a presentation-building chatbot (started Week 2) that guides users thr
 | Decision | Context | Date |
 |----------|---------|------|
 | Name: Unpack | Captures the "draw out your ideas" differentiator | 2026-03-02 |
-| Gemini over Anthropic | Free tier, $0 cost exposure for shared app | 2026-03-02 |
+| Anthropic Haiku 4.5 | Prompt caching for cost optimization, superior conversation quality | 2026-03-02 |
 | Software engineer niche | Specific, defensible, Beckham IS one | 2026-03-02 |
 | Receipt splitter rejected for week 5 | Layer 2 (auth+groups+OCR) too ambitious for "finishing" assignment | 2026-03-02 |
 | Validation before UI transformation | Prove the interview works before making it pretty | 2026-03-02 |

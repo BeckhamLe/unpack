@@ -17,14 +17,14 @@ The app currently works (interview → structure → content output) but it's a 
 **Priority 2 — Infrastructure (table stakes for anyone to use it)**
 - Deployed at a live URL anyone can visit
 - Google OAuth so each user's conversations are private
-- Switched from Anthropic to Gemini (free tier — no API cost exposure)
+- Anthropic Haiku 4.5 with prompt caching (90% savings on system prompt)
 - Streaming responses (currently users stare at nothing for 10+ seconds)
 - Error handling + loading states
 
 **Priority 3 — Validation (prove it works)**
 - User tested with real people (software engineers presenting their work)
 - At least one round of iteration on the system prompt based on real feedback
-- Model evaluation — test Gemini output quality vs. Anthropic, adjust if needed
+- Model evaluation — assess Haiku 4.5 output quality, adjust if needed
 
 **Priority 4 — UI transformation (make it feel like a presentation tool)**
 - Structured output from LLM (phase tracking, typed responses)
@@ -37,13 +37,13 @@ The app currently works (interview → structure → content output) but it's a 
 | Gap | Current State | "Done" State |
 |-----|--------------|-------------|
 | Interview quality | Generic questions anyone could replicate with ChatGPT | Adaptive, domain-specific, opinionated — pushes back, probes deeper, scores quality |
-| Usability | Runs locally, no auth, my API key pays for everything | Deployed, auth'd, free Gemini tier, streaming responses |
+| Usability | Runs locally, no auth, my API key pays for everything | Deployed, auth'd, prompt caching for cost optimization, streaming responses |
 | Validation | Only I've used it | Real users have tested it, feedback incorporated |
 | UX feel | Plain chat bubbles, no feedback while AI thinks, fixed sidebar | Progress stepper, typed cards, slide preview panel, streaming |
 
 ## Tech Stack
 - **Frontend:** React 19 + Vite + Tailwind CSS 4 + shadcn/ui + TypeScript
-- **Backend:** Express 5 + Google Gemini API + Supabase (Drizzle ORM)
+- **Backend:** Express 5 + Anthropic Claude Haiku 4.5 + Supabase (Drizzle ORM)
 - **Auth:** Supabase Auth (Google OAuth)
 - **Deployment:** TBD (Railway / Render / Vercel)
 
