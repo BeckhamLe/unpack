@@ -1,0 +1,23 @@
+{
+  "id": "TASK-006",
+  "title": "Deploy",
+  "priority": "critical",
+  "status": "planned",
+  "blocked_by": ["TASK-001", "TASK-002", "TASK-003", "TASK-004"],
+  "blocks": ["TASK-007"],
+  "estimated_hours": 1.5,
+  "skills": ["Deployment", "CI/CD"],
+  "steps": [
+    "Configure production build: vite build → dist/, Express serves static files. Verify build and start scripts. Test locally.",
+    "Set up Railway (or Render). Create account, link repo.",
+    "Set env vars on platform: GOOGLE_API_KEY, DATABASE_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, NODE_ENV=production. Configure build/start commands.",
+    "Smoke test: OAuth login, streaming, DB persistence. Add deployed URL to Google OAuth origins + Supabase redirects."
+  ],
+  "acceptance_criteria": [
+    "App accessible at public URL",
+    "OAuth works on deployed version",
+    "Streaming works",
+    "Conversations persist in DB",
+    "No API keys exposed to client"
+  ]
+}

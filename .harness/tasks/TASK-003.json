@@ -1,0 +1,23 @@
+{
+  "id": "TASK-003",
+  "title": "Add streaming responses",
+  "priority": "high",
+  "status": "planned",
+  "blocked_by": ["TASK-001"],
+  "blocks": ["TASK-006"],
+  "estimated_hours": 2.5,
+  "skills": ["SSE", "State mgmt", "API design"],
+  "steps": [
+    "Research Gemini streaming API format (generateContentStream()).",
+    "Backend: new SSE endpoint POST /chat/stream. Stream chunks as SSE events. Save to DB on complete. Keep old /chat as fallback.",
+    "Frontend: streamMessage() function using fetch + ReadableStream. Process SSE chunks with onChunk callback.",
+    "Frontend: streaming state in App.tsx. Append empty message, update on chunks, finalize on done. Disable send during streaming. Auto-scroll."
+  ],
+  "acceptance_criteria": [
+    "Messages appear word-by-word",
+    "Send button disabled during streaming",
+    "Auto-scroll follows text",
+    "Message saved to DB after stream completes",
+    "Old /chat endpoint still works"
+  ]
+}

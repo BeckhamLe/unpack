@@ -1,0 +1,25 @@
+{
+  "id": "TASK-009",
+  "title": "UI transformation (stepper, cards, slide preview)",
+  "priority": "medium",
+  "status": "planned",
+  "blocked_by": ["TASK-008"],
+  "blocks": [],
+  "estimated_hours": 5,
+  "skills": ["React", "State mgmt"],
+  "steps": [
+    "Extract message rendering into MessageList.tsx.",
+    "Progress stepper: Context → Brainstorm → Build → Polish. Driven by metadata.phase.",
+    "Card-based messages: QuestionCard, ChecklistCard, SlideCard, TipCard. Driven by metadata.messageType. Plain text fallback.",
+    "Slide preview panel: split-pane in build/refine phases (chat 40% / preview 60%). Full-width in context/brainstorm.",
+    "Integration test: full flow through all phases. Verify responsive."
+  ],
+  "acceptance_criteria": [
+    "Stepper shows current phase",
+    "Different card types render by message type",
+    "Slide preview appears in build/refine phases",
+    "Chat full-width in context/brainstorm",
+    "Plain text fallback for old messages",
+    "Mobile responsive"
+  ]
+}

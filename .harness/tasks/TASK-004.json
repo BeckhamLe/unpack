@@ -1,0 +1,21 @@
+{
+  "id": "TASK-004",
+  "title": "UI polish (errors, loading, collapsible sidebar)",
+  "priority": "high",
+  "status": "planned",
+  "blocked_by": ["TASK-002"],
+  "blocks": ["TASK-006"],
+  "estimated_hours": 1.5,
+  "skills": ["Error handling", "React"],
+  "steps": [
+    "Install sonner toast library. Add Toaster provider.",
+    "Try/catch on all fetches. Toast on errors. Loading spinner while AI responds. Connection-lost banner. 401 → redirect to login.",
+    "Collapsible sidebar: hamburger menu, overlay with transition, click-outside-to-close."
+  ],
+  "acceptance_criteria": [
+    "API errors show toast (auto-dismiss 5s)",
+    "Network failure shows persistent banner",
+    "Loading spinner while AI responds",
+    "Sidebar collapses to hamburger, opens as overlay"
+  ]
+}

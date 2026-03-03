@@ -1,0 +1,23 @@
+{
+  "id": "TASK-008",
+  "title": "Structured output from LLM",
+  "priority": "medium",
+  "status": "planned",
+  "blocked_by": ["TASK-005"],
+  "blocks": ["TASK-009"],
+  "estimated_hours": 4,
+  "skills": ["API design", "Data modeling"],
+  "steps": [
+    "Design structured response schema: phase, messageType, message, slides[], qualityScore.",
+    "Backend: Gemini function calling. Parse function call response. Handle text fallback.",
+    "Extend Message type + DB schema. Add metadata JSON column. Update storage layer.",
+    "Frontend: ensure metadata flows through to rendering layer. Verify availability in message objects."
+  ],
+  "acceptance_criteria": [
+    "Gemini responds with structured data",
+    "Metadata stored in DB",
+    "Frontend receives metadata",
+    "Fallback handles non-structured responses",
+    "Backward compat with existing conversations"
+  ]
+}

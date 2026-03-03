@@ -1,0 +1,30 @@
+{
+  "id": "TASK-002",
+  "title": "Add Google OAuth via Supabase",
+  "priority": "critical",
+  "status": "planned",
+  "blocked_by": [],
+  "blocks": ["TASK-004", "TASK-006"],
+  "estimated_hours": 3,
+  "skills": ["Security", "State mgmt", "DB"],
+  "prereqs_human": [
+    "Enable Google OAuth in Supabase dashboard",
+    "Configure Google Cloud Console OAuth consent screen + credentials",
+    "Get a Google Gemini API key",
+    "Add Supabase redirect URI for OAuth callback"
+  ],
+  "steps": [
+    "Install @supabase/supabase-js. Add env vars.",
+    "Schema: add userId (text, nullable) to conversations. Create Supabase client singleton.",
+    "Login component + auth state in App.tsx. Spinner during auth check. Handle HashRouter + OAuth callback.",
+    "Backend JWT middleware via jose + Supabase JWKS. Verify JWT, extract user_id, filter conversations by user.",
+    "Frontend authFetch wrapper: inject Bearer token, 401 → refresh → retry once → redirect to login."
+  ],
+  "acceptance_criteria": [
+    "Login/logout with Google works",
+    "No login flash (spinner during auth check)",
+    "Unauthenticated requests get 401",
+    "Each user only sees their own conversations",
+    "Token refresh works transparently"
+  ]
+}

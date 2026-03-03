@@ -1,0 +1,21 @@
+{
+  "id": "TASK-007",
+  "title": "User testing + prompt iteration",
+  "priority": "high",
+  "status": "planned",
+  "blocked_by": ["TASK-005", "TASK-006"],
+  "blocks": [],
+  "estimated_hours": null,
+  "skills": ["Evaluation", "Scope mgmt"],
+  "steps": [
+    "Share URL with 2-3 software engineers. Ask them to build a presentation for their work.",
+    "Analyze feedback: friction points, missing questions, quality of output.",
+    "Iterate on prompt. Evaluate Gemini quality. Document findings."
+  ],
+  "acceptance_criteria": [
+    "At least 2 real users tested",
+    "Feedback documented",
+    "At least one prompt iteration based on feedback",
+    "Gemini quality decision documented"
+  ]
+}

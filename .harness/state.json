@@ -1,0 +1,13 @@
+{
+  "active_feature": "Unpack — Finish & Ship Presentation Chatbot",
+  "active_branch": "feat/unpack-polish",
+  "branch_type": "feat",
+  "current_task": null,
+  "phase": "execution",
+  "greenfield": true,
+  "last_clean_commit": "c8ba39c",
+  "pr_url": null,
+  "plan_approved": "2026-03-02",
+  "tasks_total": 9,
+  "tasks_done": 0
+}

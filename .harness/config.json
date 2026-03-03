@@ -1,0 +1,15 @@
+{
+  "project_name": "unpack",
+  "created_at": "2026-03-02T12:00:00.000Z",
+  "task_counter": 9,
+  "workflow_states": ["backlog", "planned", "in-progress", "blocked", "needs-human", "handoff-pending", "done"],
+  "priorities": ["critical", "high", "medium", "low"],
+  "default_priority": "medium",
+  "git": {
+    "enabled": true,
+    "auto_push": false,
+    "default_branch": "main",
+    "lint_before_commit": true,
+    "remote": "origin"
+  }
+}

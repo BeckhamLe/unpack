@@ -1,0 +1,23 @@
+{
+  "id": "TASK-005",
+  "title": "System prompt overhaul",
+  "priority": "critical",
+  "status": "planned",
+  "blocked_by": ["TASK-001"],
+  "blocks": ["TASK-007", "TASK-008"],
+  "estimated_hours": 5,
+  "skills": ["Domain design", "Prompt engineering"],
+  "steps": [
+    "Adaptive probing: define 'vague' criteria, pushback templates, 'so what?' checks.",
+    "Software engineer domain logic: presentation type detection (demo/sprint review/conference talk/portfolio/pitch), audience calibration, impact framing, decision/tradeoff surfacing.",
+    "Strengthen Phase 1 (Brainstorm): component evaluation rubric, 'cut ruthlessly' mechanism. Strengthen Phase 3 (Refine): transitions, opening hooks, Q&A, pacing. Operationalize 'presentation is an ad for the presenter.'",
+    "Quality scoring: rate sections on clarity/impact/relevance. Flag weakest section. Give readiness score. Test with sample conversations."
+  ],
+  "acceptance_criteria": [
+    "Pushes back on vague answers",
+    "Presentation type detection works",
+    "'So what?' check fires after key points",
+    "Quality scoring after outline generation",
+    "Each phase has specific, opinionated guidance"
+  ]
+}

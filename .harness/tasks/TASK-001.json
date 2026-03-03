@@ -1,0 +1,21 @@
+{
+  "id": "TASK-001",
+  "title": "Switch to Gemini API",
+  "priority": "critical",
+  "status": "planned",
+  "blocked_by": [],
+  "blocks": ["TASK-003", "TASK-005", "TASK-006"],
+  "estimated_hours": 1.5,
+  "skills": ["API design"],
+  "steps": [
+    "Swap deps: uninstall @anthropic-ai/sdk, install @google/generative-ai. Update .env.",
+    "Rewrite Anthropic API call in main.ts to Gemini generateContent(). Map message format. Keep system prompt as systemInstruction.",
+    "Smoke test: send message, get response, verify DB persistence."
+  ],
+  "acceptance_criteria": [
+    "App uses Gemini API, no Anthropic references remain",
+    ".env has GOOGLE_API_KEY, no ANTHROPIC_API_KEY",
+    "Chat flow works end-to-end",
+    "System prompt behavior preserved"
+  ]
+}
