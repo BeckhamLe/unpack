@@ -1,4 +1,5 @@
-.harness/
+.harness/*
+!.harness/tasks/
 
 # Logs
 logs

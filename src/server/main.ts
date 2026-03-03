@@ -222,17 +222,16 @@ app.post('/chat/stream', async(req, res) => {
   const userMsg = req.body.message
   const convoId = req.body.id
 
-  // Set SSE headers
+  // SSE headers — must disable buffering for chunks to arrive incrementally
   res.setHeader('Content-Type', 'text/event-stream')
   res.setHeader('Cache-Control', 'no-cache')
   res.setHeader('Connection', 'keep-alive')
+  res.setHeader('X-Accel-Buffering', 'no')
   res.flushHeaders()
 
   try {
-    // Save user message to DB
     const updatedConvoUser = await storage.addMessageToConversation(convoId, { role: "user", content: userMsg })
 
-    // Stream from Anthropic
     const stream = anthropic.messages.stream({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 2048,
@@ -242,20 +241,26 @@ app.post('/chat/stream', async(req, res) => {
 
     let fullResponse = ""
 
+    // Abort the Anthropic stream if the client disconnects
+    req.on('close', () => stream.abort())
+
     stream.on('text', (chunk) => {
       fullResponse += chunk
       res.write(`data: ${JSON.stringify({ type: "chunk", text: chunk })}\n\n`)
     })
 
     stream.on('end', async () => {
-      // Save complete assistant message to DB
-      const updatedConvo = await storage.addMessageToConversation(convoId, { role: "assistant", content: fullResponse })
-      res.write(`data: ${JSON.stringify({ type: "done", conversation: updatedConvo })}\n\n`)
+      try {
+        const updatedConvo = await storage.addMessageToConversation(convoId, { role: "assistant", content: fullResponse })
+        res.write(`data: ${JSON.stringify({ type: "done", conversation: updatedConvo })}\n\n`)
+      } catch {
+        res.write(`data: ${JSON.stringify({ type: "error", message: "Failed to save response" })}\n\n`)
+      }
       res.end()
     })
 
-    stream.on('error', (error) => {
-      res.write(`data: ${JSON.stringify({ type: "error", message: error.message })}\n\n`)
+    stream.on('error', () => {
+      res.write(`data: ${JSON.stringify({ type: "error", message: "Stream interrupted" })}\n\n`)
       res.end()
     })
   } catch (error) {
