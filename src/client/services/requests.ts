@@ -29,18 +29,21 @@ async function authFetch(url: string, options: RequestInit = {}): Promise<Respon
 
 const createConvo = async () => {
     const response = await authFetch('/create')
+    if (!response.ok) throw new Error('Failed to create conversation')
     const newConvo = await response.json()
     return newConvo
 }
 
 const getConvo = async(convoId: string) => {
     const response = await authFetch(`/convo/${convoId}`)
+    if (!response.ok) throw new Error('Failed to load conversation')
     const returnedConvo = await response.json()
     return returnedConvo
 }
 
 const getConvos = async() => {
     const response = await authFetch('/convos')
+    if (!response.ok) throw new Error('Failed to load conversations')
     const convoIdsTitles = await response.json()
     return convoIdsTitles
 }
