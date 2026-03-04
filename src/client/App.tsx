@@ -68,7 +68,8 @@ function App() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     
-    // Refresh sidebar with latest conversation list
+    // Refresh sidebar — skip if no conversation loaded yet (pre-auth)
+    if (!currConvo) return
     requestServices.getConvos().then((convoArray: {convoId: string, convoTitle: string}[]) => {
       setSidebarConvos(convoArray)
     }).catch(() => {})
