@@ -53,13 +53,14 @@ Unpack — an AI presentation coach that interviews users to build their present
 ### PR Flow
 1. Claim the task (see above)
 2. Create task branch, do work, commit
-3. Rebase on latest `main`
-4. Push branch to `origin`
-5. Open PR via `gh pr create` — title: `TASK-XXX: <description>`, body: summary + acceptance criteria checklist
-6. Beckham reviews on GitHub
-7. Merge via PR (not local fast-forward)
-8. Delete branch: `gh pr merge` with `--delete-branch`, then `git branch -d` locally
-9. Update task status to `done` in `.harness/tasks/`, commit, push to `main`
+3. **CODE REVIEW (mandatory before PR).** Run build (`bunx vite build`). Then launch a separate agent to review the diff (`git diff main`) for correctness, security, error handling, race conditions, and state bugs. Fix all High/Medium issues. This is a GATE — do not proceed to step 4 until review passes.
+4. Rebase on latest `main`
+5. Push branch to `origin`
+6. Open PR via `gh pr create` — title: `TASK-XXX: <description>`, body: summary + acceptance criteria checklist
+7. Beckham reviews on GitHub
+8. Merge via PR (not local fast-forward)
+9. Delete branch: `gh pr merge` with `--delete-branch`, then `git branch -d` locally
+10. Update task status to `done` in `.harness/tasks/`, commit, push to `main`
 
 **Never merge directly to main. Every task ships through a PR.**
 

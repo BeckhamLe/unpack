@@ -1,6 +1,6 @@
 import "./App.css";
-import requestServices from './services/requests'       // service layer to handle creating requests and parsing server responses for frontend
-import { Message, Conversation} from '../shared/types'  // import Message and Conversation type interfaces
+import requestServices from './services/requests'
+import { Message, Conversation} from '../shared/types'
 import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from './lib/supabase.js'
 import Login from './components/Login.js'
 import type { Session } from '@supabase/supabase-js'
+import { toast, Toaster } from 'sonner'
+import { Menu, X, Loader2 } from 'lucide-react'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -18,6 +20,8 @@ function App() {
   const [currConvo, setCurrConvo] = useState<Conversation | null>(null)
   const [sidebarConvos, setSidebarConvos] = useState<{convoId: string, convoTitle: string}[]>()
   const [isStreaming, setIsStreaming] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isOffline, setIsOffline] = useState(!navigator.onLine)
 
   // Auth state listener
   useEffect(() => {
@@ -31,6 +35,18 @@ function App() {
     })
 
     return () => subscription.unsubscribe()
+  }, [])
+
+  // Online/offline detection
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true)
+    const goOnline = () => setIsOffline(false)
+    window.addEventListener('offline', goOffline)
+    window.addEventListener('online', goOnline)
+    return () => {
+      window.removeEventListener('offline', goOffline)
+      window.removeEventListener('online', goOnline)
+    }
   }, [])
 
   const initialized = useRef(false)
@@ -47,38 +63,37 @@ function App() {
         requestServices.createConvo().then((newConvo: Conversation) => {
           setCurrConvo(newConvo)
           setSelectedConvoId(newConvo.id)
-        }).catch(() => {})
+        }).catch((err) => toast.error(err.message))
       } else {
         requestServices.getConvo(convoArray[0].convoId).then((returnedConvo) => {
           setCurrConvo(returnedConvo)
           setSelectedConvoId(returnedConvo.id)
-        }).catch(() => {})
+        }).catch((err) => toast.error(err.message))
       }
-    }).catch(() => {})
+    }).catch((err) => toast.error(err.message))
 
   }, [session])
 
-  // useRef creates a reference to a DOM element so we can interact with it directly
-  // here we use it to target the bottom of the conversation for auto-scrolling
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // useEffect runs code after the component renders
-  // this one triggers every time 'conversation' changes (new message added)
-  // it auto-scrolls to the bottom so the user always sees the latest message
+  // Auto-scroll + sidebar refresh on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    
-    // Refresh sidebar — skip if no conversation loaded yet (pre-auth)
+
     if (!currConvo) return
     requestServices.getConvos().then((convoArray: {convoId: string, convoTitle: string}[]) => {
       setSidebarConvos(convoArray)
-    }).catch(() => {})
+    }).catch(() => {}) // silent — sidebar refresh is non-critical
 
   }, [currConvo]);
 
   // Auth loading spinner
   if (authLoading) {
-    return <div className="h-screen flex items-center justify-center bg-background text-foreground"><p>Loading...</p></div>
+    return (
+      <div className="h-screen flex items-center justify-center bg-background text-foreground">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   // Not authenticated — show login
@@ -86,12 +101,15 @@ function App() {
     return <Login />
   }
 
-  // Handle edge case of currConvo being null in between first render and first useEffect()
+  // Conversation loading
   if(currConvo === null){
-    return (<p className="responsive-text">Loading...</p>)
+    return (
+      <div className="h-screen flex items-center justify-center bg-background text-foreground">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
-  // Event listener to update the user's current message whenever they change it
   const handleUserMsgChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setUserMsg(event.target.value);
   };
@@ -102,7 +120,6 @@ function App() {
     setUserMsg("");
     setIsStreaming(true)
 
-    // Optimistically add user message + empty assistant message to UI
     const userMsgObj: Message = { role: "user", content: userMessage }
     const assistantMsgObj: Message = { role: "assistant", content: "" }
     setCurrConvo(prev => prev ? {
@@ -127,6 +144,7 @@ function App() {
         setIsStreaming(false)
       },
       (error) => {
+        toast.error(error || 'Something went wrong')
         setCurrConvo(prev => {
           if (!prev) return prev
           const msgs = [...prev.messages]
@@ -143,12 +161,11 @@ function App() {
     requestServices.createConvo().then((newConvo: Conversation) => {
       setCurrConvo(newConvo)
       setSelectedConvoId(newConvo.id)
-    })
-
-    // Use Service Layer method to set up sidebar of existing convos
-    requestServices.getConvos().then((convoArray: {convoId: string, convoTitle: string}[]) => {
-      setSidebarConvos(convoArray)    // set sidebar with array of id and title objects of all conversations or empty array if no convos in memory
-    })
+      setSidebarOpen(false)
+      return requestServices.getConvos()
+    }).then((convoArray) => {
+      if (convoArray) setSidebarConvos(convoArray)
+    }).catch((err) => toast.error(err.message))
   }
 
   const clickConvo = (convoId: string) => {
@@ -156,129 +173,120 @@ function App() {
     requestServices.getConvo(convoId).then((returnedConvo) => {
       setCurrConvo(returnedConvo)
       setSelectedConvoId(returnedConvo.id)
-    })
+      setSidebarOpen(false)
+    }).catch((err) => toast.error(err.message))
   }
 
-  /*
-  const resetConvo = async () => {
-    const response = await fetch('/reset', {
-      method: 'DELETE'
-    });
-
-    // if response back from server is 200-299
-    if (response.ok) {
-      setConversation([]);   // clear conversation history
-    }
-  };
-  */
-
-  return (
-    // h-screen = full viewport height, flex = flexbox layout for the whole page
-    // bg-background and text-foreground use Shadcn's dark mode CSS variables
-    <div className="h-screen flex bg-background text-foreground">
-
-      {/* ===== LEFT SIDEBAR =====
-          w-64 = fixed 256px width
-          border-r = right border to separate from main area
-          flex-shrink-0 = don't let the sidebar shrink when the window is small
-          This is just a visual placeholder for now — no functionality yet */}
-      <div className="w-64 border-r border-border flex-shrink-0 flex flex-col bg-card">
-        {/* Sidebar header with title + logout */}
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <h2 className="sm:text-md text-lg md:text-xl font-semibold">Chat History</h2>
+  // Sidebar content — shared between mobile overlay and desktop static
+  const sidebarContent = (
+    <>
+      <div className="p-4 border-b border-border flex items-center justify-between">
+        <h2 className="sm:text-md text-lg md:text-xl font-semibold">Chat History</h2>
+        <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()}>
             Logout
           </Button>
-        </div>
-
-        {/* Placeholder area where chat session logs will go later
-            flex-1 = take up all remaining vertical space
-            overflow-y-auto = scrollable if content overflows */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-2 items-stretch">
-          {/* ===== CONVERSATION TABS =====
-              p-3 = inner padding so text doesn't touch edges of tab
-              rounded-lg = rounded corners to give each tab a button-like shape
-              cursor-pointer = shows hand icon on hover to signal it's clickable
-              transition-colors = smoothly animates background color changes instead of snapping
-              truncate = cuts off long titles with "..." so they don't overflow the sidebar
-              bg-accent = solid background on the active tab to show which convo is selected
-              hover:bg-accent/50 = semi-transparent background on hover for inactive tabs
-              Parent's space-y-2 adds vertical gap between each tab */}
-          {sidebarConvos?.map((convo) => (
-            <p
-              key={convo.convoId}
-              onClick={() => clickConvo(convo.convoId)}
-              className={`text-sm md:text-md font-medium truncate p-3 rounded-lg cursor-pointer transition-colors ${
-                selectedConvoId === convo.convoId
-                  ? "bg-accent"
-                  : "hover:bg-accent/50"
-              }`}
-            >
-              {convo.convoTitle}
-            </p>
-          ))}
-          <Button className="py-1 md:py-2 w-full" onClick={() => createNewConvo()}>
-            New Conversation
+          {/* Close button — mobile only */}
+          <Button variant="ghost" size="icon-sm" className="md:hidden" onClick={() => setSidebarOpen(false)}>
+            <X className="h-5 w-5" />
           </Button>
         </div>
       </div>
 
-      {/* ===== MAIN CHAT AREA =====
-          flex-1 = take up all remaining horizontal space after the sidebar
-          flex flex-col = stack children vertically (conversation on top, input bar on bottom) */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 items-stretch">
+        {sidebarConvos?.map((convo) => (
+          <p
+            key={convo.convoId}
+            onClick={() => clickConvo(convo.convoId)}
+            className={`text-sm md:text-md font-medium truncate p-3 rounded-lg cursor-pointer transition-colors ${
+              selectedConvoId === convo.convoId
+                ? "bg-accent"
+                : "hover:bg-accent/50"
+            }`}
+          >
+            {convo.convoTitle}
+          </p>
+        ))}
+        <Button className="py-1 md:py-2 w-full" onClick={() => createNewConvo()}>
+          New Conversation
+        </Button>
+      </div>
+    </>
+  )
+
+  return (
+    <div className="h-screen flex bg-background text-foreground">
+      <Toaster position="top-right" richColors duration={5000} />
+
+      {/* Connection-lost banner */}
+      {isOffline && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-destructive text-primary-foreground text-center py-2 text-sm font-medium">
+          You're offline — check your connection
+        </div>
+      )}
+
+      {/* ===== MOBILE SIDEBAR OVERLAY ===== */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <div className="absolute inset-0 bg-black/50" />
+          <div
+            className="absolute inset-y-0 left-0 w-64 flex flex-col bg-card shadow-xl animate-in slide-in-from-left duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+
+      {/* ===== DESKTOP SIDEBAR (hidden on mobile) ===== */}
+      <div className="hidden md:flex w-64 border-r border-border flex-shrink-0 flex-col bg-card">
+        {sidebarContent}
+      </div>
+
+      {/* ===== MAIN CHAT AREA ===== */}
       <div className="flex-1 flex flex-col">
 
-        {/* ===== CONVERSATION CONTAINER =====
-            flex-1 = grow to fill all available vertical space (pushes input bar to bottom)
-            overflow-hidden = hide overflow so ScrollArea handles scrolling internally */}
+        {/* Mobile top bar with hamburger */}
+        <div className="md:hidden flex items-center gap-3 p-3 border-b border-border">
+          <Button variant="ghost" size="icon-sm" onClick={() => setSidebarOpen(true)}>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <span className="text-sm font-medium truncate">{currConvo.title || 'New Conversation'}</span>
+        </div>
+
+        {/* ===== CONVERSATION CONTAINER ===== */}
         <ScrollArea className="flex-1 overflow-hidden">
-          {/* max-w-3xl = cap the conversation width for readability (like Claude desktop)
-              mx-auto = center it horizontally
-              p-6 = padding around the messages
-              space-y-6 = vertical gap between each message */}
           <div className="max-w-3xl mx-auto p-6 space-y-6">
             {currConvo.messages.map((message, index) => (
-              // Each message row: flex layout to position avatar + speech bubble side by side
-              // justify-end = push user messages to the right side
-              // animate-in: fade-in-0 slide-in-from-bottom-2 = Shadcn animation that fades in
-              // and slides up from below, giving each new message a smooth entrance
               <div
                 key={index}
                 className={`flex items-start gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300 ${
                   message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {/* ===== CLAUDE'S AVATAR (left side) =====
-                    Only show before the speech bubble when it's Claude's message
-                    order-none keeps it on the left */}
                 {message.role === "assistant" && (
                   <div className="flex-shrink-0 avatar rounded-full bg-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
                     C
                   </div>
                 )}
 
-                {/* ===== SPEECH BUBBLE =====
-                    Card component from Shadcn gives us the rounded container with border
-                    max-w-[80%] = bubble won't take more than 80% of the conversation width
-                    The background color changes based on who's speaking:
-                    - User: primary color (lighter) to stand out on the right
-                    - Claude: card color (darker) to sit on the left
-                    relative + before:pseudo-element creates the little triangle "tail"
-                    pointing toward the speaker's avatar, like a comic book speech bubble */}
                 <Card className={`max-w-[80%] shadow-md py-0 ${
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground"      // user gets the accent color
-                    : "bg-card border-border"                   // claude gets the card background
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card border-border"
                 }`}>
                   <CardContent className="p-3">
-                    {/* whitespace-pre-wrap = preserve line breaks in the message text
-                        text-sm = slightly smaller text for a chat feel */}
                     <p className="responsive-text whitespace-pre-wrap">{message.content}</p>
+                    {/* Streaming indicator on the last assistant message */}
+                    {isStreaming && message.role === "assistant" && index === currConvo.messages.length - 1 && (
+                      <Loader2 className="h-4 w-4 animate-spin mt-2 text-muted-foreground inline-block" />
+                    )}
                   </CardContent>
                 </Card>
 
-                {/* ===== USER'S AVATAR (right side) =====
-                    Only show after the speech bubble when it's the user's message */}
                 {message.role === "user" && (
                   <div className="flex-shrink-0 avatar rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg">
                     U
@@ -287,33 +295,19 @@ function App() {
               </div>
             ))}
 
-            {/* Invisible div that sits at the very bottom of the message list.
-                When a new message is added, useEffect scrolls this into view,
-                bringing the user to the latest message automatically */}
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
-        {/* ===== BOTTOM INPUT BAR =====
-            sticky bottom-0 = stays fixed at the bottom of the main area even when scrolling
-            border-t = top border to visually separate from conversation
-            bg-background = solid background so messages don't show through when scrolling
-            p-4 = padding around the input area */}
+        {/* ===== BOTTOM INPUT BAR ===== */}
         <div className="sticky bottom-0 border-t border-border bg-background p-4">
-          {/* max-w-3xl mx-auto = match the conversation width and centering
-              flex gap-3 items-end = lay out textarea and buttons side by side, aligned to bottom
-              items-end so the buttons align with the bottom of the textarea if it grows */}
           <div className="max-w-3xl mx-auto flex gap-3 items-stretch">
-            {/* Shadcn Textarea component — styled version of the native textarea
-                flex-1 = take up all available horizontal space
-                resize-none = prevent manual resizing (keeps layout clean)
-                min-h-[44px] max-h-[120px] = minimum and maximum height constraints */}
             <Textarea
               className="flex-1 resize-none min-h-[44px] max-h-[120px]"
               placeholder="Type a message..."
               value={userMsg}
               onChange={handleUserMsgChange}
-              disabled={isStreaming}
+              disabled={isStreaming || isOffline}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -321,8 +315,8 @@ function App() {
                 }
               }}
             />
-            <Button onClick={() => createMessage(userMsg)} disabled={isStreaming}>
-              {isStreaming ? "..." : "Send"}
+            <Button onClick={() => createMessage(userMsg)} disabled={isStreaming || isOffline}>
+              {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
             </Button>
             <Button variant="outline" disabled={isStreaming}>
               Reset
