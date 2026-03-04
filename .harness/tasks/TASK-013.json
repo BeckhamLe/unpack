@@ -2,7 +2,7 @@
   "id": "TASK-013",
   "title": "Server provisioning — Node.js, nginx, PM2",
   "description": "Set up the EC2 instance to run any Node.js app. Install Node.js 20 LTS, bun, and git. Configure nginx as a reverse proxy (port 80 → 3000). Install PM2 and configure it as a systemd service for auto-restart on reboot. This is a reusable skill — same setup works for any Node.js deployment.",
-  "status": "in-progress",
+  "status": "done",
   "priority": "critical",
   "mode": "Direct",
   "created_at": "2026-03-04T16:30:00.000Z",
