@@ -262,11 +262,23 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
       updatedConvoUser.title = title
     }
 
+    // Merge consecutive same-role messages so Anthropic gets valid alternating history
+    // (self-heals conversations broken by prior stream errors that left orphaned user messages)
+    const sanitizedMessages = updatedConvoUser.messages.reduce<Message[]>((acc, msg) => {
+      const prev = acc[acc.length - 1]
+      if (prev && prev.role === msg.role) {
+        prev.content += "\n" + msg.content
+      } else {
+        acc.push({ ...msg })
+      }
+      return acc
+    }, [])
+
     const stream = anthropic.messages.stream({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 2048,
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-      messages: updatedConvoUser.messages
+      messages: sanitizedMessages
     })
 
     let fullResponse = ""
@@ -289,7 +301,11 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
       res.end()
     })
 
-    stream.on('error', () => {
+    stream.on('error', async (err) => {
+      console.error('Anthropic stream error:', err)
+      // Save whatever we got so the conversation doesn't end up with consecutive user messages
+      const fallback = fullResponse || "[Stream interrupted — please try again]"
+      await storage.addMessageToConversation(convoId, userId, { role: "assistant", content: fallback }).catch(e => console.error('Fallback save failed:', e))
       res.write(`data: ${JSON.stringify({ type: "error", message: "Stream interrupted" })}\n\n`)
       res.end()
     })
