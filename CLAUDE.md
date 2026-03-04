@@ -4,9 +4,9 @@
 
 **EXECUTING.** Per-task branching strategy. On `main`, clean state. Remote: `https://github.com/BeckhamLe/unpack`
 
-**Done:** TASK-001 (prompt caching), TASK-003 (streaming), TASK-005 (system prompt — PR #1 open).
+**Done:** TASK-001 (prompt caching), TASK-002 (OAuth), TASK-003 (streaming), TASK-004 (UI polish), TASK-005 (system prompt), TASK-010 (color theme). TASK-006 archived (replaced by TASK-011–014 for AWS EC2 deployment).
 
-**Next:** TASK-002 (OAuth — needs manual prereqs), TASK-004 (UI polish — blocked by TASK-002), TASK-006 (deploy — blocked by 002, 004).
+**Next:** TASK-011 (verify local prod build — in progress), TASK-012 (AWS infra), TASK-013 (server provisioning), TASK-014 (deploy + smoke test).
 
 ## What's Being Built
 
@@ -63,6 +63,11 @@ Unpack — an AI presentation coach that interviews users to build their present
 10. Update task status to `done` in `.harness/tasks/`, commit, push to `main`
 
 **Never merge directly to main. Every task ships through a PR.**
+
+## Operational Gotchas (ALL Agents Must Follow)
+
+- **Never background a server process.** Starting a server with `&` leaves it hogging the port after the test. If the user then runs `bun run dev`, the stale process serves old content silently. Always run servers in the foreground, or kill them immediately after testing. Before telling the user to start a server, check `lsof -i :<port>`.
+- **Streaming error cascade.** If an Anthropic stream errors, the user message is already saved but the assistant message is not — leaving consecutive user messages in DB. Anthropic rejects non-alternating messages, so every subsequent request fails. The fix is in `src/server/main.ts`: fallback assistant message on error + message history sanitization before sending to Anthropic.
 
 ## Manual Prereqs (Beckham Must Do)
 

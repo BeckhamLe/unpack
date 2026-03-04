@@ -1,0 +1,122 @@
+{
+  "id": "TASK-013",
+  "title": "Server provisioning — Node.js, nginx, PM2",
+  "description": "Set up the EC2 instance to run any Node.js app. Install Node.js 20 LTS, bun, and git. Configure nginx as a reverse proxy (port 80 → 3000). Install PM2 and configure it as a systemd service for auto-restart on reboot. This is a reusable skill — same setup works for any Node.js deployment.",
+  "status": "backlog",
+  "priority": "critical",
+  "mode": "Direct",
+  "created_at": "2026-03-04T16:30:00.000Z",
+  "updated_at": "2026-03-04T16:30:00.000Z",
+  "assigned_agent": null,
+  "skill_tags": ["Deployment"],
+  "parent_task": null,
+  "subtasks": [],
+  "blocked_by": ["TASK-012"],
+  "blocked_reason": null,
+  "plan": [
+    {
+      "step": 1,
+      "text": "SSH into instance, run `sudo dnf update -y` to update all system packages.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "inline",
+        "strategy": "inline"
+      },
+      "acceptance_criteria": ["All packages updated", "No errors in dnf output"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 2,
+      "text": "Install Node.js 20 LTS via NodeSource repo, install bun via official installer, install git.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "sub-agent",
+        "strategy": "sub-agent"
+      },
+      "acceptance_criteria": ["`node -v` returns 20.x", "`bun -v` works", "`git --version` works"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 3,
+      "text": "Install nginx, create reverse proxy config at /etc/nginx/conf.d/unpack.conf (proxy_pass to localhost:3000, WebSocket/SSE headers), enable and start nginx.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": ["/etc/nginx/conf.d/unpack.conf"],
+        "size": "sub-agent",
+        "strategy": "sub-agent"
+      },
+      "acceptance_criteria": ["nginx is running as systemd service", "Config proxies port 80 to localhost:3000", "SSE-specific headers set (proxy_buffering off, X-Accel-Buffering no)"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 4,
+      "text": "Install PM2 globally via npm, create ecosystem.config.cjs in the project root, run `pm2 startup` to configure systemd auto-start on reboot.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": ["ecosystem.config.cjs"],
+        "size": "sub-agent",
+        "strategy": "sub-agent"
+      },
+      "acceptance_criteria": ["`pm2 list` works", "ecosystem.config.cjs defines the app with NODE_ENV=production", "`pm2 startup` configured — app survives `sudo reboot`"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    }
+  ],
+  "acceptance_criteria": [
+    "Node.js 20 LTS, bun, and git installed on EC2",
+    "nginx running as reverse proxy (port 80 → 3000) with SSE support",
+    "PM2 installed and configured for auto-restart on reboot",
+    "All services survive a reboot"
+  ],
+  "context": {
+    "branch": "task/013-server-provisioning",
+    "branch_type": "chore",
+    "commit_hash": null,
+    "related_files": [],
+    "notes": "Shaky skill: Deployment — commands explained. Amazon Linux 2023 uses dnf. nginx config must disable proxy buffering for SSE streaming to work (proxy_buffering off). PM2 ecosystem file must use .cjs extension (CommonJS) since the project is ESM."
+  },
+  "phase": "build",
+  "trust_tier": "standard",
+  "code_review": {
+    "status": "pending",
+    "automated_passed": false,
+    "agent_review_passed": false,
+    "issues_found": [],
+    "iterations": 0
+  },
+  "task_output": null,
+  "outcome": null
+}

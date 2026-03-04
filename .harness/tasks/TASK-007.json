@@ -3,7 +3,7 @@
   "title": "User testing + prompt iteration",
   "priority": "high",
   "status": "planned",
-  "blocked_by": ["TASK-005", "TASK-006"],
+  "blocked_by": ["TASK-005", "TASK-014"],
   "blocks": [],
   "estimated_hours": null,
   "skills": ["Evaluation", "Scope mgmt"],

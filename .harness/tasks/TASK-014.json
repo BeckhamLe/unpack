@@ -1,0 +1,147 @@
+{
+  "id": "TASK-014",
+  "title": "Deploy app, configure secrets & smoke test",
+  "description": "Get Unpack running on EC2 and verify everything works. Store env vars securely in AWS SSM Parameter Store (not hardcoded .env). Write a reusable deploy script that pulls secrets, builds the app, and restarts PM2. Clone the repo, deploy, update OAuth redirect URIs, and run a full smoke test.",
+  "status": "backlog",
+  "priority": "critical",
+  "mode": "Direct",
+  "created_at": "2026-03-04T16:30:00.000Z",
+  "updated_at": "2026-03-04T16:30:00.000Z",
+  "assigned_agent": null,
+  "skill_tags": ["Deployment", "Security"],
+  "parent_task": null,
+  "subtasks": [],
+  "blocked_by": ["TASK-013"],
+  "blocks": ["TASK-007"],
+  "blocked_reason": null,
+  "plan": [
+    {
+      "step": 1,
+      "text": "Store 4 env vars in AWS SSM Parameter Store as SecureStrings: ANTHROPIC_API_KEY, DATABASE_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "inline",
+        "strategy": "inline"
+      },
+      "acceptance_criteria": ["`aws ssm get-parameter --name /unpack/ANTHROPIC_API_KEY` returns (encrypted)", "All 4 parameters stored"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 2,
+      "text": "Write deploy.sh script: pulls SSM params into .env, runs git pull, bun install, bun run build, pm2 restart. Make executable.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": ["deploy.sh"],
+        "size": "sub-agent",
+        "strategy": "sub-agent"
+      },
+      "acceptance_criteria": ["Script is executable", "Pulls all 4 env vars from SSM", "Runs full build + restart pipeline", "Exits on any error (set -e)"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 3,
+      "text": "Clone repo on EC2, run deploy script, verify app starts on port 3000 and is accessible via Elastic IP on port 80.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "sub-agent",
+        "strategy": "sub-agent"
+      },
+      "acceptance_criteria": ["`pm2 logs` shows app running without errors", "`curl http://<elastic-ip>` returns HTML", "nginx proxies correctly"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 4,
+      "text": "Update Supabase redirect URIs and Google OAuth origins/redirect URIs with the Elastic IP address.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "inline",
+        "strategy": "inline"
+      },
+      "acceptance_criteria": ["Supabase dashboard has http://<elastic-ip> as allowed redirect", "Google Cloud Console has the IP in authorized origins + redirect URIs"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 5,
+      "text": "Full smoke test: OAuth login, send streaming message, verify conversation persists, check CloudWatch for logs. Set up CloudWatch agent if needed.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "sub-agent",
+        "strategy": "sub-agent"
+      },
+      "acceptance_criteria": ["OAuth login works at public URL", "Streaming chat works end-to-end", "Conversation persists after page refresh", "Logs visible in CloudWatch console"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    }
+  ],
+  "acceptance_criteria": [
+    "Env vars stored securely in SSM Parameter Store (not hardcoded)",
+    "Reusable deploy.sh script works end-to-end",
+    "App accessible at http://<elastic-ip>",
+    "OAuth works on deployed version",
+    "Streaming works",
+    "Conversations persist in DB",
+    "No API keys exposed to client",
+    "Logs visible in CloudWatch"
+  ],
+  "context": {
+    "branch": "task/014-deploy-smoke-test",
+    "branch_type": "chore",
+    "commit_hash": null,
+    "related_files": ["package.json", "src/server/main.ts", ".env"],
+    "notes": "Shaky skills: Deployment, Security. The VITE_ prefixed vars get bundled into client JS at build time — they must be in .env BEFORE `bun run build`. DATABASE_URL and ANTHROPIC_API_KEY are server-only (read at runtime). Deploy script must handle this ordering. Step 4 is manual (Supabase dashboard + Google Cloud Console)."
+  },
+  "phase": "build",
+  "trust_tier": "standard",
+  "code_review": {
+    "status": "pending",
+    "automated_passed": false,
+    "agent_review_passed": false,
+    "issues_found": [],
+    "iterations": 0
+  },
+  "task_output": null,
+  "outcome": null
+}
