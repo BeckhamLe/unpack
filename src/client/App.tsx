@@ -34,6 +34,18 @@ function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Online/offline detection
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true)
+    const goOnline = () => setIsOffline(false)
+    window.addEventListener('offline', goOffline)
+    window.addEventListener('online', goOnline)
+    return () => {
+      window.removeEventListener('offline', goOffline)
+      window.removeEventListener('online', goOnline)
+    }
+  }, [])
+
   const initialized = useRef(false)
 
   useEffect(() => {
@@ -47,14 +59,14 @@ function App() {
         requestServices.createConvo().then((newConvo: Conversation) => {
           setCurrConvo(newConvo)
           setSelectedConvoId(newConvo.id)
-        }).catch(() => {})
+        }).catch((err) => toast.error(err.message))
       } else {
         requestServices.getConvo(convoArray[0].convoId).then((returnedConvo) => {
           setCurrConvo(returnedConvo)
           setSelectedConvoId(returnedConvo.id)
-        }).catch(() => {})
+        }).catch((err) => toast.error(err.message))
       }
-    }).catch(() => {})
+    }).catch((err) => toast.error(err.message))
 
   }, [session])
 
@@ -66,7 +78,7 @@ function App() {
     if (!currConvo) return
     requestServices.getConvos().then((convoArray: {convoId: string, convoTitle: string}[]) => {
       setSidebarConvos(convoArray)
-    }).catch(() => {})
+    }).catch(() => {}) // silent — sidebar refresh is non-critical
 
   }, [currConvo]);
 
@@ -126,6 +138,7 @@ function App() {
         setIsStreaming(false)
       },
       (error) => {
+        toast.error(error || 'Something went wrong')
         setCurrConvo(prev => {
           if (!prev) return prev
           const msgs = [...prev.messages]
@@ -153,11 +166,13 @@ function App() {
     requestServices.getConvo(convoId).then((returnedConvo) => {
       setCurrConvo(returnedConvo)
       setSelectedConvoId(returnedConvo.id)
-    })
+      setSidebarOpen(false)
+    }).catch((err) => toast.error(err.message))
   }
 
   return (
     <div className="h-screen flex bg-background text-foreground">
+      <Toaster position="top-right" richColors duration={5000} />
 
       {/* ===== SIDEBAR ===== */}
       {sidebarOpen && (
@@ -284,7 +299,7 @@ function App() {
               placeholder="Describe your presentation, or ask for coaching advice..."
               value={userMsg}
               onChange={handleUserMsgChange}
-              disabled={isStreaming}
+              disabled={isStreaming || isOffline}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
