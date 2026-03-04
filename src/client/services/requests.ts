@@ -55,6 +55,7 @@ const sendMsg = async(convoId: string, userMsg: string) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: userMsg, id: convoId })
     });
+    if (!response.ok) throw new Error('Failed to send message')
     const updatedConvo = await response.json()
     return updatedConvo
 }

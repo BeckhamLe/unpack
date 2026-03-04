@@ -162,11 +162,10 @@ function App() {
       setCurrConvo(newConvo)
       setSelectedConvoId(newConvo.id)
       setSidebarOpen(false)
+      return requestServices.getConvos()
+    }).then((convoArray) => {
+      if (convoArray) setSidebarConvos(convoArray)
     }).catch((err) => toast.error(err.message))
-
-    requestServices.getConvos().then((convoArray: {convoId: string, convoTitle: string}[]) => {
-      setSidebarConvos(convoArray)
-    }).catch(() => {})
   }
 
   const clickConvo = (convoId: string) => {
@@ -308,7 +307,7 @@ function App() {
               placeholder="Type a message..."
               value={userMsg}
               onChange={handleUserMsgChange}
-              disabled={isStreaming}
+              disabled={isStreaming || isOffline}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -316,7 +315,7 @@ function App() {
                 }
               }}
             />
-            <Button onClick={() => createMessage(userMsg)} disabled={isStreaming}>
+            <Button onClick={() => createMessage(userMsg)} disabled={isStreaming || isOffline}>
               {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
             </Button>
             <Button variant="outline" disabled={isStreaming}>
