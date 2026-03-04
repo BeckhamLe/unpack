@@ -9,6 +9,7 @@ import { supabase } from './lib/supabase.js'
 import Login from './components/Login.js'
 import type { Session } from '@supabase/supabase-js'
 import { PanelLeftClose, PanelLeftOpen, Plus, LogOut, Send } from 'lucide-react'
+import { toast, Toaster } from 'sonner'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -19,6 +20,7 @@ function App() {
   const [sidebarConvos, setSidebarConvos] = useState<{convoId: string, convoTitle: string}[]>()
   const [isStreaming, setIsStreaming] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isOffline, setIsOffline] = useState(!navigator.onLine)
 
   // Auth state listener
   useEffect(() => {
