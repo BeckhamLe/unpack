@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase.js'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 
 export default function Login() {
   const signIn = () => {
@@ -11,18 +10,21 @@ export default function Login() {
   }
 
   return (
-    <div className="h-screen flex items-center justify-center bg-background">
-      <Card className="w-full max-w-sm">
-        <CardContent className="p-6 flex flex-col items-center gap-4">
-          <h1 className="text-2xl font-bold">Unpack</h1>
-          <p className="text-sm text-muted-foreground text-center">
+    <div className="h-screen flex flex-col items-center justify-center bg-background px-4">
+      <div className="max-w-sm w-full flex flex-col items-center gap-6">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-primary text-center">Unpack</h1>
+          <p className="text-sm text-muted-foreground text-center mt-2">
             AI presentation coach for software engineers
           </p>
-          <Button className="w-full" onClick={signIn}>
-            Sign in with Google
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+        <Button className="w-full" onClick={signIn}>
+          Sign in with Google
+        </Button>
+        <p className="text-xs text-muted-foreground text-center">
+          Build better presentations through guided conversation
+        </p>
+      </div>
     </div>
   )
 }
