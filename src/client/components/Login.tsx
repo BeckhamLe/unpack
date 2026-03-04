@@ -18,7 +18,7 @@ export default function Login() {
             AI presentation coach for software engineers
           </p>
         </div>
-        <Button className="w-full" onClick={signIn}>
+        <Button className="w-auto px-8 py-3 text-lg font-medium rounded-xl" onClick={signIn}>
           Sign in with Google
         </Button>
         <p className="text-xs text-muted-foreground text-center">
