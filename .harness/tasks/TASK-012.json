@@ -1,0 +1,143 @@
+{
+  "id": "TASK-012",
+  "title": "AWS infrastructure — VPC, security groups, key pair, IAM, EC2",
+  "description": "Set up foundational AWS infrastructure for EC2 deployment. This is the core AWS wiring — every command maps to a concept that comes up in interviews. Create a security group with SSH/HTTP/HTTPS access, generate a key pair for SSH, create an IAM role with CloudWatch permissions, and launch a t2.micro free-tier instance with an Elastic IP.",
+  "status": "backlog",
+  "priority": "critical",
+  "mode": "Direct",
+  "created_at": "2026-03-04T16:30:00.000Z",
+  "updated_at": "2026-03-04T16:30:00.000Z",
+  "assigned_agent": null,
+  "skill_tags": ["Deployment", "Security"],
+  "parent_task": null,
+  "subtasks": [],
+  "blocked_by": ["TASK-011"],
+  "blocked_reason": null,
+  "plan": [
+    {
+      "step": 1,
+      "text": "Verify AWS CLI is configured: run `aws sts get-caller-identity`. Confirm region is us-east-1.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "inline",
+        "strategy": "inline"
+      },
+      "acceptance_criteria": ["CLI returns account ID without auth errors", "Region is us-east-1"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 2,
+      "text": "Create security group named 'unpack-sg': allow inbound SSH (22), HTTP (80), HTTPS (443) from 0.0.0.0/0. Outbound all traffic.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "inline",
+        "strategy": "inline"
+      },
+      "acceptance_criteria": ["Security group exists with correct inbound rules", "`aws ec2 describe-security-groups --group-names unpack-sg` shows 3 inbound rules"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 3,
+      "text": "Create EC2 key pair named 'unpack-key', save .pem to ~/.ssh/unpack-key.pem, chmod 400.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": ["~/.ssh/unpack-key.pem"],
+        "size": "sub-agent",
+        "strategy": "sub-agent"
+      },
+      "acceptance_criteria": ["Key pair exists in AWS", ".pem file saved locally with 400 permissions", "`aws ec2 describe-key-pairs --key-names unpack-key` succeeds"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 4,
+      "text": "Create IAM role 'unpack-ec2-role' with AmazonSSMManagedInstanceCore and CloudWatchLogsFullAccess policies. Create instance profile and attach role.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "sub-agent",
+        "strategy": "sub-agent"
+      },
+      "acceptance_criteria": ["IAM role exists with both policies attached", "Instance profile exists and has the role", "`aws iam get-role --role-name unpack-ec2-role` succeeds"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 5,
+      "text": "Launch t2.micro instance (Amazon Linux 2023 AMI) with unpack-sg security group and unpack-ec2-role IAM profile. Allocate and associate Elastic IP. Verify SSH connectivity.",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "sub-agent",
+        "strategy": "sub-agent"
+      },
+      "acceptance_criteria": ["Instance is running", "Elastic IP allocated and associated", "`ssh -i ~/.ssh/unpack-key.pem ec2-user@<elastic-ip>` connects successfully"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    }
+  ],
+  "acceptance_criteria": [
+    "Security group with SSH/HTTP/HTTPS inbound rules exists",
+    "EC2 key pair created and .pem stored securely",
+    "IAM role with CloudWatch + SSM permissions attached to instance",
+    "t2.micro instance running with Elastic IP",
+    "SSH connection to instance works"
+  ],
+  "context": {
+    "branch": "task/012-aws-infrastructure",
+    "branch_type": "chore",
+    "commit_hash": null,
+    "related_files": [],
+    "notes": "Shaky skills: Deployment, Security — extra detail on every step. All commands should be AWS CLI. Use default VPC (every new AWS account has one). Amazon Linux 2023 uses dnf, not yum."
+  },
+  "phase": "build",
+  "trust_tier": "standard",
+  "code_review": {
+    "status": "pending",
+    "automated_passed": false,
+    "agent_review_passed": false,
+    "issues_found": [],
+    "iterations": 0
+  },
+  "task_output": null,
+  "outcome": null
+}

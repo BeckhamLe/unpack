@@ -229,6 +229,20 @@ class SupabaseStorage implements Storage {
 // Create SupabaseStorage instance and pass url of database for postgres driver
 const storage = new SupabaseStorage(process.env.DATABASE_URL!)
 
+// Merge consecutive same-role messages so Anthropic gets valid alternating history
+// (self-heals conversations broken by prior stream errors that left orphaned user messages)
+function sanitizeMessages(messages: Message[]): Message[] {
+  return messages.reduce<Message[]>((acc, msg) => {
+    const prev = acc[acc.length - 1]
+    if (prev && prev.role === msg.role) {
+      prev.content += "\n" + msg.content
+    } else {
+      acc.push({ ...msg })
+    }
+    return acc
+  }, [])
+}
+
 // Streaming Chat Endpoint (primary)
 app.post('/chat/stream', requireAuth, async(req, res) => {
   const userMsg = req.body.message
@@ -266,7 +280,7 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
       model: "claude-haiku-4-5-20251001",
       max_tokens: 2048,
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-      messages: updatedConvoUser.messages
+      messages: sanitizeMessages(updatedConvoUser.messages)
     })
 
     let fullResponse = ""
@@ -289,7 +303,11 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
       res.end()
     })
 
-    stream.on('error', () => {
+    stream.on('error', async (err) => {
+      console.error('Anthropic stream error:', err)
+      // Save whatever we got so the conversation doesn't end up with consecutive user messages
+      const fallback = fullResponse || "[Stream interrupted — please try again]"
+      await storage.addMessageToConversation(convoId, userId, { role: "assistant", content: fallback }).catch(e => console.error('Fallback save failed:', e))
       res.write(`data: ${JSON.stringify({ type: "error", message: "Stream interrupted" })}\n\n`)
       res.end()
     })
@@ -321,7 +339,7 @@ app.post('/chat', requireAuth, async(req, res) => {
       model: "claude-haiku-4-5-20251001",
       max_tokens: 2048,
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-      messages: updatedConvoUser.messages
+      messages: sanitizeMessages(updatedConvoUser.messages)
     })
 
     const claudeResponse = apiMsg.content[0];

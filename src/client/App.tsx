@@ -177,8 +177,7 @@ function App() {
       <Toaster position="top-right" richColors duration={5000} />
 
       {/* ===== SIDEBAR ===== */}
-      {sidebarOpen && (
-        <div className="w-64 flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border">
+      <div className={`flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-500 ease-in-out overflow-hidden ${sidebarOpen ? 'w-64' : 'w-0 border-r-0'}`}>
           {/* Brand + toggle */}
           <div className="h-14 px-4 flex items-center justify-between border-b border-sidebar-border">
             <span className="text-lg font-bold tracking-tight text-primary">Unpack</span>
@@ -228,8 +227,7 @@ function App() {
               Sign out
             </button>
           </div>
-        </div>
-      )}
+      </div>
 
       {/* ===== MAIN AREA ===== */}
       <div className="flex-1 flex flex-col min-w-0">

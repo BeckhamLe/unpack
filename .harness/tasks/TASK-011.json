@@ -1,0 +1,101 @@
+{
+  "id": "TASK-011",
+  "title": "Verify local production build",
+  "description": "Confirm the app builds and runs correctly in production mode before touching AWS. Run bun run build, start the production server, and test auth + streaming + DB persistence locally.",
+  "status": "done",
+  "priority": "high",
+  "mode": "Direct",
+  "created_at": "2026-03-04T16:30:00.000Z",
+  "updated_at": "2026-03-04T16:30:00.000Z",
+  "assigned_agent": null,
+  "skill_tags": [],
+  "parent_task": null,
+  "subtasks": [],
+  "blocked_by": [],
+  "blocked_reason": null,
+  "plan": [
+    {
+      "step": 1,
+      "text": "Run `bun run build`, verify dist/ output contains index.html + JS/CSS assets",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": ["dist/"],
+        "size": "inline",
+        "strategy": "inline"
+      },
+      "acceptance_criteria": ["Build succeeds without errors", "dist/ contains index.html and assets/ with JS + CSS bundles"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 2,
+      "text": "Run `NODE_ENV=production bun start`, verify app serves at localhost:3000",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "inline",
+        "strategy": "inline"
+      },
+      "acceptance_criteria": ["App starts without errors", "localhost:3000 serves the UI"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    },
+    {
+      "step": 3,
+      "text": "Test OAuth login, send a streaming message, verify conversation persists in DB",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "error": null,
+      "scope": {
+        "files": [],
+        "size": "inline",
+        "strategy": "inline"
+      },
+      "acceptance_criteria": ["OAuth login works", "Streaming response appears word-by-word", "Conversation visible after page refresh"],
+      "output": {
+        "summary": null,
+        "files_created": [],
+        "key_exports": [],
+        "key_decisions": null
+      }
+    }
+  ],
+  "acceptance_criteria": [
+    "bun run build succeeds with clean output",
+    "Production server starts and serves UI at localhost:3000",
+    "Auth, streaming, and DB persistence all work in production mode"
+  ],
+  "context": {
+    "branch": "task/011-verify-prod-build",
+    "branch_type": "chore",
+    "commit_hash": null,
+    "related_files": ["package.json", "vite.config.ts", "src/server/main.ts"],
+    "notes": "Quick validation gate. If this fails, fix before proceeding to AWS."
+  },
+  "phase": "build",
+  "trust_tier": "standard",
+  "code_review": {
+    "status": "pending",
+    "automated_passed": false,
+    "agent_review_passed": false,
+    "issues_found": [],
+    "iterations": 0
+  },
+  "task_output": null,
+  "outcome": null
+}

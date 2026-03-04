@@ -2,7 +2,7 @@
   "id": "TASK-005",
   "title": "System prompt overhaul",
   "priority": "critical",
-  "status": "in-progress",
+  "status": "done",
   "branch": "task/005-system-prompt",
   "pr": "https://github.com/BeckhamLe/unpack/pull/1",
   "blocked_by": [],
