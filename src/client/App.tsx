@@ -5,12 +5,10 @@ import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from './lib/supabase.js'
 import Login from './components/Login.js'
 import type { Session } from '@supabase/supabase-js'
-import { toast, Toaster } from 'sonner'
-import { Menu, X, Loader2 } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Plus, LogOut, Send } from 'lucide-react'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -20,8 +18,7 @@ function App() {
   const [currConvo, setCurrConvo] = useState<Conversation | null>(null)
   const [sidebarConvos, setSidebarConvos] = useState<{convoId: string, convoTitle: string}[]>()
   const [isStreaming, setIsStreaming] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [isOffline, setIsOffline] = useState(!navigator.onLine)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   // Auth state listener
   useEffect(() => {
@@ -51,7 +48,6 @@ function App() {
 
   const initialized = useRef(false)
 
-  // One-time init: load conversations after first successful auth
   useEffect(() => {
     if (!session || initialized.current) return
     initialized.current = true
@@ -76,7 +72,6 @@ function App() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll + sidebar refresh on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
@@ -87,25 +82,24 @@ function App() {
 
   }, [currConvo]);
 
-  // Auth loading spinner
   if (authLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background text-foreground">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="h-screen flex flex-col items-center justify-center bg-background text-foreground gap-3">
+        <div className="text-2xl font-bold tracking-tight text-primary">Unpack</div>
+        <div className="text-sm text-muted-foreground">Loading...</div>
       </div>
     )
   }
 
-  // Not authenticated — show login
   if (!session) {
     return <Login />
   }
 
-  // Conversation loading
   if(currConvo === null){
     return (
-      <div className="h-screen flex items-center justify-center bg-background text-foreground">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="h-screen flex flex-col items-center justify-center bg-background text-foreground gap-3">
+        <div className="text-2xl font-bold tracking-tight text-primary">Unpack</div>
+        <div className="text-sm text-muted-foreground">Setting up your workspace...</div>
       </div>
     )
   }
@@ -161,11 +155,10 @@ function App() {
     requestServices.createConvo().then((newConvo: Conversation) => {
       setCurrConvo(newConvo)
       setSelectedConvoId(newConvo.id)
-      setSidebarOpen(false)
       return requestServices.getConvos()
     }).then((convoArray) => {
       if (convoArray) setSidebarConvos(convoArray)
-    }).catch((err) => toast.error(err.message))
+    })
   }
 
   const clickConvo = (convoId: string) => {
@@ -177,121 +170,120 @@ function App() {
     }).catch((err) => toast.error(err.message))
   }
 
-  // Sidebar content — shared between mobile overlay and desktop static
-  const sidebarContent = (
-    <>
-      <div className="p-4 border-b border-border flex items-center justify-between">
-        <h2 className="sm:text-md text-lg md:text-xl font-semibold">Chat History</h2>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()}>
-            Logout
-          </Button>
-          {/* Close button — mobile only */}
-          <Button variant="ghost" size="icon-sm" className="md:hidden" onClick={() => setSidebarOpen(false)}>
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 items-stretch">
-        {sidebarConvos?.map((convo) => (
-          <p
-            key={convo.convoId}
-            onClick={() => clickConvo(convo.convoId)}
-            className={`text-sm md:text-md font-medium truncate p-3 rounded-lg cursor-pointer transition-colors ${
-              selectedConvoId === convo.convoId
-                ? "bg-accent"
-                : "hover:bg-accent/50"
-            }`}
-          >
-            {convo.convoTitle}
-          </p>
-        ))}
-        <Button className="py-1 md:py-2 w-full" onClick={() => createNewConvo()}>
-          New Conversation
-        </Button>
-      </div>
-    </>
-  )
-
   return (
     <div className="h-screen flex bg-background text-foreground">
       <Toaster position="top-right" richColors duration={5000} />
 
-      {/* Connection-lost banner */}
-      {isOffline && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-destructive text-primary-foreground text-center py-2 text-sm font-medium">
-          You're offline — check your connection
-        </div>
-      )}
-
-      {/* ===== MOBILE SIDEBAR OVERLAY ===== */}
+      {/* ===== SIDEBAR ===== */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <div className="absolute inset-0 bg-black/50" />
-          <div
-            className="absolute inset-y-0 left-0 w-64 flex flex-col bg-card shadow-xl animate-in slide-in-from-left duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {sidebarContent}
+        <div className="w-64 flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border">
+          {/* Brand + toggle */}
+          <div className="h-14 px-4 flex items-center justify-between border-b border-sidebar-border">
+            <span className="text-lg font-bold tracking-tight text-primary">Unpack</span>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* New conversation */}
+          <div className="p-3">
+            <button
+              onClick={() => createNewConvo()}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              New conversation
+            </button>
+          </div>
+
+          {/* Conversation list */}
+          <div className="flex-1 overflow-y-auto px-3 space-y-0.5">
+            {sidebarConvos?.map((convo) => (
+              <button
+                key={convo.convoId}
+                onClick={() => clickConvo(convo.convoId)}
+                className={`w-full text-left text-sm truncate px-3 py-2 rounded-lg transition-colors ${
+                  selectedConvoId === convo.convoId
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                }`}
+              >
+                {convo.convoTitle}
+              </button>
+            ))}
+          </div>
+
+          {/* Bottom — logout */}
+          <div className="p-3 border-t border-sidebar-border">
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
           </div>
         </div>
       )}
 
-      {/* ===== DESKTOP SIDEBAR (hidden on mobile) ===== */}
-      <div className="hidden md:flex w-64 border-r border-border flex-shrink-0 flex-col bg-card">
-        {sidebarContent}
-      </div>
+      {/* ===== MAIN AREA ===== */}
+      <div className="flex-1 flex flex-col min-w-0">
 
-      {/* ===== MAIN CHAT AREA ===== */}
-      <div className="flex-1 flex flex-col">
-
-        {/* Mobile top bar with hamburger */}
-        <div className="md:hidden flex items-center gap-3 p-3 border-b border-border">
-          <Button variant="ghost" size="icon-sm" onClick={() => setSidebarOpen(true)}>
-            <Menu className="h-5 w-5" />
-          </Button>
-          <span className="text-sm font-medium truncate">{currConvo.title || 'New Conversation'}</span>
+        {/* Top bar */}
+        <div className="h-14 px-4 flex items-center gap-3 border-b border-border flex-shrink-0">
+          {!sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              <PanelLeftOpen className="h-4 w-4" />
+            </button>
+          )}
+          <span className="text-sm sm:text-base text-muted-foreground truncate">
+            {currConvo.title || 'New conversation'}
+          </span>
         </div>
 
-        {/* ===== CONVERSATION CONTAINER ===== */}
+        {/* ===== MESSAGES ===== */}
         <ScrollArea className="flex-1 overflow-hidden">
-          <div className="max-w-3xl mx-auto p-6 space-y-6">
+          <div className="max-w-2xl mx-auto">
+            {currConvo.messages.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
+                <div className="text-3xl font-bold tracking-tight text-primary mb-2">Unpack</div>
+                <p className="text-muted-foreground text-base max-w-md">
+                  Your AI presentation coach. Tell me about the presentation you're working on — what's the topic, who's the audience, and what do you want them to walk away with?
+                </p>
+              </div>
+            )}
+
             {currConvo.messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex items-start gap-3 animate-in fade-in-0 slide-in-from-bottom-2 duration-300 ${
-                  message.role === "user" ? "justify-end" : "justify-start"
+                className={`message-block ${
+                  message.role === "user" ? "user-msg" : "assistant-msg"
                 }`}
               >
-                {message.role === "assistant" && (
-                  <div className="flex-shrink-0 avatar rounded-full bg-purple-600 flex items-center justify-center text-white font-bold shadow-lg">
-                    C
+                <div className="max-w-2xl mx-auto">
+                  {/* Role label */}
+                  <div className={`text-xs sm:text-sm font-medium mb-1.5 ${
+                    message.role === "user"
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                  }`}>
+                    {message.role === "user" ? "You" : "Unpack"}
                   </div>
-                )}
 
-                <Card className={`max-w-[80%] shadow-md py-0 ${
-                  message.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card border-border"
-                }`}>
-                  <CardContent className="p-3">
-                    <p className="responsive-text whitespace-pre-wrap">{message.content}</p>
-                    {/* Streaming indicator on the last assistant message */}
-                    {isStreaming && message.role === "assistant" && index === currConvo.messages.length - 1 && (
-                      <Loader2 className="h-4 w-4 animate-spin mt-2 text-muted-foreground inline-block" />
+                  {/* Message content */}
+                  <div className="text-base sm:text-base leading-relaxed whitespace-pre-wrap">
+                    {message.content}
+                    {isStreaming && message.role === "assistant" && index === currConvo.messages.length - 1 && !message.content && (
+                      <span className="inline-block w-2 h-4 bg-primary/60 animate-pulse ml-0.5" />
                     )}
-                  </CardContent>
-                </Card>
-
-                {message.role === "user" && (
-                  <div className="flex-shrink-0 avatar rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg">
-                    U
                   </div>
-                )}
+                </div>
               </div>
             ))}
 
@@ -299,12 +291,12 @@ function App() {
           </div>
         </ScrollArea>
 
-        {/* ===== BOTTOM INPUT BAR ===== */}
-        <div className="sticky bottom-0 border-t border-border bg-background p-4">
-          <div className="max-w-3xl mx-auto flex gap-3 items-stretch">
+        {/* ===== INPUT AREA ===== */}
+        <div className="px-4 pb-4 pt-2">
+          <div className="chat-input max-w-2xl mx-auto rounded-xl border border-border bg-card p-3 transition-all">
             <Textarea
-              className="flex-1 resize-none min-h-[44px] max-h-[120px]"
-              placeholder="Type a message..."
+              className="w-full resize-none min-h-[48px] max-h-[160px] border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground"
+              placeholder="Describe your presentation, or ask for coaching advice..."
               value={userMsg}
               onChange={handleUserMsgChange}
               disabled={isStreaming || isOffline}
@@ -315,12 +307,19 @@ function App() {
                 }
               }}
             />
-            <Button onClick={() => createMessage(userMsg)} disabled={isStreaming || isOffline}>
-              {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
-            </Button>
-            <Button variant="outline" disabled={isStreaming}>
-              Reset
-            </Button>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-muted-foreground">
+                {isStreaming ? "Coaching..." : "Enter to send"}
+              </span>
+              <Button
+                size="icon-sm"
+                onClick={() => createMessage(userMsg)}
+                disabled={isStreaming || !userMsg.trim()}
+                className="rounded-lg"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

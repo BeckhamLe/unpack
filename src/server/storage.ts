@@ -5,4 +5,5 @@ export interface Storage {
     getConversations (userId: string): Promise<{convoId: string, convoTitle: string}[]>
     getConversation (convoId: string, userId: string): Promise<Conversation>
     createConversation (userId: string): Promise<Conversation>
+    updateTitle (convoId: string, userId: string, title: string): Promise<void>
 }

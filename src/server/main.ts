@@ -207,15 +207,22 @@ class SupabaseStorage implements Storage {
 
     await this.db
       .insert(schema.conversations)
-      .values({id: newId, title: newId, userId})
+      .values({id: newId, title: 'New conversation', userId})
 
     const newConvo: Conversation = {
       id: newId,
-      title: newId,
+      title: 'New conversation',
       messages: []
     }
 
     return newConvo
+  }
+
+  async updateTitle (convoId: string, userId: string, title: string): Promise<void> {
+    await this.db
+      .update(schema.conversations)
+      .set({ title })
+      .where(and(eq(schema.conversations.id, convoId), eq(schema.conversations.userId, userId)))
   }
 }
 
@@ -246,6 +253,14 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
 
   try {
     const updatedConvoUser = await storage.addMessageToConversation(convoId, userId, { role: "user", content: userMsg })
+
+    // Auto-title: set from first user message (when only 1 user message exists)
+    const userMessages = updatedConvoUser.messages.filter(m => m.role === 'user')
+    if (userMessages.length === 1) {
+      const title = userMsg.slice(0, 60).trim() + (userMsg.length > 60 ? '...' : '')
+      storage.updateTitle(convoId, userId, title).catch(err => console.error('Auto-title failed:', err))
+      updatedConvoUser.title = title
+    }
 
     const stream = anthropic.messages.stream({
       model: "claude-haiku-4-5-20251001",
