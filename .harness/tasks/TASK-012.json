@@ -2,7 +2,7 @@
   "id": "TASK-012",
   "title": "AWS infrastructure — VPC, security groups, key pair, IAM, EC2",
   "description": "Set up foundational AWS infrastructure for EC2 deployment. This is the core AWS wiring — every command maps to a concept that comes up in interviews. Create a security group with SSH/HTTP/HTTPS access, generate a key pair for SSH, create an IAM role with CloudWatch permissions, and launch a t2.micro free-tier instance with an Elastic IP.",
-  "status": "in-progress",
+  "status": "done",
   "priority": "critical",
   "mode": "Direct",
   "created_at": "2026-03-04T16:30:00.000Z",
