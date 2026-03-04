@@ -1,0 +1,22 @@
+{
+  "id": "TASK-010",
+  "title": "Color theme overhaul",
+  "priority": "high",
+  "status": "in-progress",
+  "branch": "task/010-color-theme",
+  "blocked_by": [],
+  "blocks": [],
+  "estimated_hours": 1,
+  "skills": ["Design", "CSS"],
+  "steps": [
+    "Generate 5 theme options with live preview picker on the chatbot.",
+    "Beckham chooses a theme.",
+    "Lock in chosen theme, remove picker, clean up."
+  ],
+  "acceptance_criteria": [
+    "Color theme fits presentation coaching brand",
+    "Dark mode looks premium, not generic",
+    "All UI elements (sidebar, cards, buttons, input) are cohesive",
+    "Theme picker removed after selection"
+  ]
+}
