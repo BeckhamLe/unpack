@@ -142,10 +142,9 @@ function App() {
     requestServices.createConvo().then((newConvo: Conversation) => {
       setCurrConvo(newConvo)
       setSelectedConvoId(newConvo.id)
-    })
-
-    requestServices.getConvos().then((convoArray: {convoId: string, convoTitle: string}[]) => {
-      setSidebarConvos(convoArray)
+      return requestServices.getConvos()
+    }).then((convoArray) => {
+      if (convoArray) setSidebarConvos(convoArray)
     })
   }
 
@@ -162,7 +161,7 @@ function App() {
 
       {/* ===== SIDEBAR ===== */}
       {sidebarOpen && (
-        <div className="w-64 flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border sidebar-panel">
+        <div className="w-64 flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border">
           {/* Brand + toggle */}
           <div className="h-14 px-4 flex items-center justify-between border-b border-sidebar-border">
             <span className="text-lg font-bold tracking-tight text-primary">Unpack</span>

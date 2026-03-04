@@ -112,7 +112,3 @@
   box-shadow: 0 0 0 1px var(--primary), 0 0 20px rgba(230, 163, 41, 0.1);
 }
 
-/* Sidebar transition */
-.sidebar-panel {
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}

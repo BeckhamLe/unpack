@@ -258,7 +258,7 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
     const userMessages = updatedConvoUser.messages.filter(m => m.role === 'user')
     if (userMessages.length === 1) {
       const title = userMsg.slice(0, 60).trim() + (userMsg.length > 60 ? '...' : '')
-      storage.updateTitle(convoId, userId, title).catch(() => {})
+      storage.updateTitle(convoId, userId, title).catch(err => console.error('Auto-title failed:', err))
       updatedConvoUser.title = title
     }
 
