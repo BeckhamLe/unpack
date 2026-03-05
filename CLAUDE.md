@@ -68,6 +68,7 @@ Unpack — an AI presentation coach that interviews users to build their present
 
 - **Verify third-party UI instructions against current docs.** Never give dashboard navigation steps (Supabase, AWS Console, Google Cloud, etc.) from training data alone. These UIs change frequently. Search the web or official docs first to confirm the current layout before telling Beckham where to click.
 - **Surface all security-critical artifacts.** Any time an agent creates, moves, or relies on a security-sensitive file (SSH keys, .pem files, API keys, certificates, credentials), explicitly tell Beckham: what it is, where it lives, and why it matters. These are NOT implementation details — they are operational knowledge the system owner needs. This applies even in Direct mode.
+- **Security checklist on infra tasks.** Any task involving secrets, credentials, server config, or deployment must include a security review as part of code review. Check: file permissions on secrets (600, not 644/664), no secrets in git history, no shell expansion risks in scripts handling credentials, security headers in web server config, and principle of least privilege on IAM roles and firewall rules. "Does it work?" is not enough — "is it secure?" is mandatory.
 
 ## Operational Gotchas (ALL Agents Must Follow)
 
