@@ -279,22 +279,21 @@ function App() {
         </div>
 
         {/* Feedback form overlay */}
-        {feedbackOpen && (
-          <>
-            <div className="absolute inset-0 bg-black/50 z-40" onClick={() => setFeedbackOpen(false)} />
-            <div className="absolute top-14 right-0 z-50 w-full max-w-md p-4">
-              <div className="rounded-lg border border-border bg-card p-4 shadow-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">Share your feedback</span>
-                  <button onClick={() => setFeedbackOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-                <FeedbackForm type="manual" onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setFeedbackOpen(false)} />
-              </div>
+        <div
+          className={`absolute inset-0 bg-black/50 z-40 transition-opacity duration-300 ease-in-out ${feedbackOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setFeedbackOpen(false)}
+        />
+        <div className={`absolute top-14 right-0 z-50 w-full max-w-md p-4 transition-all duration-300 ease-in-out ${feedbackOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3 pointer-events-none'}`}>
+          <div className="rounded-lg border border-border bg-card p-4 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium">Share your feedback</span>
+              <button onClick={() => setFeedbackOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
             </div>
-          </>
-        )}
+            {feedbackOpen && <FeedbackForm type="manual" onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setFeedbackOpen(false)} />}
+          </div>
+        </div>
 
         {/* ===== MESSAGES ===== */}
         <ScrollArea className="flex-1 overflow-hidden">
