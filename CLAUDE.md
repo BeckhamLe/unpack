@@ -4,9 +4,9 @@
 
 **EXECUTING.** Per-task branching strategy. On `main`, clean state. Remote: `https://github.com/BeckhamLe/unpack`
 
-**Done:** TASK-001 (prompt caching), TASK-002 (OAuth), TASK-003 (streaming), TASK-004 (UI polish), TASK-005 (system prompt), TASK-010 (color theme). TASK-006 archived (replaced by TASK-011–014 for AWS EC2 deployment).
+**Done:** TASK-001 (prompt caching), TASK-002 (OAuth), TASK-003 (streaming), TASK-004 (UI polish), TASK-005 (system prompt), TASK-010 (color theme), TASK-011 (local prod build), TASK-012 (AWS infra), TASK-013 (server provisioning), TASK-014 (deploy + smoke test), TASK-015 (in-app feedback). TASK-006 archived (replaced by TASK-011–014).
 
-**Next:** TASK-011 (verify local prod build — in progress), TASK-012 (AWS infra), TASK-013 (server provisioning), TASK-014 (deploy + smoke test).
+**Deployed:** https://unpack.pro (EC2 + nginx + PM2, Supabase DB via connection pooler)
 
 ## What's Being Built
 
