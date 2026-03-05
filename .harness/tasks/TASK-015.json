@@ -1,0 +1,45 @@
+{
+  "id": "TASK-015",
+  "title": "In-app feedback collection (per-message thumbs + session feedback card)",
+  "description": "Add two feedback mechanisms: (1) thumbs up/down on each bot response for granular coaching quality signal, (2) one-time inline feedback card after user's 8th message for holistic session feedback. Store in Supabase feedback table. View data via Supabase Table Editor.",
+  "status": "in-progress",
+  "priority": "high",
+  "mode": "Direct",
+  "created_at": "2026-03-05T20:15:00.000Z",
+  "updated_at": "2026-03-05T20:15:00.000Z",
+  "assigned_agent": null,
+  "skill_tags": ["React", "Supabase", "UX"],
+  "parent_task": null,
+  "subtasks": [],
+  "blocked_by": [],
+  "blocks": [],
+  "blocked_reason": null,
+  "plan": [],
+  "acceptance_criteria": [
+    "Thumbs up/down icons appear on hover for each bot message",
+    "Clicking thumb saves rating to feedback table with message_id and conversation_id",
+    "Inline feedback card appears after user's 8th message in a conversation",
+    "Feedback card has thumbs up/down + optional free-text field",
+    "Feedback card only shows once per conversation",
+    "feedback table exists in Supabase with correct schema",
+    "All feedback visible in Supabase Table Editor"
+  ],
+  "context": {
+    "branch": "task/015-feedback-widget",
+    "branch_type": "feat",
+    "commit_hash": null,
+    "related_files": ["src/client/", "src/server/main.ts"],
+    "notes": "Two-tier feedback: passive per-message thumbs + active session card at message 8. No modals. Inline chat card only."
+  },
+  "phase": "build",
+  "trust_tier": "standard",
+  "code_review": {
+    "status": "pending",
+    "automated_passed": false,
+    "agent_review_passed": false,
+    "issues_found": [],
+    "iterations": 0
+  },
+  "task_output": null,
+  "outcome": null
+}
