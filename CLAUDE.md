@@ -64,10 +64,19 @@ Unpack — an AI presentation coach that interviews users to build their present
 
 **Never merge directly to main. Every task ships through a PR.**
 
+## Agent Conduct Rules (ALL Agents Must Follow)
+
+- **Verify third-party UI instructions against current docs.** Never give dashboard navigation steps (Supabase, AWS Console, Google Cloud, etc.) from training data alone. These UIs change frequently. Search the web or official docs first to confirm the current layout before telling Beckham where to click.
+- **Surface all security-critical artifacts.** Any time an agent creates, moves, or relies on a security-sensitive file (SSH keys, .pem files, API keys, certificates, credentials), explicitly tell Beckham: what it is, where it lives, and why it matters. These are NOT implementation details — they are operational knowledge the system owner needs. This applies even in Direct mode.
+- **Security checklist on infra tasks.** Any task involving secrets, credentials, server config, or deployment must include a security review as part of code review. Check: file permissions on secrets (600, not 644/664), no secrets in git history, no shell expansion risks in scripts handling credentials, security headers in web server config, and principle of least privilege on IAM roles and firewall rules. "Does it work?" is not enough — "is it secure?" is mandatory.
+
 ## Operational Gotchas (ALL Agents Must Follow)
 
 - **Never background a server process.** Starting a server with `&` leaves it hogging the port after the test. If the user then runs `bun run dev`, the stale process serves old content silently. Always run servers in the foreground, or kill them immediately after testing. Before telling the user to start a server, check `lsof -i :<port>`.
 - **Streaming error cascade.** If an Anthropic stream errors, the user message is already saved but the assistant message is not — leaving consecutive user messages in DB. Anthropic rejects non-alternating messages, so every subsequent request fails. The fix is in `src/server/main.ts`: fallback assistant message on error + message history sanitization before sending to Anthropic.
+- **Supabase direct DB connection is IPv6-only.** The hostname `db.xxx.supabase.co:5432` has no IPv4 A record. EC2 default VPC has no IPv6 connectivity. Use the Supabase connection pooler (`pooler.supabase.com:6543`) instead, or enable IPv6 on the VPC.
+- **Google OAuth rejects raw IPs and AWS hostnames.** Must use a registered domain. AWS `*.amazonaws.com` subdomains are on the Public Suffix List and rejected by Google's OAuth validation.
+- **deploy.sh heredoc and special chars.** If DB passwords contain `$`, the unquoted heredoc in deploy.sh could expand shell variables. SSM stores literal values but the heredoc substitution happens after command expansion.
 
 ## Manual Prereqs (Beckham Must Do)
 

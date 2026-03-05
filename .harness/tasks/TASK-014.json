@@ -2,7 +2,7 @@
   "id": "TASK-014",
   "title": "Deploy app, configure secrets & smoke test",
   "description": "Get Unpack running on EC2 and verify everything works. Store env vars securely in AWS SSM Parameter Store (not hardcoded .env). Write a reusable deploy script that pulls secrets, builds the app, and restarts PM2. Clone the repo, deploy, update OAuth redirect URIs, and run a full smoke test.",
-  "status": "in-progress",
+  "status": "done",
   "priority": "critical",
   "mode": "Direct",
   "created_at": "2026-03-04T16:30:00.000Z",
