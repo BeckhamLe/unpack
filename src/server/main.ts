@@ -395,9 +395,30 @@ app.post('/feedback', requireAuth, async (req, res) => {
     res.status(400).json({ error: 'Invalid feedback type' })
     return
   }
+  if (rating !== undefined && rating !== 1 && rating !== -1) {
+    res.status(400).json({ error: 'Rating must be 1 or -1' })
+    return
+  }
+
+  const sanitizeText = (val: unknown): string | undefined => {
+    if (val === undefined || val === null || val === '') return undefined
+    if (typeof val !== 'string') return undefined
+    return val.slice(0, 2000)
+  }
 
   try {
-    await storage.saveFeedback({ conversationId, userId, rating, workingWell, notWorking, wouldImprove, type })
+    // Verify conversation belongs to this user
+    await storage.getConversation(conversationId, userId)
+
+    await storage.saveFeedback({
+      conversationId,
+      userId,
+      rating,
+      workingWell: sanitizeText(workingWell),
+      notWorking: sanitizeText(notWorking),
+      wouldImprove: sanitizeText(wouldImprove),
+      type,
+    })
 
     res.json({ success: true })
   } catch (error) {
