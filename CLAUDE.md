@@ -50,19 +50,20 @@ Unpack — an AI presentation coach that interviews users to build their present
 - **To claim a task:** update its status to `in-progress` in the JSON file, commit to `main`, and push. THEN create your task branch and start work.
 - Only the main orchestrating instance writes to `.harness/tasks/`. Sub-instances report back; they do not update task files directly.
 
-### PR Flow
-1. Claim the task (see above)
-2. Create task branch, do work, commit
-3. **CODE REVIEW (mandatory before PR).** Run build (`bunx vite build`). Then launch a separate agent to review the diff (`git diff main`) for correctness, security, error handling, race conditions, and state bugs. Fix all High/Medium issues. This is a GATE — do not proceed to step 4 until review passes.
-4. Rebase on latest `main`
-5. Push branch to `origin`
-6. Open PR via `gh pr create` — title: `TASK-XXX: <description>`, body: summary + acceptance criteria checklist
-7. Beckham reviews on GitHub
-8. Merge via PR (not local fast-forward)
-9. Delete branch: `gh pr merge` with `--delete-branch`, then `git branch -d` locally
-10. Update task status to `done` in `.harness/tasks/`, commit, push to `main`
+### Task Lifecycle (MANDATORY — follow in order, no skipping)
+
+Every task goes through these gates. Each gate requires explicit approval from Beckham before proceeding to the next. Do NOT collapse gates or assume approval.
+
+1. **PICK** — Claim the task: update status to `in-progress` in `.harness/tasks/`, commit to `main`, push.
+2. **PLAN** — Present a flat step-by-step plan (files to change, what each step does). **GATE: Stop and wait for Beckham to approve the plan.** Do not write any code until approved.
+3. **MODE** — Confirm working mode (Direct/Design/Learn). Default to what's in the task file.
+4. **EXECUTE** — Create task branch. Implement the approved plan. Commit as you go.
+5. **CODE REVIEW** — Run build (`bunx vite build`). Launch a separate agent to review the diff (`git diff main`) for correctness, security, error handling, race conditions, and state bugs. Fix all High/Medium issues. **GATE: Do not proceed until review passes.**
+6. **PR** — Rebase on `main`, push branch, open PR via `gh pr create` (title: `TASK-XXX: <description>`, body: summary + acceptance criteria checklist). **GATE: Beckham reviews and merges on GitHub.**
+7. **CLOSE** — After merge: delete branch (remote + local), update task status to `done`, commit to `main`, push.
 
 **Never merge directly to main. Every task ships through a PR.**
+**Never skip a gate. "Yes" to the plan is not "yes" to execute — wait for explicit go-ahead at each gate.**
 
 ## Agent Conduct Rules (ALL Agents Must Follow)
 

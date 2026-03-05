@@ -92,7 +92,7 @@
 
 /* ===== Message styling ===== */
 .message-block {
-  @apply py-5 px-4;
+  @apply py-4 px-3 sm:py-5 sm:px-4;
 }
 
 .message-block + .message-block {

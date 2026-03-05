@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from './lib/supabase.js'
 import Login from './components/Login.js'
 import type { Session } from '@supabase/supabase-js'
-import { PanelLeftClose, PanelLeftOpen, Plus, LogOut, Send } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Plus, LogOut, Send, MessageSquare, X } from 'lucide-react'
 import { toast, Toaster } from 'sonner'
+import FeedbackForm from './components/FeedbackForm.js'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -19,8 +20,10 @@ function App() {
   const [currConvo, setCurrConvo] = useState<Conversation | null>(null)
   const [sidebarConvos, setSidebarConvos] = useState<{convoId: string, convoTitle: string}[]>()
   const [isStreaming, setIsStreaming] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768)
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [sessionFeedbackDismissed, setSessionFeedbackDismissed] = useState<Set<string>>(new Set())
 
   // Auth state listener
   useEffect(() => {
@@ -163,6 +166,22 @@ function App() {
     })
   }
 
+  const handleFeedbackSubmit = (data: { workingWell?: string; notWorking?: string; wouldImprove?: string; rating?: number; type: 'session' | 'manual' }) => {
+    requestServices.submitFeedback({
+      conversationId: selectedConvoId,
+      ...data,
+    }).then(() => {
+      toast.success('Thanks for your feedback!')
+      setFeedbackOpen(false)
+      if (data.type === 'session') {
+        setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))
+      }
+    }).catch(() => toast.error('Failed to submit feedback'))
+  }
+
+  const userMessageCount = currConvo.messages.filter(m => m.role === 'user').length
+  const showSessionCard = userMessageCount >= 8 && !sessionFeedbackDismissed.has(selectedConvoId)
+
   const clickConvo = (convoId: string) => {
     if (isStreaming) return
     requestServices.getConvo(convoId).then((returnedConvo) => {
@@ -176,8 +195,13 @@ function App() {
     <div className="h-screen flex bg-background text-foreground">
       <Toaster position="top-right" richColors duration={5000} />
 
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* ===== SIDEBAR ===== */}
-      <div className={`flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-500 ease-in-out overflow-hidden ${sidebarOpen ? 'w-64' : 'w-0 border-r-0'}`}>
+      <div className={`flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-500 ease-in-out overflow-hidden md:relative fixed inset-y-0 left-0 z-50 ${sidebarOpen ? 'w-64' : 'w-0 border-r-0'}`}>
           {/* Brand + toggle */}
           <div className="h-14 px-4 flex items-center justify-between border-b border-sidebar-border">
             <span className="text-lg font-bold tracking-tight text-primary">Unpack</span>
@@ -230,7 +254,7 @@ function App() {
       </div>
 
       {/* ===== MAIN AREA ===== */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
 
         {/* Top bar */}
         <div className="h-14 px-4 flex items-center gap-3 border-b border-border flex-shrink-0">
@@ -242,9 +266,33 @@ function App() {
               <PanelLeftOpen className="h-4 w-4" />
             </button>
           )}
-          <span className="text-sm sm:text-base text-muted-foreground truncate">
+          <span className="text-sm sm:text-base text-muted-foreground truncate flex-1">
             {currConvo.title || 'New conversation'}
           </span>
+          <button
+            onClick={() => setFeedbackOpen(!feedbackOpen)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            Feedback
+          </button>
+        </div>
+
+        {/* Feedback form overlay */}
+        <div
+          className={`absolute inset-0 bg-black/50 z-40 transition-opacity duration-300 ease-in-out ${feedbackOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          onClick={() => setFeedbackOpen(false)}
+        />
+        <div className={`absolute top-14 right-0 z-50 w-full max-w-md p-4 transition-all duration-300 ease-in-out ${feedbackOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3 pointer-events-none'}`}>
+          <div className="rounded-lg border border-border bg-card p-4 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium">Share your feedback</span>
+              <button onClick={() => setFeedbackOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {feedbackOpen && <FeedbackForm type="manual" onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setFeedbackOpen(false)} />}
+          </div>
         </div>
 
         {/* ===== MESSAGES ===== */}
@@ -287,12 +335,32 @@ function App() {
               </div>
             ))}
 
+            {/* Inline session feedback card — appears after 8th user message */}
+            {showSessionCard && (
+              <div className="message-block assistant-msg">
+                <div className="max-w-2xl mx-auto">
+                  <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Quick check-in: How's Unpack doing?</span>
+                      <button
+                        onClick={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))}
+                        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <FeedbackForm type="session" showThumbs onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))} />
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
         {/* ===== INPUT AREA ===== */}
-        <div className="px-4 pb-4 pt-2">
+        <div className="px-3 sm:px-4 pb-4 pt-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
           <div className="chat-input max-w-2xl mx-auto rounded-xl border border-border bg-card p-3 transition-all">
             <Textarea
               className="w-full resize-none min-h-[48px] max-h-[160px] border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground"

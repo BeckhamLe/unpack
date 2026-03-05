@@ -1,7 +1,7 @@
 // Importing Drizzle's building blocks for PostgreSQL tables
 // pgTable = creates a table
 // text, serial = define column types
-import { pgTable, text, serial } from 'drizzle-orm/pg-core'
+import { pgTable, text, serial, integer, timestamp } from 'drizzle-orm/pg-core'
 
 // Conversations table schema
 export const conversations = pgTable('conversations', {
@@ -35,4 +35,17 @@ export const messages = pgTable('messages', {
 
   // content of the message
   content: text('content').notNull(),
+})
+
+// Feedback table schema
+export const feedback = pgTable('feedback', {
+  id: serial('id').primaryKey(),
+  conversationId: text('conversation_id').notNull().references(() => conversations.id),
+  userId: text('user_id').notNull(),
+  rating: integer('rating'),
+  workingWell: text('working_well'),
+  notWorking: text('not_working'),
+  wouldImprove: text('would_improve'),
+  type: text('type').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 })
