@@ -254,7 +254,7 @@ function App() {
       </div>
 
       {/* ===== MAIN AREA ===== */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
 
         {/* Top bar */}
         <div className="h-14 px-4 flex items-center gap-3 border-b border-border flex-shrink-0">
@@ -278,20 +278,23 @@ function App() {
           </button>
         </div>
 
-        {/* Persistent feedback form (slide-down from top bar) */}
-        <div className={`overflow-hidden transition-all duration-500 ease-in-out ${feedbackOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-          <div className="px-4 py-3 border-b border-border bg-card">
-            <div className="max-w-2xl mx-auto">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Share your feedback</span>
-                <button onClick={() => setFeedbackOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
-                  <X className="h-4 w-4" />
-                </button>
+        {/* Feedback form overlay */}
+        {feedbackOpen && (
+          <>
+            <div className="absolute inset-0 bg-black/50 z-40" onClick={() => setFeedbackOpen(false)} />
+            <div className="absolute top-14 right-0 z-50 w-full max-w-md p-4">
+              <div className="rounded-lg border border-border bg-card p-4 shadow-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium">Share your feedback</span>
+                  <button onClick={() => setFeedbackOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <FeedbackForm type="manual" onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setFeedbackOpen(false)} />
               </div>
-              {feedbackOpen && <FeedbackForm type="manual" onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setFeedbackOpen(false)} />}
             </div>
-          </div>
-        </div>
+          </>
+        )}
 
         {/* ===== MESSAGES ===== */}
         <ScrollArea className="flex-1 overflow-hidden">
