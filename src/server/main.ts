@@ -218,6 +218,12 @@ class SupabaseStorage implements Storage {
     return newConvo
   }
 
+  async saveFeedback (data: { conversationId: string; userId: string; rating?: number; workingWell?: string; notWorking?: string; wouldImprove?: string; type: string }): Promise<void> {
+    await this.db
+      .insert(schema.feedback)
+      .values(data)
+  }
+
   async updateTitle (convoId: string, userId: string, title: string): Promise<void> {
     await this.db
       .update(schema.conversations)
@@ -374,6 +380,30 @@ app.get('/convos', requireAuth, async (req, res) => {
 app.get('/create', requireAuth, async (req, res) => {
   const newConvo = await storage.createConversation(req.userId!)
   res.json(newConvo)
+})
+
+// Submit Feedback Endpoint
+app.post('/feedback', requireAuth, async (req, res) => {
+  const userId = req.userId!
+  const { conversationId, rating, workingWell, notWorking, wouldImprove, type } = req.body
+
+  if (!conversationId || typeof conversationId !== 'string') {
+    res.status(400).json({ error: 'Missing conversation id' })
+    return
+  }
+  if (!type || (type !== 'session' && type !== 'manual')) {
+    res.status(400).json({ error: 'Invalid feedback type' })
+    return
+  }
+
+  try {
+    await storage.saveFeedback({ conversationId, userId, rating, workingWell, notWorking, wouldImprove, type })
+
+    res.json({ success: true })
+  } catch (error) {
+    console.error('Failed to save feedback:', error)
+    res.status(500).json({ error: 'Failed to save feedback' })
+  }
 })
 
 // Endpoint to reset chat history

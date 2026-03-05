@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from './lib/supabase.js'
 import Login from './components/Login.js'
 import type { Session } from '@supabase/supabase-js'
-import { PanelLeftClose, PanelLeftOpen, Plus, LogOut, Send } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Plus, LogOut, Send, MessageSquare, ThumbsUp, ThumbsDown, X } from 'lucide-react'
 import { toast, Toaster } from 'sonner'
 
 function App() {
@@ -21,6 +21,10 @@ function App() {
   const [isStreaming, setIsStreaming] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
+  const [sessionFeedbackDismissed, setSessionFeedbackDismissed] = useState<Set<string>>(new Set())
+  const [feedbackForm, setFeedbackForm] = useState({ workingWell: '', notWorking: '', wouldImprove: '' })
 
   // Auth state listener
   useEffect(() => {
@@ -163,6 +167,65 @@ function App() {
     })
   }
 
+  const submitFeedback = (type: 'session' | 'manual', rating?: number) => {
+    if (!feedbackForm.workingWell && !feedbackForm.notWorking && !feedbackForm.wouldImprove && rating === undefined) return
+    requestServices.submitFeedback({
+      conversationId: selectedConvoId,
+      rating,
+      workingWell: feedbackForm.workingWell || undefined,
+      notWorking: feedbackForm.notWorking || undefined,
+      wouldImprove: feedbackForm.wouldImprove || undefined,
+      type,
+    }).then(() => {
+      toast.success('Thanks for your feedback!')
+      setFeedbackForm({ workingWell: '', notWorking: '', wouldImprove: '' })
+      setFeedbackOpen(false)
+      setFeedbackSubmitted(true)
+      if (type === 'session') {
+        setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))
+      }
+    }).catch(() => toast.error('Failed to submit feedback'))
+  }
+
+  const userMessageCount = currConvo.messages.filter(m => m.role === 'user').length
+  const showSessionCard = userMessageCount >= 8 && !sessionFeedbackDismissed.has(selectedConvoId)
+
+  const FeedbackFormFields = ({ type, onClose }: { type: 'session' | 'manual'; onClose: () => void }) => (
+    <div className="space-y-3">
+      <div>
+        <label className="text-xs text-muted-foreground">What's working well?</label>
+        <Textarea
+          className="mt-1 min-h-[40px] max-h-[80px] resize-none text-sm"
+          placeholder="e.g. The probing questions help me think deeper..."
+          value={feedbackForm.workingWell}
+          onChange={e => setFeedbackForm(prev => ({ ...prev, workingWell: e.target.value }))}
+        />
+      </div>
+      <div>
+        <label className="text-xs text-muted-foreground">What's not working?</label>
+        <Textarea
+          className="mt-1 min-h-[40px] max-h-[80px] resize-none text-sm"
+          placeholder="e.g. Responses are too long sometimes..."
+          value={feedbackForm.notWorking}
+          onChange={e => setFeedbackForm(prev => ({ ...prev, notWorking: e.target.value }))}
+        />
+      </div>
+      <div>
+        <label className="text-xs text-muted-foreground">What would you improve?</label>
+        <Textarea
+          className="mt-1 min-h-[40px] max-h-[80px] resize-none text-sm"
+          placeholder="e.g. I wish it could generate actual slides..."
+          value={feedbackForm.wouldImprove}
+          onChange={e => setFeedbackForm(prev => ({ ...prev, wouldImprove: e.target.value }))}
+        />
+      </div>
+      <div className="flex gap-2 justify-end">
+        <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+        <Button size="sm" onClick={() => submitFeedback(type)}>Submit</Button>
+      </div>
+    </div>
+  )
+
   const clickConvo = (convoId: string) => {
     if (isStreaming) return
     requestServices.getConvo(convoId).then((returnedConvo) => {
@@ -242,10 +305,32 @@ function App() {
               <PanelLeftOpen className="h-4 w-4" />
             </button>
           )}
-          <span className="text-sm sm:text-base text-muted-foreground truncate">
+          <span className="text-sm sm:text-base text-muted-foreground truncate flex-1">
             {currConvo.title || 'New conversation'}
           </span>
+          <button
+            onClick={() => { setFeedbackOpen(!feedbackOpen); setFeedbackSubmitted(false) }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            Feedback
+          </button>
         </div>
+
+        {/* Persistent feedback form (dropdown from top bar) */}
+        {feedbackOpen && (
+          <div className="px-4 py-3 border-b border-border bg-card">
+            <div className="max-w-2xl mx-auto">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Share your feedback</span>
+                <button onClick={() => setFeedbackOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <FeedbackFormFields type="manual" onClose={() => setFeedbackOpen(false)} />
+            </div>
+          </div>
+        )}
 
         {/* ===== MESSAGES ===== */}
         <ScrollArea className="flex-1 overflow-hidden">
@@ -286,6 +371,40 @@ function App() {
                 </div>
               </div>
             ))}
+
+            {/* Inline session feedback card — appears after 8th user message */}
+            {showSessionCard && (
+              <div className="message-block assistant-msg">
+                <div className="max-w-2xl mx-auto">
+                  <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Quick check-in: How's Unpack doing?</span>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => { submitFeedback('session', 1) }}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-green-500 hover:bg-green-500/10 transition-colors"
+                        >
+                          <ThumbsUp className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => { submitFeedback('session', -1) }}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                        >
+                          <ThumbsDown className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))}
+                          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                    <FeedbackFormFields type="session" onClose={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))} />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div ref={messagesEndRef} />
           </div>

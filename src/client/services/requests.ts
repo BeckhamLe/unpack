@@ -113,4 +113,21 @@ const streamMsg = async(
     }
 }
 
-export default { createConvo, getConvo, getConvos, sendMsg, streamMsg }
+const submitFeedback = async (data: {
+    conversationId: string;
+    rating?: number;
+    workingWell?: string;
+    notWorking?: string;
+    wouldImprove?: string;
+    type: 'session' | 'manual';
+}) => {
+    const response = await authFetch('/feedback', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    })
+    if (!response.ok) throw new Error('Failed to submit feedback')
+    return response.json()
+}
+
+export default { createConvo, getConvo, getConvos, sendMsg, streamMsg, submitFeedback }
