@@ -1,29 +1,50 @@
 import { useState } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { ThumbsUp, ThumbsDown } from 'lucide-react'
 
 interface FeedbackFormProps {
   type: 'session' | 'manual'
-  onSubmit: (data: { workingWell?: string; notWorking?: string; wouldImprove?: string; type: 'session' | 'manual' }) => void
+  showThumbs?: boolean
+  onSubmit: (data: { workingWell?: string; notWorking?: string; wouldImprove?: string; rating?: number; type: 'session' | 'manual' }) => void
   onClose: () => void
 }
 
-export default function FeedbackForm({ type, onSubmit, onClose }: FeedbackFormProps) {
+export default function FeedbackForm({ type, showThumbs, onSubmit, onClose }: FeedbackFormProps) {
   const [workingWell, setWorkingWell] = useState('')
   const [notWorking, setNotWorking] = useState('')
   const [wouldImprove, setWouldImprove] = useState('')
+  const [rating, setRating] = useState<number | undefined>(undefined)
 
   const handleSubmit = () => {
     onSubmit({
       workingWell: workingWell || undefined,
       notWorking: notWorking || undefined,
       wouldImprove: wouldImprove || undefined,
+      rating,
       type,
     })
   }
 
   return (
     <div className="space-y-3">
+      {showThumbs && (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">Overall:</span>
+          <button
+            onClick={() => setRating(rating === 1 ? undefined : 1)}
+            className={`p-1.5 rounded-md transition-colors ${rating === 1 ? 'text-green-500 bg-green-500/10' : 'text-muted-foreground hover:text-green-500 hover:bg-green-500/10'}`}
+          >
+            <ThumbsUp className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setRating(rating === -1 ? undefined : -1)}
+            className={`p-1.5 rounded-md transition-colors ${rating === -1 ? 'text-red-500 bg-red-500/10' : 'text-muted-foreground hover:text-red-500 hover:bg-red-500/10'}`}
+          >
+            <ThumbsDown className="h-4 w-4" />
+          </button>
+        </div>
+      )}
       <div>
         <label className="text-xs text-muted-foreground">What's working well?</label>
         <Textarea

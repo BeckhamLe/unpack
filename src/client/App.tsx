@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from './lib/supabase.js'
 import Login from './components/Login.js'
 import type { Session } from '@supabase/supabase-js'
-import { PanelLeftClose, PanelLeftOpen, Plus, LogOut, Send, MessageSquare, ThumbsUp, ThumbsDown, X } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, Plus, LogOut, Send, MessageSquare, X } from 'lucide-react'
 import { toast, Toaster } from 'sonner'
 import FeedbackForm from './components/FeedbackForm.js'
 
@@ -20,7 +20,7 @@ function App() {
   const [currConvo, setCurrConvo] = useState<Conversation | null>(null)
   const [sidebarConvos, setSidebarConvos] = useState<{convoId: string, convoTitle: string}[]>()
   const [isStreaming, setIsStreaming] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768)
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [sessionFeedbackDismissed, setSessionFeedbackDismissed] = useState<Set<string>>(new Set())
@@ -166,10 +166,9 @@ function App() {
     })
   }
 
-  const handleFeedbackSubmit = (data: { workingWell?: string; notWorking?: string; wouldImprove?: string; type: 'session' | 'manual' }, rating?: number) => {
+  const handleFeedbackSubmit = (data: { workingWell?: string; notWorking?: string; wouldImprove?: string; rating?: number; type: 'session' | 'manual' }) => {
     requestServices.submitFeedback({
       conversationId: selectedConvoId,
-      rating,
       ...data,
     }).then(() => {
       toast.success('Thanks for your feedback!')
@@ -196,8 +195,13 @@ function App() {
     <div className="h-screen flex bg-background text-foreground">
       <Toaster position="top-right" richColors duration={5000} />
 
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* ===== SIDEBAR ===== */}
-      <div className={`flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-500 ease-in-out overflow-hidden ${sidebarOpen ? 'w-64' : 'w-0 border-r-0'}`}>
+      <div className={`flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-500 ease-in-out overflow-hidden md:relative fixed inset-y-0 left-0 z-50 ${sidebarOpen ? 'w-64' : 'w-0 border-r-0'}`}>
           {/* Brand + toggle */}
           <div className="h-14 px-4 flex items-center justify-between border-b border-sidebar-border">
             <span className="text-lg font-bold tracking-tight text-primary">Unpack</span>
@@ -266,7 +270,7 @@ function App() {
             {currConvo.title || 'New conversation'}
           </span>
           <button
-            onClick={() => { setFeedbackOpen(!feedbackOpen); setFeedbackSubmitted(false) }}
+            onClick={() => setFeedbackOpen(!feedbackOpen)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
           >
             <MessageSquare className="h-3.5 w-3.5" />
@@ -274,8 +278,8 @@ function App() {
           </button>
         </div>
 
-        {/* Persistent feedback form (dropdown from top bar) */}
-        {feedbackOpen && (
+        {/* Persistent feedback form (slide-down from top bar) */}
+        <div className={`overflow-hidden transition-all duration-500 ease-in-out ${feedbackOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
           <div className="px-4 py-3 border-b border-border bg-card">
             <div className="max-w-2xl mx-auto">
               <div className="flex items-center justify-between mb-2">
@@ -284,10 +288,10 @@ function App() {
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <FeedbackForm type="manual" onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setFeedbackOpen(false)} />
+              {feedbackOpen && <FeedbackForm type="manual" onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setFeedbackOpen(false)} />}
             </div>
           </div>
-        )}
+        </div>
 
         {/* ===== MESSAGES ===== */}
         <ScrollArea className="flex-1 overflow-hidden">
@@ -336,28 +340,14 @@ function App() {
                   <div className="rounded-lg border border-border bg-card p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Quick check-in: How's Unpack doing?</span>
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => handleFeedbackSubmit({ type: 'session' }, 1)}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-green-500 hover:bg-green-500/10 transition-colors"
-                        >
-                          <ThumbsUp className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleFeedbackSubmit({ type: 'session' }, -1)}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                        >
-                          <ThumbsDown className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))}
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))}
+                        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
-                    <FeedbackForm type="session" onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))} />
+                    <FeedbackForm type="session" showThumbs onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))} />
                   </div>
                 </div>
               </div>
@@ -368,7 +358,7 @@ function App() {
         </ScrollArea>
 
         {/* ===== INPUT AREA ===== */}
-        <div className="px-4 pb-4 pt-2">
+        <div className="px-3 sm:px-4 pb-4 pt-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
           <div className="chat-input max-w-2xl mx-auto rounded-xl border border-border bg-card p-3 transition-all">
             <Textarea
               className="w-full resize-none min-h-[48px] max-h-[160px] border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground"
