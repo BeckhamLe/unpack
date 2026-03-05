@@ -3,6 +3,7 @@ module.exports = {
     name: 'unpack',
     script: 'node_modules/.bin/tsx',
     args: 'src/server/main.ts',
+    node_args: '--dns-result-order=ipv4first',
     env: {
       NODE_ENV: 'production'
     },
