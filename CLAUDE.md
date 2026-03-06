@@ -4,9 +4,9 @@
 
 **EXECUTING.** Per-task branching strategy. On `main`, clean state. Remote: `https://github.com/BeckhamLe/unpack`
 
-**Done:** TASK-001 (prompt caching), TASK-002 (OAuth), TASK-003 (streaming), TASK-004 (UI polish), TASK-005 (system prompt), TASK-007 (user testing — feedback captured), TASK-010 (color theme), TASK-011 (local prod build), TASK-012 (AWS infra), TASK-013 (server provisioning), TASK-014 (deploy + smoke test), TASK-015 (in-app feedback). TASK-006 archived (replaced by TASK-011–014).
+**Done:** TASK-001 (prompt caching), TASK-002 (OAuth), TASK-003 (streaming), TASK-004 (UI polish), TASK-005 (system prompt), TASK-007 (user testing — feedback captured), TASK-008 (structured output + prompt tuning), TASK-010 (color theme), TASK-011 (local prod build), TASK-012 (AWS infra), TASK-013 (server provisioning), TASK-014 (deploy + smoke test), TASK-015 (in-app feedback). TASK-006 archived (replaced by TASK-011–014).
 
-**Next:** TASK-008 (structured output + prompt tuning) → TASK-009 (UI transformation + slide design system + export). Plans APPROVED by Beckham (2026-03-07). Full execution plan: `.harness/plans/TASK-008-009-plan.md`. TASK-016 (PDF export) created as future follow-up.
+**Next:** TASK-009 (UI transformation + slide design system + export). Plan APPROVED by Beckham. Full execution plan: `.harness/plans/TASK-008-009-plan.md`. Deploy TASK-008+009 together after TASK-009 merges. TASK-016 (PDF export) created as future follow-up.
 
 **Deployed:** https://unpack.pro (EC2 + nginx + PM2, Supabase DB via connection pooler)
 
@@ -20,7 +20,7 @@ Unpack — an AI presentation coach that interviews users to build their present
 - **Pitch**: `unpack-pitch.md`
 - **Competitive research**: `presentation-builder-research.md`
 - **Execution plan**: `.harness/plans/TASK-008-009-plan.md` (APPROVED)
-- **Session handoff**: `.harness/agents/handoffs/session-handoff-2026-03-06.json`
+- **Session handoff**: `.harness/agents/handoffs/session-handoff-2026-03-07.json`
 - **Knowledge tracker**: `/Users/beckhamle/Documents/Fractal_Bootcamp/weekly_projects/beckham-claudebook-main/knowledge-tracker.md`
 - **Working agreement (full)**: `/Users/beckhamle/Documents/Fractal_Bootcamp/weekly_projects/beckham-claudebook-main/CLAUDE.md`
 - **Slash commands**: `~/.claude/commands/`
