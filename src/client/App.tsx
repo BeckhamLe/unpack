@@ -1,6 +1,6 @@
 import "./App.css";
 import requestServices from './services/requests'
-import { Message, Conversation} from '../shared/types'
+import { Message, Conversation, MessageMetadata } from '../shared/types'
 import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -151,6 +151,15 @@ function App() {
           return { ...prev, messages: msgs }
         })
         setIsStreaming(false)
+      },
+      (metadata: MessageMetadata) => {
+        setCurrConvo(prev => {
+          if (!prev) return prev
+          const msgs = [...prev.messages]
+          const last = msgs[msgs.length - 1]
+          msgs[msgs.length - 1] = { ...last, metadata }
+          return { ...prev, messages: msgs }
+        })
       }
     )
   };

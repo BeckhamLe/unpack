@@ -1,7 +1,7 @@
 // Importing Drizzle's building blocks for PostgreSQL tables
 // pgTable = creates a table
 // text, serial = define column types
-import { pgTable, text, serial, integer, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, text, serial, integer, timestamp, jsonb } from 'drizzle-orm/pg-core'
 
 // Conversations table schema
 export const conversations = pgTable('conversations', {
@@ -35,6 +35,9 @@ export const messages = pgTable('messages', {
 
   // content of the message
   content: text('content').notNull(),
+
+  // structured metadata from tool_use (phase, suggestions, slides, etc.)
+  metadata: jsonb('metadata'),
 })
 
 // Feedback table schema
