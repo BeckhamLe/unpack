@@ -373,8 +373,7 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
     })
 
     let fullResponse = ""
-    let metadataJson = ""
-    let currentBlockType: "text" | "tool_use" | null = null
+    let metadataSnapshot: unknown = null
 
     // Abort the Anthropic stream if the client disconnects
     req.on('close', () => stream.abort())
@@ -385,21 +384,24 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
       res.write(`data: ${JSON.stringify({ type: "chunk", text: chunk })}\n\n`)
     })
 
+    // inputJson snapshot is already a parsed object from the SDK
     stream.on('inputJson', (_delta, snapshot) => {
-      metadataJson = snapshot
+      metadataSnapshot = snapshot
     })
 
     stream.on('end', async () => {
       try {
-        // Parse metadata from tool_use if present
+        // Extract metadata from tool_use snapshot (already parsed by SDK)
         let metadata: MessageMetadata | null = null
         const finalMessage = await stream.finalMessage()
 
-        if (metadataJson) {
-          try {
-            metadata = JSON.parse(metadataJson) as MessageMetadata
-          } catch (e) {
-            console.error('Failed to parse metadata JSON:', e)
+        if (metadataSnapshot && typeof metadataSnapshot === 'object') {
+          const m = metadataSnapshot as Record<string, unknown>
+          // Validate required fields exist before casting
+          if (m.phase && m.messageType && Array.isArray(m.suggestions)) {
+            metadata = metadataSnapshot as MessageMetadata
+          } else {
+            console.warn('Metadata missing required fields:', Object.keys(m))
           }
         }
 
