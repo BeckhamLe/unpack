@@ -364,7 +364,7 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
     }
 
     const stream = anthropic.messages.stream({
-      model: "claude-sonnet-4-6-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 4096,
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
       tools: [PRESENTATION_METADATA_TOOL],
@@ -463,7 +463,7 @@ app.post('/chat', requireAuth, async(req, res) => {
     const updatedConvoUser = await storage.addMessageToConversation(convoId, userId, { role: "user", content: userMsg})
 
     const apiMsg = await anthropic.messages.create({
-      model: "claude-sonnet-4-6-20250514",
+      model: "claude-sonnet-4-6",
       max_tokens: 4096,
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
       tools: [PRESENTATION_METADATA_TOOL],

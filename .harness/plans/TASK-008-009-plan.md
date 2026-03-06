@@ -5,7 +5,7 @@
 
 ## Design Decisions (Locked)
 
-- **Model:** Upgrade from Haiku 4.5 to Sonnet 4.6 (`claude-sonnet-4-6-20250514`) for reliable tool use
+- **Model:** Upgrade from Haiku 4.5 to Sonnet 4.6 (`claude-sonnet-4-6`) for reliable tool use
 - **Slide format:** Model outputs structured JSON (typed slide objects), NOT raw HTML. A frontend render function maps JSON to HTML using the CSS design system.
 - **5 layouts v1:** Title, Content, Code, Metrics, Closing. (Two-Column, Section Divider, Quote deferred to v2.)
 - **Theming:** 2 themes (light default, dark) x 4 accent colors (blue default, violet, teal, orange). Model is unaware of theme — it outputs semantic JSON. Theme is a CSS class swap.
@@ -62,7 +62,7 @@ ClosingSlide:  { slideId, type: "closing", heading, links?: string[], cta? }
 **What:** Switch model, bump max_tokens, add tool definition to API call.
 **Files:** `src/server/main.ts` (lines 285-290)
 **Changes:**
-- Model: `claude-haiku-4-5-20251001` -> `claude-sonnet-4-6-20250514`
+- Model: `claude-haiku-4-5-20251001` -> `claude-sonnet-4-6`
 - max_tokens: `2048` -> `4096`
 - Add `tools: [presentationMetadataTool]` to the API call
 - Add `tool_choice: { type: "auto" }`

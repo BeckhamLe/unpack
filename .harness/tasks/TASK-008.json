@@ -11,7 +11,7 @@
   "plan_ref": ".harness/plans/TASK-008-009-plan.md",
   "steps": [
     "Step 1: Design JSON schema + Anthropic tool definition (presentation_metadata tool with phase, messageType, suggestions, slides, qualityScore). Define 5 SlideData types: TitleSlide, ContentSlide, CodeSlide, MetricsSlide, ClosingSlide — each with slideId. Add all types to src/shared/types.ts.",
-    "Step 2 [PARALLEL A]: Model upgrade — change model to claude-sonnet-4-6-20250514, bump max_tokens to 4096, add tools array + tool_choice to API call in src/server/main.ts L285-290.",
+    "Step 2 [PARALLEL A]: Model upgrade — change model to claude-sonnet-4-6, bump max_tokens to 4096, add tools array + tool_choice to API call in src/server/main.ts L285-290.",
     "Step 3 [PARALLEL A]: DB migration + schema — add nullable metadata jsonb column to messages table in schema.ts L23-38. Update storage class in main.ts L126-233.",
     "Step 4 [PARALLEL A]: System prompt rewrite — rewrite SYSTEM_PROMPT in main.ts L19-120. Collaborative tone, 3-4 exchanges per phase, tool-use instructions, 5 slide layout docs (~2600 tokens, cacheable), slideId stability instructions, phase pacing guidance.",
     "Step 5: Storage layer — update addMessageToConversation (L138) to accept/save metadata. Update getConversation mapping (L180) to return metadata. Null metadata for user messages.",
