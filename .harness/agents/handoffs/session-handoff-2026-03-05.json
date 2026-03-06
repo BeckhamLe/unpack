@@ -1,0 +1,121 @@
+{
+  "type": "session_handoff",
+  "timestamp": "2026-03-05T21:30:00.000Z",
+  "session_summary": "Deployed app to EC2 (fixed IPv6→IPv4 DB connection via Supabase pooler). Built in-app feedback collection (TASK-015). Hardened deploy.sh security. Added Agent Conduct Rules and Task Lifecycle gates to CLAUDE.md. Collected first round of real user feedback — actionable items below.",
+
+  "workflow_position": {
+    "current_skill": "Director Advance — PICK phase",
+    "step_reached": "User feedback collected. Next agent needs to CREATE new tasks from the feedback below, then go through the full Task Lifecycle (PICK → PLAN → approve → EXECUTE → CODE REVIEW → PR → CLOSE) for each.",
+    "next_action": "Create TASK-016 (markdown rendering + quick reply buttons) and TASK-017 (system prompt iteration). These may overlap with TASK-008 (structured output) and TASK-009 (UI transformation) from the original plan — coordinate accordingly."
+  },
+
+  "git_state": {
+    "current_branch": "main",
+    "main_commit": "582e9f0",
+    "branching_strategy": "per-task — each task gets its own branch off main, merges back via PR when done"
+  },
+
+  "deployed": {
+    "url": "https://unpack.pro",
+    "infra": "EC2 (107.23.228.4) + nginx + PM2 + Supabase (connection pooler on port 6543)",
+    "ssh_key": "~/.ssh/unpack-key.pem",
+    "deploy_command": "ssh -i ~/.ssh/unpack-key.pem ec2-user@107.23.228.4 'cd ~/unpack && bash deploy.sh'",
+    "secrets": "AWS SSM Parameter Store under /unpack/ (ANTHROPIC_API_KEY, DATABASE_URL, VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)",
+    "domain": "unpack.pro (DNS → 107.23.228.4, SSL via Let's Encrypt)"
+  },
+
+  "task_status": {
+    "TASK-001": "done — prompt caching",
+    "TASK-002": "done — OAuth",
+    "TASK-003": "done — streaming",
+    "TASK-004": "done — UI polish",
+    "TASK-005": "done — system prompt",
+    "TASK-007": "planned — user testing + prompt iteration (NOW UNBLOCKED, feedback collected below)",
+    "TASK-008": "planned — structured output from LLM",
+    "TASK-009": "planned — UI transformation (stepper, cards, slide preview)",
+    "TASK-010": "done — color theme",
+    "TASK-011": "done — local prod build",
+    "TASK-012": "done — AWS infra",
+    "TASK-013": "done — server provisioning",
+    "TASK-014": "done — deploy + smoke test",
+    "TASK-015": "done — in-app feedback collection"
+  },
+
+  "user_feedback": {
+    "source": "First round of real user testing (2026-03-05)",
+    "raw_feedback": [
+      "Add some basic markdown formatting. The AI keeps outputting **bold** with raw asterisks showing.",
+      "Can you have stubs at the top of the chat so that the user only needs to select what is next, not type. But in short really like it. 2 points: 1. md formatting and 2. add stubs above the chat so I can just click when there are options rather than typing.",
+      "Whatever you can do to make it punchier and reduce the time taken to develop. Some questions felt a little repetitive.",
+      "I feel like this isn't particularly useful for me and I'll just make my own slides. Two ways it's good: it asked 2 useful concrete questions: 1. who is your audience, and 2. give me a concrete example of [CLAIM]. It was very insistent I had to find a problem to solve because I was presenting to engineers.",
+      "The vibe feels like I'm getting interviewed, not that we're working cooperatively towards a solution."
+    ],
+    "actionable_items": [
+      {
+        "id": "FB-1",
+        "issue": "Markdown not rendered — raw **bold**, *italic* showing as plaintext",
+        "fix": "Add a markdown renderer (react-markdown or similar) to message display",
+        "priority": "high",
+        "effort": "small",
+        "task": "TASK-016"
+      },
+      {
+        "id": "FB-2",
+        "issue": "No quick reply buttons — users have to type everything",
+        "fix": "Add suggested response chips/buttons above the input when the bot asks questions with clear options",
+        "priority": "high",
+        "effort": "medium",
+        "task": "TASK-016"
+      },
+      {
+        "id": "FB-3",
+        "issue": "Too many questions, feels repetitive and like an interrogation",
+        "fix": "Reduce question count in system prompt. Combine related questions. Move faster through context gathering.",
+        "priority": "high",
+        "effort": "small (prompt only)",
+        "task": "TASK-017"
+      },
+      {
+        "id": "FB-4",
+        "issue": "Too insistent on problem framing — not every presentation is problem→solution",
+        "fix": "System prompt should recognize presentations that don't fit problem/solution (demos, show-and-tell, updates) and adapt structure accordingly",
+        "priority": "high",
+        "effort": "small (prompt only)",
+        "task": "TASK-017"
+      },
+      {
+        "id": "FB-5",
+        "issue": "Vibe is 'interview' not 'collaboration' — bot asks too much, gives too little",
+        "fix": "Prompt should instruct bot to offer suggestions, examples, and partial drafts earlier. Give before you ask. Show the user you're building WITH them.",
+        "priority": "high",
+        "effort": "small (prompt only)",
+        "task": "TASK-017"
+      }
+    ]
+  },
+
+  "new_tasks_to_create": {
+    "TASK-016": {
+      "title": "Markdown rendering + quick reply buttons",
+      "description": "Render bot messages with markdown (bold, italic, lists, headers). Add quick reply suggestion buttons above the input when the bot asks questions with clear options (e.g., presentation type, audience). This addresses FB-1 and FB-2 from user feedback.",
+      "priority": "high",
+      "skill_tags": ["React", "UX"],
+      "notes": "This overlaps with TASK-009 (UI transformation). Consider whether to fold quick replies into TASK-009 or keep separate. Markdown rendering is standalone and should ship first regardless."
+    },
+    "TASK-017": {
+      "title": "System prompt iteration based on user feedback",
+      "description": "Address FB-3 (repetitive questions), FB-4 (forced problem framing), and FB-5 (interview vibe). Make the bot more collaborative: offer suggestions early, reduce question count, recognize non-problem/solution presentations, give before you ask.",
+      "priority": "high",
+      "skill_tags": ["Prompt engineering", "Domain design"],
+      "notes": "This IS TASK-007 (user testing + prompt iteration) from the original plan. Consider merging or replacing TASK-007 with this."
+    }
+  },
+
+  "task_009_overlap": "TASK-009 (UI transformation) includes stepper, cards, and slide preview. Quick reply buttons (FB-2) are a natural fit for TASK-009's card-based message rendering. However, TASK-009 depends on TASK-008 (structured output). Markdown rendering does NOT depend on structured output and should ship independently. Recommended approach: ship markdown rendering now in TASK-016, defer quick replies to TASK-009 if structured output is needed, OR ship quick replies as a simple heuristic (detect question marks in bot messages) without structured output.",
+
+  "important_rules": {
+    "task_lifecycle": "CLAUDE.md now has a mandatory Task Lifecycle section with explicit gates. Every task: PICK → PLAN (stop, wait for approval) → MODE → EXECUTE → CODE REVIEW (gate) → PR (gate) → CLOSE. Never skip gates.",
+    "agent_conduct": "Verify third-party UI instructions against current docs. Surface all security-critical artifacts. Security checklist on infra tasks.",
+    "deploy_after_merge": "After every PR merge, redeploy to EC2: ssh -i ~/.ssh/unpack-key.pem ec2-user@107.23.228.4 'cd ~/unpack && bash deploy.sh'"
+  }
+}
