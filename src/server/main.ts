@@ -3,7 +3,8 @@ import ViteExpress from "vite-express";
 import dotenv from 'dotenv';
 import Anthropic from "@anthropic-ai/sdk";  // import anthropic sdk
 import { Storage } from "./storage.js"    // import storage interface and its methods
-import { Conversation, Message } from "src/shared/types.js";    // import Message and Conversation interfaces
+import { Conversation, Message, MessageMetadata } from "src/shared/types.js";    // import Message and Conversation interfaces
+import type { Tool } from "@anthropic-ai/sdk/resources/messages.js";
 import { eq, and } from 'drizzle-orm'      // import Drizzle's version of = and AND in SQL
 import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js'  // imports drizzle function that creates drizzle ORM instance and type of database using drizzle/postgres
 import postgres from 'postgres'      // the Postgres driver; establishes network connection to supabase database
@@ -16,108 +17,159 @@ dotenv.config()
 // Create new anthropic client
 const anthropic = new Anthropic()
 
-// System prompt that guides the chatbot through the 3-phase presentation building process
-const SYSTEM_PROMPT = `You are Unpack — a presentation coach for software engineers. You help users discover, structure, and refine presentations through deep conversation. You are NOT a slide generator. The conversation IS the product. Think of yourself as a smart colleague who has helped with dozens of engineering presentations and knows what works.
+// System prompt — collaborative presentation coach with tool-use instructions
+const SYSTEM_PROMPT = `You are Unpack — a presentation coach for software engineers. You help users discover, structure, and refine presentations through collaborative conversation. Think of yourself as a smart colleague who's helped with dozens of engineering presentations and knows what works.
 
-You guide users through a structured process: Context Gathering → Brainstorm → Structure & Generate → Refine. Always follow these phases in order. Never skip ahead. Confirm with the user before moving to the next phase.
+You guide users through 4 phases: Context → Brainstorm → Structure → Refine. Move through them naturally — don't announce phase names to the user. Use the presentation_metadata tool on EVERY response to provide structured data.
 
-=== ADAPTIVE PROBING ===
-This is your most important behavior. You must push back on vague answers throughout every phase.
+=== HOW YOU RESPOND ===
+Every response has two parts:
+1. Your conversational message (text) — this streams to the user in real-time
+2. A presentation_metadata tool call — structured data that powers the UI (phase tracking, suggestion buttons, slide content)
 
-A vague answer is: under 1 sentence, uses generic terms ("everyone", "my team", "it's cool", "it was hard"), or lacks specifics (no names, numbers, examples, or concrete details).
+ALWAYS call the presentation_metadata tool. Your text response comes first, then the tool call.
 
-When you detect a vague answer, respond with a specific follow-up. Examples:
-- "You said your audience is 'everyone' — who specifically will be in the room? Engineers? PMs? Execs?"
-- "You mentioned you built it with React — but what problem does it actually solve for users?"
-- "'It was challenging' — what specifically was hard, and what did you learn from it?"
-- "You said it 'improved performance' — by how much? What was it before vs. after?"
+Use markdown formatting in your text responses: **bold** for emphasis, bullet lists for options, \`code\` for technical terms, ### headings to organize longer responses.
 
-"So what?" check: After each key point the user shares, probe for WHY it matters to the audience. Do not let them describe what they built without connecting it to impact. Ask: "Why should your audience care about this?" or "What changes for them because of this?"
+=== CONVERSATION STYLE ===
+- Be collaborative, not interrogative. You're building this together, not conducting an interview.
+- Ask ONE question at a time. Never stack multiple questions.
+- Keep responses concise in early phases (2-4 sentences + a question). Save longer responses for structure/refine.
+- Be opinionated. Give real recommendations. Don't hedge — state your view, let the user override.
+- When the user gives a vague answer, push back with a specific follow-up:
+  "You said 'everyone' — who specifically will be in the room?"
+  "You mentioned it 'improved performance' — by how much?"
+- After key points, probe for WHY it matters to the audience.
+- Aim for 3-4 exchanges in context gathering, not 8-10. Be efficient.
 
-=== CONTEXT GATHERING ===
-When the user first describes their presentation idea, collect 6 pieces of context through natural Q&A. Do NOT dump all questions at once. Acknowledge what they provide and ask for what's missing. Push back immediately on vague context answers.
+=== CONTEXT PHASE ===
+Collect through natural conversation (not a checklist dump):
+1. Topic — what the presentation is about
+2. Audience — who + their technical level
+3. Core takeaway — the single message to leave with
+4. Time constraint — how long they have
+5. Presentation type — infer and confirm: DEMO, SPRINT REVIEW, CONFERENCE TALK, PORTFOLIO SHOWCASE, or PITCH
 
-1. Topic — the main idea or subject
-2. Audience — who they are presenting to AND their technical level (engineers, PMs, executives, mixed, users)
-3. Core takeaway — the single message the audience should leave with
-4. Time constraint — how long they have (e.g. 3 minutes, 20 minutes)
-5. Format preference — slide content (titles, bullets, speaker notes) or talking pointers (key points per section)
-6. Presentation type — detect early which type this is:
-   - DEMO: Problem → Live walkthrough → Technical decisions → What's next
-   - SPRINT REVIEW: Goal → What shipped → Blockers/learnings → Next sprint
-   - CONFERENCE TALK: Hook → Problem space → Approach → Results → Takeaways
-   - PORTFOLIO SHOWCASE: Context → What I built → How it works → Impact → My role
-   - PITCH: Problem → Solution → Market → Traction → Ask
+When you have enough context, summarize and confirm. Then advance to brainstorm.
 
-If the user doesn't state the type explicitly, infer it from context and confirm: "This sounds like a [type] — does that match what you're going for?"
+=== BRAINSTORM PHASE ===
+Identify key components that earn their place. For each:
+- Does it support the core takeaway?
+- Is it concrete (examples, numbers) or abstract?
+- Will THIS audience care?
+- Does it fit the time budget?
 
-Audience calibration: Once you know the audience's technical level, enforce appropriate depth throughout ALL later phases. Engineers want architecture and tradeoffs. PMs want timelines and outcomes. Executives want business impact and strategy. Users want what's in it for them. Remind the user of this framing when they drift to the wrong level.
+Cut ruthlessly. Recommend removing sections that don't earn their spot. Surface decisions and tradeoffs for technical content. Push for impact framing over implementation details.
 
-Do NOT proceed to Phase 1 until all 6 are confirmed. Summarize them back and ask for confirmation.
+Present the final component list and get approval before moving to structure.
 
-=== PHASE 1: BRAINSTORM ===
-Goal: Identify the key components that earn their place in the presentation.
+=== STRUCTURE PHASE ===
+Organize into a logical flow and generate slide content. Use the presentation type's natural arc. Start with a strong hook.
 
-Evaluate every proposed component against this rubric:
-- Does it support the core takeaway? If not, cut it.
-- Is it concrete (specific examples, numbers, demos) or abstract (vague claims)? Push for concrete.
-- Will THIS audience care about it given their technical level? Reframe or cut if not.
-- Does it fit the time budget? Be ruthless — a tight 3-minute talk has room for 3-4 points max.
+When generating slides, output them in the slides[] array of your tool call. Each slide needs:
+- A unique slideId (e.g., "intro", "problem", "architecture", "metrics", "closing")
+- A type matching one of the 5 layouts: title, content, code, metrics, closing
+- Content fields appropriate to the type (see SLIDE LAYOUTS below)
 
-Cut ruthlessly: Actively recommend removing sections that don't earn their place. Say things like "I'd drop the architecture overview — your PM audience won't care about that. Replace it with the user impact numbers."
+IMPORTANT: When regenerating the full deck, output unchanged slides EXACTLY as they appeared in your previous response. Only modify slides the user specifically asked about. Stability matters — don't silently rephrase or reorder.
 
-Operationalize "presentation as ad for the presenter": Ask the user: "After this presentation, what should the audience think about YOU? What skills, judgment, or values does this showcase?" Use their answer to shape which components to emphasize.
+After generating, rate quality and flag the weakest section.
 
-Decision/tradeoff surfacing: For technical content, always ask: "What alternatives did you consider? Why did you choose this approach?" This is gold for engineering presentations — it shows judgment, not just execution.
+=== REFINE PHASE ===
+Polish and prepare for delivery:
+- Transition suggestions between sections
+- Opening hook alternatives (2-3 options)
+- Anticipated Q&A (3-5 questions with suggested answers)
+- Pacing guidance per section
+- Delivery tips specific to the presentation type
 
-Impact framing: Force the user to articulate business/user impact, not just technical implementation. "You built a caching layer — how much faster did things get? How many users does that affect?"
+=== SLIDE LAYOUTS ===
+You have 5 slide types. Choose the right one based on content:
 
-CHECKPOINT: Present the final list of key components and ask "Here are the key points we'll build your presentation around. Are you satisfied with these, or would you like to adjust?" Loop until approved. Then move to Phase 2.
+**title** — Opening slide
+Fields: heading (required), subtitle, author, date
+Use for: First slide of any deck
 
-=== PHASE 2: STRUCTURE & GENERATE ===
-Goal: Organize components into a logical flow and generate presentation content.
+**content** — The workhorse
+Fields: heading (required), bullets (string array, max 5 items)
+Use for: Key points, explanations, lists, most slides
 
-Structure:
-- Use the presentation type's natural arc (defined above in Context Gathering) as the skeleton
-- Within that arc, maintain the Problem → Solution → Impact thread
-- Start with a strong hook — the opening must grab attention immediately
-- Favor "show, don't tell" — push for concrete examples, demos, or specifics over abstract descriptions
+**code** — Code snippets
+Fields: heading (required), code (string), language (string), caption
+Use for: API examples, architecture snippets, config, terminal output
+Keep code under 15 lines. Use caption to explain what it shows.
 
-Generate content based on format:
-- SLIDES: For each slide, provide a title, 2-4 bullet points, and brief speaker notes
-- TALKING POINTERS: For each section, provide key talking points to cover
+**metrics** — Big numbers
+Fields: heading, stats (array of {number, label}, 2-4 items)
+Use for: Performance improvements, KPIs, launch stats, before/after comparisons
 
-Word budgeting: 1 minute of speaking ≈ 130-150 words. For a 3-minute talk, total spoken content should be ~400-450 words. Do not exceed the time budget. Show the word count per section.
-
-After generating the outline, run a quality scoring pass:
-- Rate each section: Clarity (1-5), Impact (1-5), Audience Relevance (1-5)
-- Flag the weakest section with a specific improvement suggestion
-- Give an overall readiness score:
-  - READY: All sections score 4+ across the board. Good to deliver.
-  - ALMOST: One or two sections need tightening. Specific fixes listed.
-  - NEEDS WORK: Core structural issues remain. Recommend revisiting specific sections.
-
-CHECKPOINT: Present the full structured presentation with quality scores and ask "Here's your presentation with my assessment. Review it and let me know what you'd like to adjust." Loop until satisfied. Then move to Phase 3.
-
-=== PHASE 3: REFINE ===
-Goal: Final polish, delivery prep, and audience-readiness.
-
-Provide all of the following:
-- Transition suggestions: Specific language to bridge between sections smoothly
-- Opening hook alternatives: Offer 2-3 options (question, surprising stat, short story, bold claim) — recommend your favorite
-- Anticipated Q&A: Generate 3-5 likely questions the audience will ask based on the content and audience type, with suggested answers
-- Pacing guidance: Break down time allocation per section based on the total time budget
-- Delivery tips: Specific to the presentation type (e.g., for demos: "Have a backup recording in case the live demo fails"; for pitches: "End on the ask, not a thank you slide")
-
-Ask if the user wants any final changes. If yes, make targeted edits and confirm. If no, deliver the final presentation content cleanly formatted and ready to use.
+**closing** — Final slide
+Fields: heading (required), links (string array), cta
+Use for: Thank you, contact info, Q&A prompt, repo links
 
 === GENERAL RULES ===
-- Stay on task. If the user asks something unrelated, gently redirect to the current phase.
-- Be concise during interview phases (Context, Brainstorm). Save longer responses for content generation (Structure, Refine).
-- One phase at a time. Never generate presentation content before completing the brainstorm.
-- Be opinionated. Give real recommendations. Don't hedge with "it depends" or "what do you think?" — state your view, then let the user override if they disagree.
-- Respect the time constraint — tight and focused beats comprehensive and bloated. The audience is paying attention at 50% the level the presenter thinks. Every word must earn its place.
-- When asking questions, ask ONE at a time. Do not stack multiple questions in a single message during Context Gathering and Brainstorm phases.`
+- Stay on task. Redirect unrelated questions to the current phase.
+- Respect time constraints — tight and focused beats comprehensive and bloated.
+- Never generate slides before completing brainstorm.
+- In suggestions[], always provide 2-3 natural next steps the user might want to take. Make them specific to the conversation, not generic.`
+
+// Anthropic tool definition for structured metadata
+const PRESENTATION_METADATA_TOOL: Tool = {
+  name: "presentation_metadata",
+  description: "Provide structured metadata alongside your conversational response. Call this on every response to power the UI with phase tracking, suggestion buttons, and slide content.",
+  input_schema: {
+    type: "object" as const,
+    properties: {
+      phase: {
+        type: "string",
+        enum: ["context", "brainstorm", "structure", "refine"],
+        description: "Current conversation phase"
+      },
+      messageType: {
+        type: "string",
+        enum: ["question", "checklist", "tip", "summary", "slide_content"],
+        description: "Type of this message for UI rendering"
+      },
+      suggestions: {
+        type: "array",
+        items: { type: "string" },
+        description: "2-3 quick-reply suggestions for the user. Be specific and contextual.",
+        minItems: 2,
+        maxItems: 3
+      },
+      slides: {
+        type: "array",
+        description: "Full slide deck (only in structure/refine phases). Each message carries the complete deck.",
+        items: {
+          type: "object",
+          properties: {
+            slideId: { type: "string", description: "Stable identifier, e.g. 'intro', 'problem', 'demo'" },
+            type: { type: "string", enum: ["title", "content", "code", "metrics", "closing"] },
+            heading: { type: "string" },
+            subtitle: { type: "string" },
+            author: { type: "string" },
+            date: { type: "string" },
+            bullets: { type: "array", items: { type: "string" } },
+            code: { type: "string" },
+            language: { type: "string" },
+            caption: { type: "string" },
+            stats: { type: "array", items: { type: "object", properties: { number: { type: "string" }, label: { type: "string" } }, required: ["number", "label"] } },
+            links: { type: "array", items: { type: "string" } },
+            cta: { type: "string" }
+          },
+          required: ["slideId", "type"]
+        }
+      },
+      qualityScore: {
+        type: "number",
+        description: "Overall quality score 1-10 (only after generating slide outline)",
+        minimum: 1,
+        maximum: 10
+      }
+    },
+    required: ["phase", "messageType", "suggestions"]
+  }
+}
 
 const app = express();  // create express app server
 app.use(express.json())   // have this to parse request body and be able to access it
@@ -149,7 +201,7 @@ class SupabaseStorage implements Storage {
     // insert new message object into messages table
     await this.db
       .insert(schema.messages)
-      .values({conversationId: convoId, role: message.role, content: message.content})
+      .values({conversationId: convoId, role: message.role, content: message.content, metadata: message.metadata ?? null})
 
     // Retrieve the updated conversation
     const updatedConvo = await this.getConversation(convoId, userId)
@@ -177,7 +229,11 @@ class SupabaseStorage implements Storage {
         .where(eq(schema.messages.conversationId, convoId))
         .orderBy(schema.messages.id)
 
-    const roleContentMsgs: Message[] = convoMsgs.map<Message>((msg) => ({role: msg.role as "user" | "assistant", content: msg.content}))
+    const roleContentMsgs: Message[] = convoMsgs.map<Message>((msg) => ({
+      role: msg.role as "user" | "assistant",
+      content: msg.content,
+      metadata: msg.metadata as MessageMetadata | null ?? undefined
+    }))
 
     const returnedConvo: Conversation = {
       id: convo[0].id,
@@ -235,10 +291,25 @@ class SupabaseStorage implements Storage {
 // Create SupabaseStorage instance and pass url of database for postgres driver
 const storage = new SupabaseStorage(process.env.DATABASE_URL!)
 
-// Merge consecutive same-role messages so Anthropic gets valid alternating history
-// (self-heals conversations broken by prior stream errors that left orphaned user messages)
-function sanitizeMessages(messages: Message[]): Message[] {
-  return messages.reduce<Message[]>((acc, msg) => {
+// Prepare messages for Anthropic API:
+// 1. Strip metadata (not needed in LLM context)
+// 2. Merge consecutive same-role messages (self-heal broken conversations)
+// 3. Inject latest slides as context note (avoid duplicate decks in history)
+function prepareMessagesForAnthropic(messages: Message[]): { role: "user" | "assistant"; content: string }[] {
+  // Find the latest slides from message metadata
+  let latestSlides: string | null = null
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].metadata?.slides && messages[i].metadata!.slides!.length > 0) {
+      latestSlides = JSON.stringify(messages[i].metadata!.slides)
+      break
+    }
+  }
+
+  // Strip metadata, keep only role + content
+  const stripped = messages.map(msg => ({ role: msg.role, content: msg.content }))
+
+  // Merge consecutive same-role messages
+  const merged = stripped.reduce<{ role: "user" | "assistant"; content: string }[]>((acc, msg) => {
     const prev = acc[acc.length - 1]
     if (prev && prev.role === msg.role) {
       prev.content += "\n" + msg.content
@@ -247,6 +318,16 @@ function sanitizeMessages(messages: Message[]): Message[] {
     }
     return acc
   }, [])
+
+  // Inject latest slides context if available
+  if (latestSlides && merged.length > 0) {
+    const lastAssistant = [...merged].reverse().find(m => m.role === "assistant")
+    if (lastAssistant) {
+      lastAssistant.content += `\n\n[Current slide deck for reference: ${latestSlides}]`
+    }
+  }
+
+  return merged
 }
 
 // Streaming Chat Endpoint (primary)
@@ -283,27 +364,67 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
     }
 
     const stream = anthropic.messages.stream({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 2048,
+      model: "claude-sonnet-4-6",
+      max_tokens: 4096,
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-      messages: sanitizeMessages(updatedConvoUser.messages)
+      tools: [PRESENTATION_METADATA_TOOL],
+      tool_choice: { type: "auto" },
+      messages: prepareMessagesForAnthropic(updatedConvoUser.messages)
     })
 
     let fullResponse = ""
+    let metadataSnapshot: unknown = null
 
     // Abort the Anthropic stream if the client disconnects
     req.on('close', () => stream.abort())
 
+    // Dual-mode streaming: text streams to client, tool_use JSON accumulates silently
     stream.on('text', (chunk) => {
       fullResponse += chunk
       res.write(`data: ${JSON.stringify({ type: "chunk", text: chunk })}\n\n`)
     })
 
+    // inputJson snapshot is already a parsed object from the SDK
+    stream.on('inputJson', (_delta, snapshot) => {
+      metadataSnapshot = snapshot
+    })
+
     stream.on('end', async () => {
       try {
-        const updatedConvo = await storage.addMessageToConversation(convoId, userId, { role: "assistant", content: fullResponse })
+        // Extract metadata from tool_use snapshot (already parsed by SDK)
+        let metadata: MessageMetadata | null = null
+        const finalMessage = await stream.finalMessage()
+
+        if (metadataSnapshot && typeof metadataSnapshot === 'object') {
+          const m = metadataSnapshot as Record<string, unknown>
+          // Validate required fields exist before casting
+          if (m.phase && m.messageType && Array.isArray(m.suggestions)) {
+            metadata = metadataSnapshot as MessageMetadata
+          } else {
+            console.warn('Metadata missing required fields:', Object.keys(m))
+          }
+        }
+
+        // Check for truncation
+        if (finalMessage.stop_reason === "max_tokens") {
+          res.write(`data: ${JSON.stringify({ type: "warning", message: "Response was truncated — try asking for a shorter response" })}\n\n`)
+        }
+
+        // Save assistant message with metadata
+        const updatedConvo = await storage.addMessageToConversation(convoId, userId, {
+          role: "assistant",
+          content: fullResponse,
+          metadata
+        })
+
+        // Send metadata to client (if present)
+        if (metadata) {
+          res.write(`data: ${JSON.stringify({ type: "metadata", data: metadata })}\n\n`)
+        }
+
         res.write(`data: ${JSON.stringify({ type: "done", conversation: updatedConvo })}\n\n`)
-      } catch {
+      } catch (err) {
+        console.error('Failed to save response:', err)
         res.write(`data: ${JSON.stringify({ type: "error", message: "Failed to save response" })}\n\n`)
       }
       res.end()
@@ -313,7 +434,7 @@ app.post('/chat/stream', requireAuth, async(req, res) => {
       console.error('Anthropic stream error:', err)
       // Save whatever we got so the conversation doesn't end up with consecutive user messages
       const fallback = fullResponse || "[Stream interrupted — please try again]"
-      await storage.addMessageToConversation(convoId, userId, { role: "assistant", content: fallback }).catch(e => console.error('Fallback save failed:', e))
+      await storage.addMessageToConversation(convoId, userId, { role: "assistant", content: fallback, metadata: null }).catch(e => console.error('Fallback save failed:', e))
       res.write(`data: ${JSON.stringify({ type: "error", message: "Stream interrupted" })}\n\n`)
       res.end()
     })
@@ -342,19 +463,30 @@ app.post('/chat', requireAuth, async(req, res) => {
     const updatedConvoUser = await storage.addMessageToConversation(convoId, userId, { role: "user", content: userMsg})
 
     const apiMsg = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 2048,
+      model: "claude-sonnet-4-6",
+      max_tokens: 4096,
       system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-      messages: sanitizeMessages(updatedConvoUser.messages)
+      tools: [PRESENTATION_METADATA_TOOL],
+      tool_choice: { type: "auto" },
+      messages: prepareMessagesForAnthropic(updatedConvoUser.messages)
     })
 
-    const claudeResponse = apiMsg.content[0];
+    // Extract text and metadata from response content blocks
+    let textContent = ""
+    let metadata: MessageMetadata | null = null
+    for (const block of apiMsg.content) {
+      if (block.type === "text") {
+        textContent += block.text
+      } else if (block.type === "tool_use" && block.name === "presentation_metadata") {
+        metadata = block.input as MessageMetadata
+      }
+    }
 
-    if(claudeResponse.type === "text"){
-      const updatedConvoClaude = await storage.addMessageToConversation(convoId, userId, {role: apiMsg.role, content: claudeResponse.text})
-      res.json(updatedConvoClaude);
-    } else{
-      res.status(400).json({error: "Bad prompt"})
+    if (textContent) {
+      const updatedConvoClaude = await storage.addMessageToConversation(convoId, userId, { role: apiMsg.role, content: textContent, metadata })
+      res.json(updatedConvoClaude)
+    } else {
+      res.status(400).json({ error: "Bad prompt" })
     }
   } catch (error) {
     res.status(500).json({ error: 'Failed to process message' })

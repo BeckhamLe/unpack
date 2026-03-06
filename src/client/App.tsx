@@ -1,6 +1,6 @@
 import "./App.css";
 import requestServices from './services/requests'
-import { Message, Conversation} from '../shared/types'
+import { Message, Conversation, MessageMetadata } from '../shared/types'
 import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,10 +20,13 @@ function App() {
   const [currConvo, setCurrConvo] = useState<Conversation | null>(null)
   const [sidebarConvos, setSidebarConvos] = useState<{convoId: string, convoTitle: string}[]>()
   const [isStreaming, setIsStreaming] = useState(false)
+  const [streamingText, setStreamingText] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768)
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [sessionFeedbackDismissed, setSessionFeedbackDismissed] = useState<Set<string>>(new Set())
+  const rafIdRef = useRef<number | null>(null)
+  const streamingFullTextRef = useRef("")
 
   // Auth state listener
   useEffect(() => {
@@ -126,31 +129,61 @@ function App() {
       messages: [...prev.messages, userMsgObj, assistantMsgObj]
     } : prev)
 
+    streamingFullTextRef.current = ""
+    setStreamingText("")
+
+    const flushStreamBuffer = () => {
+      const text = streamingFullTextRef.current
+      setStreamingText(text)
+    }
+
+    const scheduleFlush = () => {
+      if (rafIdRef.current === null) {
+        rafIdRef.current = requestAnimationFrame(() => {
+          rafIdRef.current = null
+          flushStreamBuffer()
+        })
+      }
+    }
+
     requestServices.streamMsg(
       selectedConvoId,
       userMessage,
       (chunk) => {
-        setCurrConvo(prev => {
-          if (!prev) return prev
-          const msgs = [...prev.messages]
-          const last = msgs[msgs.length - 1]
-          msgs[msgs.length - 1] = { ...last, content: last.content + chunk }
-          return { ...prev, messages: msgs }
-        })
+        streamingFullTextRef.current += chunk
+        scheduleFlush()
       },
       (conversation) => {
+        if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current)
+        rafIdRef.current = null
+        setStreamingText("")
+        streamingFullTextRef.current = ""
         setCurrConvo(conversation)
         setIsStreaming(false)
       },
       (error) => {
+        if (rafIdRef.current !== null) cancelAnimationFrame(rafIdRef.current)
+        rafIdRef.current = null
+        const partialText = streamingFullTextRef.current
+        setStreamingText("")
+        streamingFullTextRef.current = ""
         toast.error(error || 'Something went wrong')
         setCurrConvo(prev => {
           if (!prev) return prev
           const msgs = [...prev.messages]
-          msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: msgs[msgs.length - 1].content || `Error: ${error}` }
+          msgs[msgs.length - 1] = { ...msgs[msgs.length - 1], content: partialText || `Error: ${error}` }
           return { ...prev, messages: msgs }
         })
         setIsStreaming(false)
+      },
+      (metadata: MessageMetadata) => {
+        setCurrConvo(prev => {
+          if (!prev) return prev
+          const msgs = [...prev.messages]
+          const last = msgs[msgs.length - 1]
+          msgs[msgs.length - 1] = { ...last, metadata }
+          return { ...prev, messages: msgs }
+        })
       }
     )
   };
@@ -326,10 +359,9 @@ function App() {
 
                   {/* Message content */}
                   <div className="text-base sm:text-base leading-relaxed whitespace-pre-wrap">
-                    {message.content}
-                    {isStreaming && message.role === "assistant" && index === currConvo.messages.length - 1 && !message.content && (
-                      <span className="inline-block w-2 h-4 bg-primary/60 animate-pulse ml-0.5" />
-                    )}
+                    {isStreaming && message.role === "assistant" && index === currConvo.messages.length - 1
+                      ? (streamingText || <span className="inline-block w-2 h-4 bg-primary/60 animate-pulse ml-0.5" />)
+                      : message.content}
                   </div>
                 </div>
               </div>

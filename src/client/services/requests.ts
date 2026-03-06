@@ -1,4 +1,4 @@
-import { Conversation } from "../../shared/types.js"
+import { Conversation, MessageMetadata } from "../../shared/types.js"
 import { supabase } from "../lib/supabase.js"
 
 // Authenticated fetch wrapper — attaches Bearer token, retries once on 401
@@ -66,7 +66,8 @@ const streamMsg = async(
     userMsg: string,
     onChunk: (text: string) => void,
     onDone: (conversation: Conversation) => void,
-    onError: (error: string) => void
+    onError: (error: string) => void,
+    onMetadata?: (metadata: MessageMetadata) => void
 ) => {
     const response = await authFetch('/chat/stream', {
       method: "POST",
@@ -101,10 +102,14 @@ const streamMsg = async(
           const event = JSON.parse(json)
           if (event.type === "chunk") {
             onChunk(event.text)
+          } else if (event.type === "metadata") {
+            onMetadata?.(event.data as MessageMetadata)
           } else if (event.type === "done") {
             onDone(event.conversation)
           } else if (event.type === "error") {
             onError(event.message)
+          } else if (event.type === "warning") {
+            console.warn("Stream warning:", event.message)
           }
         } catch {
           // skip malformed JSON lines
