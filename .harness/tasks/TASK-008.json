@@ -1,23 +1,52 @@
 {
   "id": "TASK-008",
-  "title": "Structured output from LLM",
-  "priority": "medium",
+  "title": "Structured output from LLM + prompt tuning",
+  "priority": "high",
   "status": "planned",
   "blocked_by": ["TASK-005"],
   "blocks": ["TASK-009"],
-  "estimated_hours": 4,
-  "skills": ["API design", "Data modeling"],
+  "estimated_hours": 5,
+  "skills": ["API design", "Data modeling", "Prompt eng"],
+  "mode": "Direct",
   "steps": [
-    "Design structured response schema: phase, messageType, message, slides[], qualityScore.",
-    "Backend: Gemini function calling. Parse function call response. Handle text fallback.",
-    "Extend Message type + DB schema. Add metadata JSON column. Update storage layer.",
-    "Frontend: ensure metadata flows through to rendering layer. Verify availability in message objects."
+    "Design structured response schema: phase (enum: context|brainstorm|structure|refine), messageType (question|checklist|slide_content|tip|summary), message (markdown string), suggestions[] (2-3 quick-reply options), slides[] (full deck per message in structure/refine), qualityScore (after outline generation).",
+    "Rework streaming architecture — dual-mode: listen for both 'text' events (stream to client) and 'inputJson' events (accumulate metadata silently). On 'end', parse tool input JSON, save text + metadata to DB, send final metadata payload to client via SSE.",
+    "Prompt rewrite — collaborative tone, less repetitive questioning, loosen rigid problem framing, keep audience + concrete example patterns. Add tool-use instructions so model always produces text block first then calls tool for metadata.",
+    "DB migration — add nullable metadata jsonb column to messages table. Update schema.ts, storage layer (addMessageToConversation, getConversation mapping), and Message type in types.ts.",
+    "Frontend SSE parser — update streamMsg() to handle new 'metadata' event type that arrives after text streaming completes.",
+    "Fallback handling — if model doesn't use the tool (stop_reason != tool_use), treat as plain text with no metadata (today's behavior). Monitor for max_tokens truncation."
   ],
   "acceptance_criteria": [
-    "Gemini responds with structured data",
-    "Metadata stored in DB",
-    "Frontend receives metadata",
-    "Fallback handles non-structured responses",
-    "Backward compat with existing conversations"
-  ]
+    "Haiku 4.5 responds with both streamed text AND structured metadata via tool_use",
+    "Text still streams word-by-word to the client (no UX regression)",
+    "Metadata (phase, messageType, suggestions, slides, qualityScore) stored in DB",
+    "Frontend receives metadata after stream completes",
+    "Fallback handles non-structured responses gracefully",
+    "Backward compat: old conversations with null metadata still load and render",
+    "Prompt feels collaborative, not interrogative — fewer repetitive questions",
+    "Suggestions array populated with 2-3 clickable options per response"
+  ],
+  "risks": [
+    {
+      "area": "Streaming + tool_use compatibility",
+      "severity": "HIGH",
+      "detail": "stream.on('text') is blind to tool_use content blocks. Must listen for both 'text' and 'inputJson' events. Model must be instructed to produce text block first, then tool_use block.",
+      "mitigation": "Dual-mode streaming: text events stream to client, inputJson events accumulate silently. Parse on 'end' event."
+    },
+    {
+      "area": "max_tokens truncation",
+      "severity": "MEDIUM",
+      "detail": "Structured JSON + text in one response can exceed 2048 tokens, especially in structure/refine phases with full slide decks.",
+      "mitigation": "Bump max_tokens to 4096 or set dynamically per phase. Monitor stop_reason: 'max_tokens'. Keep slide content tight (titles + bullets only)."
+    },
+    {
+      "area": "Tool definition token cost",
+      "severity": "LOW",
+      "detail": "Tool definition adds ~200-400 tokens per request. But tool definitions are cacheable with prompt caching, so marginal cost is minimal after first request."
+    }
+  ],
+  "context": {
+    "user_feedback_driving_changes": "Users reported the bot feels like an interrogation, not a collaboration. Wants suggestion buttons, markdown formatting, punchier flow. Prompt tuning folded into this task.",
+    "key_technical_decision": "Dual-mode streaming — text streams progressively, tool_use metadata arrives at end. Full slide deck per message (not incremental diffs) to avoid state reconstruction bugs."
+  }
 }

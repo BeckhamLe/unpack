@@ -1,0 +1,83 @@
+{
+  "type": "session_handoff",
+  "timestamp": "2026-03-06T23:00:00.000Z",
+  "session_summary": "Planning session. Reviewed remaining tasks (007, 008, 009). Beckham confirmed TASK-007 (user testing) is done — captured user feedback. Refined TASK-008 and TASK-009 scope based on that feedback. Ran a risk analysis subagent. No code written — this was pure design/planning.",
+
+  "workflow_position": {
+    "current_skill": "Director Advance",
+    "step_reached": "TASK-008 is next. Plan has been discussed but NOT yet formally approved at the PLAN gate. Next agent should present the plan for Beckham's approval before writing any code.",
+    "next_action": "Pick up TASK-008. Present the refined plan (see task file) for Beckham's approval. Follow the full task lifecycle: PICK > PLAN (gate) > MODE > EXECUTE > CODE REVIEW (gate) > PR (gate) > CLOSE."
+  },
+
+  "git_state": {
+    "current_branch": "main",
+    "status": "clean",
+    "branching_strategy": "per-task — each task gets its own branch off main, merges back via PR"
+  },
+
+  "task_status": {
+    "TASK-001 through TASK-005": "done",
+    "TASK-006": "archived (replaced by TASK-011 through TASK-014)",
+    "TASK-007": "done — user testing complete, feedback captured in task file outcome field",
+    "TASK-008": "planned — NEXT UP. Structured output + prompt tuning. Scope refined with user feedback and risk analysis.",
+    "TASK-009": "planned — blocked by TASK-008. UI transformation. Scope refined with user feedback.",
+    "TASK-010 through TASK-015": "done"
+  },
+
+  "user_feedback_summary": {
+    "source": "2 real users tested on unpack.pro",
+    "positive": [
+      "Asked useful concrete questions: 'who is your audience?' and 'give me a concrete example'",
+      "Great at focusing on the important things"
+    ],
+    "negative": [
+      "Feels like an interrogation, not collaborative — too many questions, repetitive",
+      "Too insistent on problem/solution framing — not every presentation fits that",
+      "No markdown formatting — walls of plain text",
+      "Takes too long to develop a presentation — needs to be punchier"
+    ],
+    "requested_features": [
+      "Markdown formatting in responses",
+      "Quick-reply suggestion buttons instead of typing",
+      "Fewer, less repetitive questions"
+    ],
+    "beckham_synthesis": "The goal is creating an experience of the chatbot helping the user 'unpack and build their presentation' — not an interrogation. Structured UI (stepper, cards, slide preview) from TASK-008/009 directly serves this by showing the presentation taking shape. Suggestion buttons turn 'answer my question' into 'pick a direction'. These two worlds (user feedback fixes + original TASK-008/009 vision) are combined, not one replacing the other."
+  },
+
+  "key_technical_decisions": {
+    "dual_mode_streaming": "Text streams progressively via 'text' events. Tool_use metadata (phase, suggestions, slides) accumulates silently via 'inputJson' events. Metadata sent to client after stream completes. This is the critical architectural decision for TASK-008.",
+    "full_deck_per_message": "Each assistant message in structure/refine carries the complete slides[] array. No incremental diffs. Simpler, avoids state reconstruction bugs, costs more tokens.",
+    "forward_only_stepper": "Phase can advance but never regress. Protects against LLM outputting inconsistent phase values.",
+    "prompt_tuning_in_008": "System prompt rewrite folded into TASK-008 rather than a separate task. Collaborative tone, less repetitive, loosen rigid problem framing, add tool-use instructions."
+  },
+
+  "risks_identified": {
+    "high": [
+      "Streaming + tool_use: stream.on('text') is blind to tool_use blocks. Must listen for both 'text' and 'inputJson' events. Model must produce text first, then tool call."
+    ],
+    "medium": [
+      "max_tokens truncation: structured JSON + text can exceed 2048 tokens in structure/refine phases. Bump to 4096 or dynamic.",
+      "LLM phase inconsistency: model might output wrong phase. Mitigate with enum constraint in tool schema + forward-only stepper."
+    ],
+    "low": [
+      "Tool definition token cost (~200-400 tokens, but cacheable with prompt caching).",
+      "Old conversations with null metadata — straightforward fallback to plain text."
+    ]
+  },
+
+  "files_to_read_first": [
+    "src/server/main.ts — current streaming logic (lines 285-319), system prompt (lines 20-120), storage class",
+    "src/shared/types.ts — Message and Conversation types",
+    "src/server/schema.ts — DB schema, needs metadata column added",
+    "src/client/App.tsx — message rendering loop (lines 310-336), streaming state, input handling",
+    "src/client/services/requests.ts — streamMsg() SSE parser, needs metadata event handling",
+    ".harness/tasks/TASK-008.json — full refined plan with steps, acceptance criteria, risks",
+    ".harness/tasks/TASK-009.json — full refined plan with steps, acceptance criteria, risks"
+  ],
+
+  "beckham_context": {
+    "working_mode": "Direct — executing tasks",
+    "energy": "Wrapping up for the night, picking up tomorrow",
+    "note": "Beckham wants to review and discuss the plan more thoroughly with the next agent before approving. Do NOT skip the PLAN gate."
+  }
+}

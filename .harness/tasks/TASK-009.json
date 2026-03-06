@@ -1,25 +1,48 @@
 {
   "id": "TASK-009",
-  "title": "UI transformation (stepper, cards, slide preview)",
-  "priority": "medium",
+  "title": "UI transformation (markdown, suggestions, stepper, cards, slide preview)",
+  "priority": "high",
   "status": "planned",
   "blocked_by": ["TASK-008"],
   "blocks": [],
   "estimated_hours": 5,
   "skills": ["React", "State mgmt"],
+  "mode": "Direct",
   "steps": [
-    "Extract message rendering into MessageList.tsx.",
-    "Progress stepper: Context → Brainstorm → Build → Polish. Driven by metadata.phase.",
-    "Card-based messages: QuestionCard, ChecklistCard, SlideCard, TipCard. Driven by metadata.messageType. Plain text fallback.",
-    "Slide preview panel: split-pane in build/refine phases (chat 40% / preview 60%). Full-width in context/brainstorm.",
-    "Integration test: full flow through all phases. Verify responsive."
+    "Markdown rendering — install react-markdown, render all assistant messages as markdown instead of plain text with whitespace-pre-wrap. Handles the 'walls of text' feedback.",
+    "Suggestion buttons — render metadata.suggestions as clickable chips near the chat input. Only show on latest assistant message. Disable while isStreaming. Click calls createMessage(suggestionText) directly.",
+    "Progress stepper — Context > Brainstorm > Structure > Refine. Driven by latest metadata.phase. Forward-only (phase can advance but never regress). Defaults to 'context' for old convos with null metadata.",
+    "Extract message components — MessageList.tsx from App.tsx inline loop. Card-type dispatch based on metadata.messageType: QuestionCard, ChecklistCard, SlideCard, TipCard. Plain text fallback when metadata is null.",
+    "Slide preview panel — split-pane layout in structure/refine phases (chat left, preview right). Driven by latest metadata.slides. Full-width chat in context/brainstorm phases.",
+    "Backward compat + responsive — old messages with null metadata render as plain text. Mobile responsive layout."
   ],
   "acceptance_criteria": [
-    "Stepper shows current phase",
-    "Different card types render by message type",
-    "Slide preview appears in build/refine phases",
-    "Chat full-width in context/brainstorm",
-    "Plain text fallback for old messages",
+    "Assistant messages render as formatted markdown (headers, bullets, bold, code)",
+    "Suggestion buttons appear after each bot response with 2-3 clickable options",
+    "Suggestion buttons disabled during streaming, only shown on latest message",
+    "Stepper shows current phase, progresses forward only",
+    "Different card types render by metadata.messageType",
+    "Slide preview appears in structure/refine phases",
+    "Chat full-width in context/brainstorm phases",
+    "Plain text fallback for old messages with no metadata",
     "Mobile responsive"
-  ]
+  ],
+  "risks": [
+    {
+      "area": "Stepper phase inconsistency",
+      "severity": "MEDIUM",
+      "detail": "LLM might output inconsistent phase values. E.g. 'context' after previously outputting 'brainstorm'.",
+      "mitigation": "Forward-only high-water mark: stepper can only advance. Enum constraint in tool schema forces valid values."
+    },
+    {
+      "area": "Suggestion button race conditions",
+      "severity": "LOW",
+      "detail": "User could click suggestion while streaming. Already guarded by isStreaming check in createMessage.",
+      "mitigation": "Also visually disable/hide suggestion buttons while isStreaming === true."
+    }
+  ],
+  "context": {
+    "user_feedback_driving_changes": "Markdown rendering and suggestion buttons are direct user requests. Stepper + cards + slide preview create the 'building together' experience that counters the 'interrogation' feeling.",
+    "depends_on_task_008": "All UI features depend on metadata from structured output. Without metadata, everything falls back to plain text (today's behavior)."
+  }
 }
