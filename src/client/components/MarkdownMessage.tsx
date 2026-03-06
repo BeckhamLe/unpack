@@ -17,9 +17,10 @@ export default function MarkdownMessage({ content }: MarkdownMessageProps) {
         li: ({ children }) => <li className="leading-relaxed">{children}</li>,
         strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
         em: ({ children }) => <em className="italic">{children}</em>,
-        code: ({ className, children }) => {
-          const isBlock = className?.includes('language-')
-          if (isBlock) {
+        code: (props) => {
+          const { className, children, ref: _, ...rest } = props
+          const isInline = !className && typeof children === 'string' && !children.includes('\n')
+          if (!isInline) {
             return (
               <code className="block bg-[#1e1e2e] text-[#cdd6f4] rounded-md p-3 my-2 text-sm font-mono overflow-x-auto whitespace-pre">
                 {children}

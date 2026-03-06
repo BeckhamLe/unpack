@@ -96,6 +96,9 @@ function renderSlide(slide: SlideData, index: number, previousSlides: SlideData[
           <span className="slide-number">{index + 1}</span>
         </div>
       )
+
+    default:
+      return null
   }
 }
 

@@ -51,6 +51,9 @@ function slideToHtml(slide: SlideData, index: number): string {
         ${slide.links?.length ? `<div class="slide-links">${slide.links.map(l => `<span>${sanitize(l)}</span>`).join('')}</div>` : ''}
         ${num}
       </section>`
+
+    default:
+      return ''
   }
 }
 

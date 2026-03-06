@@ -15,7 +15,7 @@ export default function ExportButton({ slides, theme, accent }: ExportButtonProp
     a.href = url
     a.download = 'unpack-presentation.html'
     a.click()
-    URL.revokeObjectURL(url)
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
   return (

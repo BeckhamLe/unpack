@@ -196,15 +196,19 @@ function App() {
           msgs[msgs.length - 1] = { ...last, metadata }
           return { ...prev, messages: msgs }
         })
-        // Update UI state from metadata
+        // Update UI state from metadata (use functional updaters to avoid stale closures)
         const phaseOrder: Phase[] = ["context", "brainstorm", "structure", "refine"]
         const newIdx = phaseOrder.indexOf(metadata.phase)
-        const curIdx = phaseOrder.indexOf(currentPhase)
-        if (newIdx > curIdx) setCurrentPhase(metadata.phase)
+        setCurrentPhase(prev => {
+          const curIdx = phaseOrder.indexOf(prev)
+          return newIdx > curIdx ? metadata.phase : prev
+        })
         if (metadata.suggestions?.length) setLatestSuggestions(metadata.suggestions)
         if (metadata.slides?.length) {
-          setPreviousSlides(latestSlides)
-          setLatestSlides(metadata.slides)
+          setLatestSlides(prev => {
+            setPreviousSlides(prev)
+            return metadata.slides!
+          })
         }
       }
     )
@@ -215,6 +219,10 @@ function App() {
     requestServices.createConvo().then((newConvo: Conversation) => {
       setCurrConvo(newConvo)
       setSelectedConvoId(newConvo.id)
+      setCurrentPhase("context")
+      setLatestSlides([])
+      setLatestSuggestions([])
+      setPreviousSlides([])
       return requestServices.getConvos()
     }).then((convoArray) => {
       if (convoArray) setSidebarConvos(convoArray)

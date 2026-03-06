@@ -111,13 +111,13 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
               <div key={i} className="flex gap-2">
                 <input
                   value={stat.number}
-                  onChange={e => { const s = [...statsInput]; s[i].number = e.target.value; setStatsInput(s) }}
+                  onChange={e => { const s = statsInput.map((item, idx) => idx === i ? { ...item, number: e.target.value } : item); setStatsInput(s) }}
                   placeholder="Number"
                   className="flex-1 bg-background border border-border rounded px-2 py-1 text-sm text-foreground"
                 />
                 <input
                   value={stat.label}
-                  onChange={e => { const s = [...statsInput]; s[i].label = e.target.value; setStatsInput(s) }}
+                  onChange={e => { const s = statsInput.map((item, idx) => idx === i ? { ...item, label: e.target.value } : item); setStatsInput(s) }}
                   placeholder="Label"
                   className="flex-1 bg-background border border-border rounded px-2 py-1 text-sm text-foreground"
                 />
