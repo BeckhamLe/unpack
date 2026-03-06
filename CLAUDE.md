@@ -6,7 +6,7 @@
 
 **Done:** TASK-001 (prompt caching), TASK-002 (OAuth), TASK-003 (streaming), TASK-004 (UI polish), TASK-005 (system prompt), TASK-007 (user testing — feedback captured), TASK-010 (color theme), TASK-011 (local prod build), TASK-012 (AWS infra), TASK-013 (server provisioning), TASK-014 (deploy + smoke test), TASK-015 (in-app feedback). TASK-006 archived (replaced by TASK-011–014).
 
-**Next:** TASK-008 (structured output + prompt tuning) → TASK-009 (UI transformation). Plans refined with user feedback and risk analysis. See `.harness/agents/handoffs/session-handoff-2026-03-06.json` and task files for full context. TASK-008 plan NOT yet approved — next agent must present for approval before coding.
+**Next:** TASK-008 (structured output + prompt tuning) → TASK-009 (UI transformation + slide design system + export). Plans APPROVED by Beckham (2026-03-07). Full execution plan: `.harness/plans/TASK-008-009-plan.md`. TASK-016 (PDF export) created as future follow-up.
 
 **Deployed:** https://unpack.pro (EC2 + nginx + PM2, Supabase DB via connection pooler)
 
@@ -19,7 +19,8 @@ Unpack — an AI presentation coach that interviews users to build their present
 - **Implementation plan**: `PLAN.md` (APPROVED)
 - **Pitch**: `unpack-pitch.md`
 - **Competitive research**: `presentation-builder-research.md`
-- **Session handoff**: `.harness/agents/handoffs/session-handoff-2026-03-03.json`
+- **Execution plan**: `.harness/plans/TASK-008-009-plan.md` (APPROVED)
+- **Session handoff**: `.harness/agents/handoffs/session-handoff-2026-03-06.json`
 - **Knowledge tracker**: `/Users/beckhamle/Documents/Fractal_Bootcamp/weekly_projects/beckham-claudebook-main/knowledge-tracker.md`
 - **Working agreement (full)**: `/Users/beckhamle/Documents/Fractal_Bootcamp/weekly_projects/beckham-claudebook-main/CLAUDE.md`
 - **Slash commands**: `~/.claude/commands/`
@@ -28,8 +29,9 @@ Unpack — an AI presentation coach that interviews users to build their present
 
 - **Project**: Presentation chatbot, NOT receipt splitter
 - **Name**: Unpack
-- **LLM**: Anthropic Claude Haiku 4.5
-- **Cost strategy**: Prompt caching (90% savings on system prompt), full conversation history, concise responses (max_tokens 300-400)
+- **LLM**: Anthropic Claude Sonnet 4.6 (upgraded from Haiku 4.5 for reliable tool use — TASK-008)
+- **Cost strategy**: Prompt caching (90% savings on system prompt), full conversation history, max_tokens 4096
+- **Slide format**: Model outputs typed JSON (not HTML). Frontend renders JSON → HTML via CSS design system. 5 layouts v1, 2 themes x 4 accents. Client-side HTML export.
 - **Niche**: Software engineers presenting their work
 - **Package manager**: bun (NOT npm/npx). Use `bun run`, `bun add`, `bunx` — never `npm`, `npx`, or `yarn`
 - **Priority order**: System prompt → Infrastructure → Validation → UI transformation

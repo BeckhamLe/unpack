@@ -1,0 +1,27 @@
+{
+  "id": "TASK-016",
+  "title": "PDF export via Playwright",
+  "priority": "low",
+  "status": "planned",
+  "blocked_by": ["TASK-009"],
+  "blocks": [],
+  "estimated_hours": 3,
+  "skills": ["Server-side rendering", "Playwright"],
+  "mode": "Direct",
+  "steps": [
+    "Install Playwright + Chromium on EC2 server (~400MB)",
+    "Create POST /api/export/pdf endpoint — receives HTML string, renders via Playwright at 1920x1080, outputs multi-page PDF",
+    "Add PDF option to ExportButton dropdown in frontend",
+    "Update deploy.sh to install Playwright on server"
+  ],
+  "acceptance_criteria": [
+    "PDF export produces clean multi-page PDF with one slide per page",
+    "Fonts render correctly (Inter, Fira Code)",
+    "Theme and accent colors preserved in PDF",
+    "Export completes in under 10 seconds for a 10-slide deck"
+  ],
+  "context": {
+    "deferred_from": "TASK-009 discussion. HTML export ships first (client-side). PDF is a fast-follow.",
+    "dependency": "Requires Playwright + headless Chromium on EC2. ~400MB install."
+  }
+}

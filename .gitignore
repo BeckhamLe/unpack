@@ -1,5 +1,6 @@
 .harness/*
 !.harness/tasks/
+!.harness/plans/
 
 # Logs
 logs

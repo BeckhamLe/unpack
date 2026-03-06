@@ -1,48 +1,76 @@
 {
   "id": "TASK-009",
-  "title": "UI transformation (markdown, suggestions, stepper, cards, slide preview)",
+  "title": "UI transformation + slide design system + export",
   "priority": "high",
   "status": "planned",
   "blocked_by": ["TASK-008"],
   "blocks": [],
-  "estimated_hours": 5,
-  "skills": ["React", "State mgmt"],
+  "estimated_hours": 8,
+  "skills": ["React", "CSS", "State mgmt", "Design systems"],
   "mode": "Direct",
+  "plan_ref": ".harness/plans/TASK-008-009-plan.md",
   "steps": [
-    "Markdown rendering — install react-markdown, render all assistant messages as markdown instead of plain text with whitespace-pre-wrap. Handles the 'walls of text' feedback.",
-    "Suggestion buttons — render metadata.suggestions as clickable chips near the chat input. Only show on latest assistant message. Disable while isStreaming. Click calls createMessage(suggestionText) directly.",
-    "Progress stepper — Context > Brainstorm > Structure > Refine. Driven by latest metadata.phase. Forward-only (phase can advance but never regress). Defaults to 'context' for old convos with null metadata.",
-    "Extract message components — MessageList.tsx from App.tsx inline loop. Card-type dispatch based on metadata.messageType: QuestionCard, ChecklistCard, SlideCard, TipCard. Plain text fallback when metadata is null.",
-    "Slide preview panel — split-pane layout in structure/refine phases (chat left, preview right). Driven by latest metadata.slides. Full-width chat in context/brainstorm phases.",
-    "Backward compat + responsive — old messages with null metadata render as plain text. Mobile responsive layout."
+    "Step 1 [PARALLEL A]: Install dependencies — bun add react-markdown dompurify @types/dompurify",
+    "Step 2 [PARALLEL A]: CSS design system — create src/client/styles/slides.css with 5 layouts (title, content, code, metrics, closing), design tokens, 2 themes (light default, dark), 4 accent colors (blue, violet, teal, orange), 16:9 aspect ratio, clamp() responsive fonts, WCAG AA contrast.",
+    "Step 3 [PARALLEL A]: Extract MessageList.tsx from App.tsx L310-336. Props: messages, isStreaming, latestMetadata.",
+    "Step 4 [PARALLEL B]: Markdown rendering — create MarkdownMessage.tsx wrapping react-markdown with Tailwind prose classes. Replace whitespace-pre-wrap in MessageList.",
+    "Step 5 [PARALLEL B]: Slide render function — create SlideRenderer.tsx mapping SlideData JSON to HTML using CSS design system. DOMPurify sanitization.",
+    "Step 6 [PARALLEL B]: Suggestion buttons — create SuggestionButtons.tsx. Clickable chips from metadata.suggestions. Only latest message. Hidden while streaming.",
+    "Step 7 [PARALLEL B]: Progress stepper — create Stepper.tsx. 4 phases, forward-only, accent-colored active state. Defaults to context for null metadata.",
+    "Step 8 [PARALLEL C]: Split-pane layout + SlidePreview.tsx. Chat 45% / preview 55% in structure/refine. Full-width in context/brainstorm. Animated transition. Changed-slide badges.",
+    "Step 9 [PARALLEL C]: Theme/accent picker — create ThemePicker.tsx. Light/dark toggle + 4 accent swatches. localStorage persistence. Instant CSS class swap.",
+    "Step 10: Layout swap — create LayoutSwapper.tsx. Per-slide dropdown. Free swap between text layouts. Code/Metrics prompt user for missing fields via modal.",
+    "Step 11: HTML export — create slideExport.ts (HTML builder with inlined CSS + nav JS) + ExportButton.tsx. Client-side download, no server call.",
+    "Step 12: Session reconstruction — create sessionReconstruct.ts. Restore phase/slides/suggestions on conversation reload from message metadata.",
+    "Step 13: Backward compat + errors + mobile — null metadata fallback, DOMPurify strict allowlist, mobile tab switcher (Chat | Slides) below 768px."
   ],
   "acceptance_criteria": [
-    "Assistant messages render as formatted markdown (headers, bullets, bold, code)",
-    "Suggestion buttons appear after each bot response with 2-3 clickable options",
-    "Suggestion buttons disabled during streaming, only shown on latest message",
+    "Assistant messages render as formatted markdown (headers, bullets, bold, code blocks)",
+    "Suggestion buttons appear after latest bot response with 2-3 clickable options",
+    "Suggestions hidden during streaming, only on latest message",
     "Stepper shows current phase, progresses forward only",
-    "Different card types render by metadata.messageType",
-    "Slide preview appears in structure/refine phases",
-    "Chat full-width in context/brainstorm phases",
-    "Plain text fallback for old messages with no metadata",
-    "Mobile responsive"
+    "Split-pane preview appears in structure/refine with smooth animation",
+    "Slides render using CSS design system — professional and polished",
+    "2 themes (light default, dark) x 4 accent colors, user swaps freely",
+    "Per-slide layout swap with prompted input for Code/Metrics",
+    "Download slides exports self-contained HTML file with arrow-key navigation",
+    "Changed slides show visual indicator after regeneration (diff by slideId)",
+    "Session reconstruction restores phase + slides + suggestions on reload",
+    "Old conversations with null metadata render as plain text",
+    "All slide HTML sanitized with DOMPurify",
+    "Mobile: tab-based Chat/Slides below 768px"
   ],
   "risks": [
     {
+      "area": "Slide HTML XSS",
+      "severity": "HIGH",
+      "detail": "Rendered slide HTML must be sanitized. Even with JSON->HTML approach, DOMPurify is defense in depth.",
+      "mitigation": "DOMPurify with strict allowlist of design system classes/tags."
+    },
+    {
       "area": "Stepper phase inconsistency",
       "severity": "MEDIUM",
-      "detail": "LLM might output inconsistent phase values. E.g. 'context' after previously outputting 'brainstorm'.",
-      "mitigation": "Forward-only high-water mark: stepper can only advance. Enum constraint in tool schema forces valid values."
+      "detail": "Model may output phase behind high-water mark.",
+      "mitigation": "Forward-only logic: stepper only advances, never regresses."
+    },
+    {
+      "area": "Preview panel layout shift",
+      "severity": "MEDIUM",
+      "detail": "Chat area shrinks from 100% to 45% when structure phase starts.",
+      "mitigation": "CSS width animation (300ms ease). Placeholder in early phases."
     },
     {
       "area": "Suggestion button race conditions",
       "severity": "LOW",
-      "detail": "User could click suggestion while streaming. Already guarded by isStreaming check in createMessage.",
-      "mitigation": "Also visually disable/hide suggestion buttons while isStreaming === true."
+      "detail": "User could click suggestion while streaming.",
+      "mitigation": "Visually disable + isStreaming guard in createMessage."
     }
   ],
   "context": {
-    "user_feedback_driving_changes": "Markdown rendering and suggestion buttons are direct user requests. Stepper + cards + slide preview create the 'building together' experience that counters the 'interrogation' feeling.",
-    "depends_on_task_008": "All UI features depend on metadata from structured output. Without metadata, everything falls back to plain text (today's behavior)."
+    "slide_format": "Model outputs typed JSON. SlideRenderer maps JSON to HTML using CSS design system. No raw HTML from model.",
+    "export_v1": "Client-side HTML only. PDF via Playwright deferred to TASK-016.",
+    "theming": "2 themes x 4 accents = 8 combos. Model unaware. Pure CSS variable swaps.",
+    "layout_swap": "User can change slide layout type. Content layouts swap freely. Code/Metrics prompt for missing fields.",
+    "user_feedback": "Markdown + suggestion buttons are direct user requests. Stepper + preview create collaborative building experience."
   }
 }
