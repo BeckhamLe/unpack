@@ -2,7 +2,7 @@
   "id": "TASK-008",
   "title": "Structured output from LLM + prompt tuning",
   "priority": "high",
-  "status": "planned",
+  "status": "in-progress",
   "blocked_by": ["TASK-005"],
   "blocks": ["TASK-009"],
   "estimated_hours": 6,
