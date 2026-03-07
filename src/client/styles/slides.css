@@ -435,49 +435,36 @@
     var(--slide-bg);
 }
 
-/* Decorative: scattered rectangles at various sizes and positions */
+/* Decorative: outlined square with shadow — top-left */
 .slide-closing::before {
   content: '';
   position: absolute;
-  inset: 0;
+  top: clamp(0.75rem, 2vw, 1.5rem);
+  left: clamp(0.75rem, 2vw, 1.5rem);
+  width: clamp(2.5rem, 6vw, 5rem);
+  height: clamp(2.5rem, 6vw, 5rem);
+  border: clamp(2px, 0.3vw, 3px) solid var(--slide-accent);
+  border-radius: 4px;
+  opacity: 0.07;
   pointer-events: none;
-  opacity: 0.06;
-  background:
-    /* Large rect — top-left */
-    linear-gradient(var(--slide-accent), var(--slide-accent)) 3% 8% / 8% 12% no-repeat,
-    /* Medium rect — top-left, overlapping */
-    linear-gradient(var(--slide-accent), var(--slide-accent)) 6% 16% / 4% 6% no-repeat,
-    /* Small square — further down-left */
-    linear-gradient(var(--slide-accent), var(--slide-accent)) 2% 26% / 2% 3% no-repeat,
-    /* Tiny square — bottom-left */
-    linear-gradient(var(--slide-accent), var(--slide-accent)) 5% 78% / 1.2% 1.8% no-repeat,
-    /* Large rect — bottom-right */
-    linear-gradient(var(--slide-accent), var(--slide-accent)) 89% 72% / 6% 10% no-repeat,
-    /* Medium square — bottom-right, offset up */
-    linear-gradient(var(--slide-accent), var(--slide-accent)) 93% 64% / 3% 4.5% no-repeat,
-    /* Small square — top-right */
-    linear-gradient(var(--slide-accent), var(--slide-accent)) 95% 10% / 1.8% 2.5% no-repeat,
-    /* Tiny square — right side mid */
-    linear-gradient(var(--slide-accent), var(--slide-accent)) 97% 45% / 1% 1.5% no-repeat;
+  transform: rotate(-6deg);
+  box-shadow: clamp(0.5rem, 1.5vw, 1rem) clamp(0.5rem, 1.5vw, 1rem) 0 0 var(--slide-accent);
 }
 
-/* Decorative: horizontal line pattern — bottom-right corner */
+/* Decorative: smaller outlined square with shadow — bottom-right */
 .slide-closing::after {
   content: '';
   position: absolute;
-  bottom: clamp(1.25rem, 3vw, 2rem);
-  right: clamp(1rem, 3vw, 2rem);
-  width: clamp(2.5rem, 6vw, 5rem);
-  height: clamp(1rem, 2.5vw, 2rem);
-  background: repeating-linear-gradient(
-    0deg,
-    var(--slide-accent) 0px,
-    var(--slide-accent) 2px,
-    transparent 2px,
-    transparent 7px
-  );
-  opacity: 0.08;
+  bottom: clamp(1rem, 2.5vw, 2rem);
+  right: clamp(1.5rem, 3vw, 2.5rem);
+  width: clamp(1.75rem, 4vw, 3.5rem);
+  height: clamp(1.75rem, 4vw, 3.5rem);
+  border: clamp(2px, 0.25vw, 3px) solid var(--slide-accent);
+  border-radius: 3px;
+  opacity: 0.07;
   pointer-events: none;
+  transform: rotate(8deg);
+  box-shadow: clamp(0.35rem, 1vw, 0.75rem) clamp(0.35rem, 1vw, 0.75rem) 0 0 var(--slide-accent);
 }
 
 .slide-closing .slide-heading {
