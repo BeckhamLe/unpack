@@ -122,18 +122,49 @@
   background: linear-gradient(90deg, var(--slide-accent), var(--slide-accent-light));
 }
 
-/* Decorative: large arc in bottom-right corner */
+/* Decorative: scattered geometric shapes across corners and edges */
 .slide-title::after {
   content: '';
   position: absolute;
-  bottom: -30%;
-  right: -10%;
-  width: 45%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: clamp(3px, 0.4vw, 6px) solid var(--slide-accent);
-  opacity: 0.07;
+  inset: 0;
   pointer-events: none;
+  opacity: 0.07;
+  background:
+    /* Large ring — bottom-right corner, partially clipped */
+    radial-gradient(circle at 90% 88%, transparent 14%, var(--slide-accent) 14%, var(--slide-accent) 15%, transparent 15%),
+    /* Medium ring — top-left */
+    radial-gradient(circle at 7% 15%, transparent 4.5%, var(--slide-accent) 4.5%, var(--slide-accent) 5.2%, transparent 5.2%),
+    /* Small ring — left center */
+    radial-gradient(circle at 4% 52%, transparent 1.8%, var(--slide-accent) 1.8%, var(--slide-accent) 2.3%, transparent 2.3%),
+    /* Filled dot — top-right */
+    radial-gradient(circle at 93% 10%, var(--slide-accent) 0.8%, transparent 0.8%),
+    /* Filled dot — bottom-left */
+    radial-gradient(circle at 6% 88%, var(--slide-accent) 0.6%, transparent 0.6%),
+    /* Filled dot — right mid */
+    radial-gradient(circle at 96% 55%, var(--slide-accent) 0.5%, transparent 0.5%),
+    /* Small square — right side (sharp corners via conic) */
+    conic-gradient(from 0deg at 94% 42%, var(--slide-accent) 90deg, transparent 90deg),
+    /* Thin horizontal line accent — left side */
+    linear-gradient(to right, transparent 2%, var(--slide-accent) 2%, var(--slide-accent) 10%, transparent 10%);
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    1.2% 1.2%,
+    100% 2px;
+  background-position:
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    94% 42%,
+    0 72%;
+  background-repeat: no-repeat;
 }
 
 .slide-title .slide-heading {
@@ -404,23 +435,33 @@
     var(--slide-bg);
 }
 
-/* Decorative: overlapping rectangles in top-left */
+/* Decorative: scattered rectangles at various sizes and positions */
 .slide-closing::before {
   content: '';
   position: absolute;
-  top: clamp(0.75rem, 2vw, 1.5rem);
-  left: clamp(0.75rem, 2vw, 1.5rem);
-  width: clamp(2.5rem, 6vw, 5rem);
-  height: clamp(2.5rem, 6vw, 5rem);
-  border: clamp(2px, 0.3vw, 3px) solid var(--slide-accent);
-  border-radius: 4px;
-  opacity: 0.07;
+  inset: 0;
   pointer-events: none;
-  transform: rotate(-6deg);
-  box-shadow: clamp(0.5rem, 1.5vw, 1rem) clamp(0.5rem, 1.5vw, 1rem) 0 0 var(--slide-accent);
+  opacity: 0.06;
+  background:
+    /* Large rect — top-left */
+    linear-gradient(var(--slide-accent), var(--slide-accent)) 3% 8% / 8% 12% no-repeat,
+    /* Medium rect — top-left, overlapping */
+    linear-gradient(var(--slide-accent), var(--slide-accent)) 6% 16% / 4% 6% no-repeat,
+    /* Small square — further down-left */
+    linear-gradient(var(--slide-accent), var(--slide-accent)) 2% 26% / 2% 3% no-repeat,
+    /* Tiny square — bottom-left */
+    linear-gradient(var(--slide-accent), var(--slide-accent)) 5% 78% / 1.2% 1.8% no-repeat,
+    /* Large rect — bottom-right */
+    linear-gradient(var(--slide-accent), var(--slide-accent)) 89% 72% / 6% 10% no-repeat,
+    /* Medium square — bottom-right, offset up */
+    linear-gradient(var(--slide-accent), var(--slide-accent)) 93% 64% / 3% 4.5% no-repeat,
+    /* Small square — top-right */
+    linear-gradient(var(--slide-accent), var(--slide-accent)) 95% 10% / 1.8% 2.5% no-repeat,
+    /* Tiny square — right side mid */
+    linear-gradient(var(--slide-accent), var(--slide-accent)) 97% 45% / 1% 1.5% no-repeat;
 }
 
-/* Decorative: horizontal accent lines in bottom-right */
+/* Decorative: horizontal line pattern — bottom-right corner */
 .slide-closing::after {
   content: '';
   position: absolute;
