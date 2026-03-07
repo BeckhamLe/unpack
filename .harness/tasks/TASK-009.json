@@ -2,7 +2,7 @@
   "id": "TASK-009",
   "title": "UI transformation + slide design system + export",
   "priority": "high",
-  "status": "in-progress",
+  "status": "done",
   "blocked_by": ["TASK-008"],
   "blocks": [],
   "estimated_hours": 8,
