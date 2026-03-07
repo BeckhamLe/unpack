@@ -303,6 +303,24 @@
   letter-spacing: 0.05em;
 }
 
+/* --- Shimmer skeleton for slide generation --- */
+.slide-shimmer-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* --- Syntax tokens (basic highlight classes) --- */
 .token-keyword { color: #c678dd; }
 .token-string { color: #98c379; }

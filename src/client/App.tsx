@@ -244,7 +244,8 @@ function App() {
 
   const userMessageCount = currConvo.messages.filter(m => m.role === 'user').length
   const showSessionCard = userMessageCount >= 8 && !sessionFeedbackDismissed.has(selectedConvoId)
-  const showPreview = (currentPhase === "structure" || currentPhase === "refine") && latestSlides.length > 0
+  const inSlidePhase = currentPhase === "structure" || currentPhase === "refine"
+  const showPreview = (inSlidePhase && latestSlides.length > 0) || (isStreaming && latestSlides.length > 0)
 
   const applySessionState = (convo: Conversation) => {
     const state = reconstructSession(convo.messages)
@@ -483,6 +484,7 @@ function App() {
                 slides={latestSlides}
                 previousSlides={previousSlides}
                 onSlidesChange={setLatestSlides}
+                isStreaming={isStreaming}
               />
             </div>
           )}

@@ -45,6 +45,18 @@ export default function MessageList({ messages, isStreaming, streamingText }: Me
                   : <span className="inline-block w-2 h-4 bg-primary/60 animate-pulse ml-0.5" />)
                 : <MarkdownMessage content={message.content} />}
             </div>
+
+            {/* Thinking/generating indicator — persists through text + tool_use gap */}
+            {isStreaming && message.role === "assistant" && index === messages.length - 1 && streamingText && (
+              <div className="flex items-center gap-1.5 mt-3 text-muted-foreground">
+                <span className="generating-dots flex gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: '300ms' }} />
+                </span>
+                <span className="text-xs">Working on it...</span>
+              </div>
+            )}
           </div>
         </div>
       ))}
