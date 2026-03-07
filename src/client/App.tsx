@@ -1,6 +1,7 @@
 import "./App.css";
+import "./styles/slides.css";
 import requestServices from './services/requests'
-import { Message, Conversation, MessageMetadata } from '../shared/types'
+import { Message, Conversation, MessageMetadata, SlideData, Phase } from '../shared/types'
 import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,11 @@ import type { Session } from '@supabase/supabase-js'
 import { PanelLeftClose, PanelLeftOpen, Plus, LogOut, Send, MessageSquare, X } from 'lucide-react'
 import { toast, Toaster } from 'sonner'
 import FeedbackForm from './components/FeedbackForm.js'
+import MessageList from './components/MessageList.js'
+import Stepper from './components/Stepper.js'
+import SuggestionButtons from './components/SuggestionButtons.js'
+import SlidePreview from './components/SlidePreview.js'
+import { reconstructSession } from './lib/sessionReconstruct.js'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -25,6 +31,11 @@ function App() {
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [sessionFeedbackDismissed, setSessionFeedbackDismissed] = useState<Set<string>>(new Set())
+  const [currentPhase, setCurrentPhase] = useState<Phase>("context")
+  const [latestSlides, setLatestSlides] = useState<SlideData[]>([])
+  const [latestSuggestions, setLatestSuggestions] = useState<string[]>([])
+  const [previousSlides, setPreviousSlides] = useState<SlideData[]>([])
+  const [mobileTab, setMobileTab] = useState<'chat' | 'slides'>('chat')
   const rafIdRef = useRef<number | null>(null)
   const streamingFullTextRef = useRef("")
 
@@ -72,6 +83,7 @@ function App() {
         requestServices.getConvo(convoArray[0].convoId).then((returnedConvo) => {
           setCurrConvo(returnedConvo)
           setSelectedConvoId(returnedConvo.id)
+          applySessionState(returnedConvo)
         }).catch((err) => toast.error(err.message))
       }
     }).catch((err) => toast.error(err.message))
@@ -184,6 +196,20 @@ function App() {
           msgs[msgs.length - 1] = { ...last, metadata }
           return { ...prev, messages: msgs }
         })
+        // Update UI state from metadata (use functional updaters to avoid stale closures)
+        const phaseOrder: Phase[] = ["context", "brainstorm", "structure", "refine"]
+        const newIdx = phaseOrder.indexOf(metadata.phase)
+        setCurrentPhase(prev => {
+          const curIdx = phaseOrder.indexOf(prev)
+          return newIdx > curIdx ? metadata.phase : prev
+        })
+        if (metadata.suggestions?.length) setLatestSuggestions(metadata.suggestions)
+        if (metadata.slides?.length) {
+          setLatestSlides(prev => {
+            setPreviousSlides(prev)
+            return metadata.slides!
+          })
+        }
       }
     )
   };
@@ -193,6 +219,10 @@ function App() {
     requestServices.createConvo().then((newConvo: Conversation) => {
       setCurrConvo(newConvo)
       setSelectedConvoId(newConvo.id)
+      setCurrentPhase("context")
+      setLatestSlides([])
+      setLatestSuggestions([])
+      setPreviousSlides([])
       return requestServices.getConvos()
     }).then((convoArray) => {
       if (convoArray) setSidebarConvos(convoArray)
@@ -214,12 +244,23 @@ function App() {
 
   const userMessageCount = currConvo.messages.filter(m => m.role === 'user').length
   const showSessionCard = userMessageCount >= 8 && !sessionFeedbackDismissed.has(selectedConvoId)
+  const inSlidePhase = currentPhase === "structure" || currentPhase === "refine"
+  const showPreview = (inSlidePhase && latestSlides.length > 0) || (isStreaming && latestSlides.length > 0)
+
+  const applySessionState = (convo: Conversation) => {
+    const state = reconstructSession(convo.messages)
+    setCurrentPhase(state.currentPhase)
+    setLatestSlides(state.latestSlides)
+    setLatestSuggestions(state.latestSuggestions)
+    setPreviousSlides([])
+  }
 
   const clickConvo = (convoId: string) => {
     if (isStreaming) return
     requestServices.getConvo(convoId).then((returnedConvo) => {
       setCurrConvo(returnedConvo)
       setSelectedConvoId(returnedConvo.id)
+      applySessionState(returnedConvo)
       setSidebarOpen(false)
     }).catch((err) => toast.error(err.message))
   }
@@ -328,99 +369,125 @@ function App() {
           </div>
         </div>
 
-        {/* ===== MESSAGES ===== */}
-        <ScrollArea className="flex-1 overflow-hidden">
-          <div className="max-w-2xl mx-auto">
-            {currConvo.messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
-                <div className="text-3xl font-bold tracking-tight text-primary mb-2">Unpack</div>
-                <p className="text-muted-foreground text-base max-w-md">
-                  Your AI presentation coach. Tell me about the presentation you're working on — what's the topic, who's the audience, and what do you want them to walk away with?
-                </p>
-              </div>
-            )}
+        {/* Stepper */}
+        <Stepper currentPhase={currentPhase} />
 
-            {currConvo.messages.map((message, index) => (
-              <div
-                key={index}
-                className={`message-block ${
-                  message.role === "user" ? "user-msg" : "assistant-msg"
-                }`}
-              >
-                <div className="max-w-2xl mx-auto">
-                  {/* Role label */}
-                  <div className={`text-xs sm:text-sm font-medium mb-1.5 ${
-                    message.role === "user"
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                  }`}>
-                    {message.role === "user" ? "You" : "Unpack"}
-                  </div>
-
-                  {/* Message content */}
-                  <div className="text-base sm:text-base leading-relaxed whitespace-pre-wrap">
-                    {isStreaming && message.role === "assistant" && index === currConvo.messages.length - 1
-                      ? (streamingText || <span className="inline-block w-2 h-4 bg-primary/60 animate-pulse ml-0.5" />)
-                      : message.content}
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Inline session feedback card — appears after 8th user message */}
-            {showSessionCard && (
-              <div className="message-block assistant-msg">
-                <div className="max-w-2xl mx-auto">
-                  <div className="rounded-lg border border-border bg-card p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Quick check-in: How's Unpack doing?</span>
-                      <button
-                        onClick={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))}
-                        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <FeedbackForm type="session" showThumbs onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div ref={messagesEndRef} />
+        {/* Mobile tab switcher */}
+        {showPreview && (
+          <div className="flex md:hidden border-b border-border">
+            <button
+              onClick={() => setMobileTab('chat')}
+              className={`flex-1 py-2 text-sm font-medium text-center transition-colors ${mobileTab === 'chat' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}
+            >
+              Chat
+            </button>
+            <button
+              onClick={() => setMobileTab('slides')}
+              className={`flex-1 py-2 text-sm font-medium text-center transition-colors ${mobileTab === 'slides' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}
+            >
+              Slides
+            </button>
           </div>
-        </ScrollArea>
+        )}
 
-        {/* ===== INPUT AREA ===== */}
-        <div className="px-3 sm:px-4 pb-4 pt-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-          <div className="chat-input max-w-2xl mx-auto rounded-xl border border-border bg-card p-3 transition-all">
-            <Textarea
-              className="w-full resize-none min-h-[48px] max-h-[160px] border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground"
-              placeholder="Describe your presentation, or ask for coaching advice..."
-              value={userMsg}
-              onChange={handleUserMsgChange}
-              disabled={isStreaming || isOffline}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  createMessage(userMsg);
-                }
-              }}
-            />
-            <div className="flex items-center justify-between mt-2">
-              <span className="text-xs text-muted-foreground">
-                {isStreaming ? "Coaching..." : "Enter to send"}
-              </span>
-              <Button
-                size="icon-sm"
-                onClick={() => createMessage(userMsg)}
-                disabled={isStreaming || !userMsg.trim()}
-                className="rounded-lg"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+        {/* Split pane: chat + preview */}
+        <div className="flex-1 flex min-h-0">
+          {/* Chat pane */}
+          <div className={`flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+            showPreview
+              ? `${mobileTab === 'slides' ? 'hidden' : 'flex'} md:flex md:w-[45%] md:border-r md:border-border`
+              : 'flex-1'
+          }`}>
+            <ScrollArea className="flex-1 overflow-hidden">
+              <div className="max-w-2xl mx-auto">
+                <MessageList
+                  messages={currConvo.messages}
+                  isStreaming={isStreaming}
+                  streamingText={streamingText}
+                  latestMetadata={null}
+                />
+
+                {/* Suggestion buttons */}
+                {!isStreaming && latestSuggestions.length > 0 && currConvo.messages.length > 0 && (
+                  <div className="px-3 sm:px-4 py-2">
+                    <div className="max-w-2xl mx-auto">
+                      <SuggestionButtons
+                        suggestions={latestSuggestions}
+                        onSelect={(text) => createMessage(text)}
+                        disabled={isStreaming}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Inline session feedback card */}
+                {showSessionCard && (
+                  <div className="message-block assistant-msg">
+                    <div className="max-w-2xl mx-auto">
+                      <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Quick check-in: How's Unpack doing?</span>
+                          <button
+                            onClick={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))}
+                            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                        <FeedbackForm type="session" showThumbs onSubmit={(data) => handleFeedbackSubmit(data)} onClose={() => setSessionFeedbackDismissed(prev => new Set(prev).add(selectedConvoId))} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Input area */}
+            <div className="px-3 sm:px-4 pb-4 pt-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+              <div className="chat-input max-w-2xl mx-auto rounded-xl border border-border bg-card p-3 transition-all">
+                <Textarea
+                  className="w-full resize-none min-h-[48px] max-h-[160px] border-0 bg-transparent p-0 text-base focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground"
+                  placeholder="Describe your presentation, or ask for coaching advice..."
+                  value={userMsg}
+                  onChange={handleUserMsgChange}
+                  disabled={isStreaming || isOffline}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      createMessage(userMsg);
+                    }
+                  }}
+                />
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-xs text-muted-foreground">
+                    {isStreaming ? "Coaching..." : "Enter to send"}
+                  </span>
+                  <Button
+                    size="icon-sm"
+                    onClick={() => createMessage(userMsg)}
+                    disabled={isStreaming || !userMsg.trim()}
+                    className="rounded-lg"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* Slide preview pane */}
+          {showPreview && (
+            <div className={`${mobileTab === 'chat' ? 'hidden' : 'flex'} md:flex md:w-[55%] flex-col min-w-0`}>
+              <SlidePreview
+                slides={latestSlides}
+                previousSlides={previousSlides}
+                onSlidesChange={setLatestSlides}
+                isStreaming={isStreaming}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

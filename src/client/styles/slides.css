@@ -1,0 +1,331 @@
+/* ===== Unpack Slide Design System ===== */
+
+/* --- Font imports --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+/* --- Design tokens --- */
+.slide-container {
+  --slide-bg: #ffffff;
+  --slide-text: #1a1a2e;
+  --slide-text-secondary: #64648c;
+  --slide-accent: #2563eb;
+  --slide-accent-light: #dbeafe;
+  --slide-border: #e2e8f0;
+  --slide-code-bg: #1e1e2e;
+  --slide-code-text: #cdd6f4;
+  --slide-heading-size: clamp(1.5rem, 3vw, 2.5rem);
+  --slide-body-size: clamp(0.875rem, 1.5vw, 1.25rem);
+  --slide-small-size: clamp(0.75rem, 1.2vw, 1rem);
+  --slide-spacing: clamp(1rem, 2vw, 2rem);
+
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* --- Themes --- */
+.slide-container.theme-light {
+  --slide-bg: #ffffff;
+  --slide-text: #1a1a2e;
+  --slide-text-secondary: #64648c;
+  --slide-border: #e2e8f0;
+}
+
+.slide-container.theme-dark {
+  --slide-bg: #1a1a2e;
+  --slide-text: #e2e8f0;
+  --slide-text-secondary: #94a3b8;
+  --slide-border: #334155;
+}
+
+/* --- Accent colors (WCAG AA on both themes) --- */
+.slide-container.accent-blue {
+  --slide-accent: #2563eb;
+  --slide-accent-light: #dbeafe;
+}
+.slide-container.theme-dark.accent-blue {
+  --slide-accent: #60a5fa;
+  --slide-accent-light: #1e3a5f;
+}
+
+.slide-container.accent-violet {
+  --slide-accent: #7c3aed;
+  --slide-accent-light: #ede9fe;
+}
+.slide-container.theme-dark.accent-violet {
+  --slide-accent: #a78bfa;
+  --slide-accent-light: #2e1065;
+}
+
+.slide-container.accent-teal {
+  --slide-accent: #0d9488;
+  --slide-accent-light: #ccfbf1;
+}
+.slide-container.theme-dark.accent-teal {
+  --slide-accent: #2dd4bf;
+  --slide-accent-light: #042f2e;
+}
+
+.slide-container.accent-orange {
+  --slide-accent: #ea580c;
+  --slide-accent-light: #ffedd5;
+}
+.slide-container.theme-dark.accent-orange {
+  --slide-accent: #fb923c;
+  --slide-accent-light: #431407;
+}
+
+/* --- Base slide --- */
+.slide {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--slide-bg);
+  color: var(--slide-text);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: var(--slide-spacing);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.slide + .slide {
+  margin-top: 1rem;
+}
+
+/* Slide number badge */
+.slide-number {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 1rem;
+  font-size: var(--slide-small-size);
+  color: var(--slide-text-secondary);
+  opacity: 0.6;
+}
+
+/* --- Title Slide --- */
+.slide-title {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.slide-title .slide-heading {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--slide-text);
+}
+
+.slide-title .slide-subtitle {
+  font-size: var(--slide-body-size);
+  color: var(--slide-text-secondary);
+  max-width: 80%;
+}
+
+.slide-title .slide-author {
+  font-size: var(--slide-small-size);
+  color: var(--slide-accent);
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.slide-title .slide-date {
+  font-size: var(--slide-small-size);
+  color: var(--slide-text-secondary);
+}
+
+/* --- Content Slide --- */
+.slide-content {
+  gap: var(--slide-spacing);
+}
+
+.slide-content .slide-heading {
+  font-size: var(--slide-heading-size);
+  font-weight: 600;
+  color: var(--slide-text);
+  border-bottom: 2px solid var(--slide-accent);
+  padding-bottom: 0.5rem;
+}
+
+.slide-content .slide-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.slide-content .slide-bullets li {
+  font-size: var(--slide-body-size);
+  line-height: 1.5;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.slide-content .slide-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--slide-accent);
+}
+
+/* --- Code Slide --- */
+.slide-code {
+  gap: 0.75rem;
+}
+
+.slide-code .slide-heading {
+  font-size: var(--slide-heading-size);
+  font-weight: 600;
+  color: var(--slide-text);
+}
+
+.slide-code .slide-code-block {
+  flex: 1;
+  background: var(--slide-code-bg);
+  color: var(--slide-code-text);
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  overflow: auto;
+  font-family: 'Fira Code', monospace;
+  font-size: var(--slide-small-size);
+  line-height: 1.6;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.slide-code .slide-caption {
+  font-size: var(--slide-small-size);
+  color: var(--slide-text-secondary);
+  text-align: center;
+  font-style: italic;
+}
+
+/* --- Metrics Slide --- */
+.slide-metrics {
+  justify-content: center;
+  gap: var(--slide-spacing);
+}
+
+.slide-metrics .slide-heading {
+  font-size: var(--slide-heading-size);
+  font-weight: 600;
+  color: var(--slide-text);
+  text-align: center;
+}
+
+.slide-metrics .slide-stats {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1.5rem, 3vw, 3rem);
+  flex-wrap: wrap;
+}
+
+.slide-metrics .slide-stat {
+  text-align: center;
+  min-width: 120px;
+}
+
+.slide-metrics .slide-stat-number {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  color: var(--slide-accent);
+  line-height: 1.1;
+}
+
+.slide-metrics .slide-stat-label {
+  font-size: var(--slide-small-size);
+  color: var(--slide-text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* --- Closing Slide --- */
+.slide-closing {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.slide-closing .slide-heading {
+  font-size: clamp(1.75rem, 3.5vw, 3rem);
+  font-weight: 700;
+  color: var(--slide-text);
+}
+
+.slide-closing .slide-cta {
+  font-size: var(--slide-body-size);
+  color: var(--slide-accent);
+  font-weight: 600;
+}
+
+.slide-closing .slide-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.slide-closing .slide-links a,
+.slide-closing .slide-links span {
+  font-size: var(--slide-small-size);
+  color: var(--slide-text-secondary);
+}
+
+/* --- Transition --- */
+.slide-fade-enter {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.slide-fade-enter-active {
+  opacity: 1;
+}
+
+/* --- Changed badge --- */
+.slide-changed-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--slide-accent);
+  color: var(--slide-bg);
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- Shimmer skeleton for slide generation --- */
+.slide-shimmer-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- Syntax tokens (basic highlight classes) --- */
+.token-keyword { color: #c678dd; }
+.token-string { color: #98c379; }
+.token-comment { color: #5c6370; font-style: italic; }
+.token-function { color: #61afef; }
+.token-number { color: #d19a66; }
+.token-operator { color: #56b6c2; }
+.token-punctuation { color: #abb2bf; }
