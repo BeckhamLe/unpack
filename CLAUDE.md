@@ -6,7 +6,10 @@
 
 **Done:** TASK-001 (prompt caching), TASK-002 (OAuth), TASK-003 (streaming), TASK-004 (UI polish), TASK-005 (system prompt), TASK-007 (user testing — feedback captured), TASK-008 (structured output + prompt tuning), TASK-009 (UI transformation + slide design system + export), TASK-010 (color theme), TASK-011 (local prod build), TASK-012 (AWS infra), TASK-013 (server provisioning), TASK-014 (deploy + smoke test), TASK-015 (in-app feedback). TASK-006 archived (replaced by TASK-011–014).
 
-**Next:** Deploy TASK-008+009 to production. TASK-016 (PDF export) is the next feature task.
+**Next:** Deploy TASK-008+009 to production. Then discuss with Beckham:
+- **TASK-017 (image slides):** Add an image slide type to the design system so slides can include uploaded images. Beckham wants to discuss scope/approach before planning.
+- **New task TBD (slide CSS polish):** The current slide CSS design system (`src/client/styles/slides.css`) looks too plain. Needs visual polish — better typography, spacing, accent usage, backgrounds, etc. to make exported slides look professional. Discuss scope with Beckham before creating task.
+- TASK-016 (PDF export) is also queued but lower priority.
 
 **Deployed:** https://unpack.pro (EC2 + nginx + PM2, Supabase DB via connection pooler)
 
