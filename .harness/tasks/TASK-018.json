@@ -1,0 +1,24 @@
+{
+  "id": "TASK-018",
+  "title": "Slide CSS design system polish",
+  "priority": "high",
+  "status": "in-progress",
+  "branch": "task/018-slide-css-polish",
+  "blocked_by": [],
+  "blocks": [],
+  "estimated_hours": 0.5,
+  "skills": ["CSS", "Design"],
+  "steps": [
+    "Polish title slide — accent bar, spacing, subtle depth",
+    "Polish content slide — accent left-border heading, better bullets",
+    "Polish code slide — terminal-style header bar, improved padding",
+    "Polish metrics slide — card treatment for stat items",
+    "Polish closing slide — accent gradient wash, prominent CTA"
+  ],
+  "acceptance_criteria": [
+    "All 5 slide types look visually polished in both light and dark themes",
+    "No component/TSX changes — pure CSS only",
+    "Existing theme and accent token system preserved",
+    "bunx vite build passes cleanly"
+  ]
+}
