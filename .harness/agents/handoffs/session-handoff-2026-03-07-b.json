@@ -1,0 +1,73 @@
+{
+  "type": "session_handoff",
+  "timestamp": "2026-03-07T16:45:00.000Z",
+  "session_summary": "Polished slide CSS (TASK-018, PR #11 open), updated export template to match, built Beckham's demo presentation HTML with embedded screenshots. Next agent needs to help Beckham create a 3-minute demo rehearsal script.",
+
+  "workflow_position": {
+    "current_task": "TASK-018 in PR #11 awaiting merge. Demo prep is the immediate priority — NOT a tracked task.",
+    "next_action": "Help Beckham write a 3-minute demo rehearsal script based on the context below. He wants to practice before presenting."
+  },
+
+  "git_state": {
+    "current_branch": "task/018-slide-css-polish",
+    "status": "PR #11 open — 4 commits on branch. Export template also updated in this branch.",
+    "main_status": "Has TASK-018 claim commit. Clean otherwise."
+  },
+
+  "demo_context": {
+    "time_limit": "3 minutes",
+    "audience": "AI engineers at Fractal bootcamp",
+    "presentation_file": "~/Downloads/unpack-presentation.html (self-contained HTML with embedded screenshots, arrow keys to navigate, f for fullscreen)",
+    "total_slides": 8,
+
+    "demo_angle": "Meta-narrative: 'This tool helped me build this very presentation.' Beckham struggled with what to say for this demo, used Unpack to figure it out, and the slides he's presenting were generated through the app.",
+
+    "slide_breakdown": [
+      {"slide": 1, "type": "title", "content": "Unpack — The presentation coach that helps you figure out what to say — then builds your slides for you."},
+      {"slide": 2, "type": "content", "content": "Ever had no idea what to say? — relatable hook, existing tools assume clarity, ChatGPT requires you to build the pipeline, meta: this app built these slides"},
+      {"slide": 3, "type": "content", "content": "A coach that starts before the slides — conversational AI asks the right questions, guides through topic/audience/structure, no blank page"},
+      {"slide": 4, "type": "screenshot", "content": "The coaching in action — screenshot of user message where chatbot pushes back on vague thinking"},
+      {"slide": 5, "type": "screenshot", "content": "Real feedback, not yes-and — screenshot of chatbot giving honest recommendation ('for 3 minutes, trying to cover both angles is too many')"},
+      {"slide": 6, "type": "screenshot", "content": "From conversation to slides — large split-pane screenshot showing chat on left, generated slides on right"},
+      {"slide": 7, "type": "content", "content": "No tool does both — other tools assume clarity, ChatGPT = build your own pipeline, Unpack = both in one place"},
+      {"slide": 8, "type": "closing", "content": "Try it yourself — unpack.pro (URL is large and prominent)"}
+    ],
+
+    "opening_hook": "Beckham wants to open by asking the crowd 'Does anyone have times where they didn't know what to say?' — wait for responses — then 'Well this is me all the time and this was also me earlier when I was thinking about what exactly to say for this demo'",
+
+    "key_talking_points": [
+      "The pivot: went from generic chatbot to scoped presentation builder for engineers",
+      "Differentiator is the conversational discovery — not just slide generation",
+      "The chatbot actually pushes back and challenges vague thinking (show screenshots as proof)",
+      "Honest framing: slides only appear in structure phase, not 'every step of the way' — it's 'discover first, build second'",
+      "The system prompt enforces one question at a time, opinionated recommendations, ruthless cutting of sections that don't earn their spot",
+      "Don't oversell the engineer-specific angle — it's a system prompt personality, not a product feature"
+    ],
+
+    "what_NOT_to_say": [
+      "Don't call it 'infrastructure' — it's a guided conversation flow, not infrastructure",
+      "Don't claim 'building the presentation every step of the way' — slides only appear after brainstorm phase",
+      "Don't focus on slide quality — the CSS is decent now but the conversation quality is the real differentiator"
+    ]
+  },
+
+  "task_018_state": {
+    "status": "PR #11 open, 4 commits",
+    "branch": "task/018-slide-css-polish",
+    "what_shipped": [
+      "Title slide: accent gradient top bar, scattered geometric decorations (rings, dots, square, line)",
+      "Content slide: left-border heading, square bullet markers, diagonal strip + dot grid decorations",
+      "Code slide: terminal header bar with traffic light dots, angle bracket decoration",
+      "Metrics slide: card-style stats with accent backgrounds, concentric ring + triangle decorations",
+      "Closing slide: radial gradient wash, pill CTA button, two outlined squares with offset shadows",
+      "Export template (slideExport.ts) synced with all polished CSS + projector-optimized font sizes"
+    ],
+    "after_merge": "Delete branch, update TASK-018.json to done, commit to main, push"
+  },
+
+  "exported_presentation_details": {
+    "file": "~/Downloads/unpack-presentation.html",
+    "features": "Self-contained HTML, 3 embedded base64 screenshots, arrow key navigation, f for fullscreen, projector-sized text (headings 3.75-7rem, bullets 2.25rem), prominent unpack.pro URL on closing slide",
+    "note": "This file is outside git — it's Beckham's personal demo file with his screenshots baked in"
+  }
+}

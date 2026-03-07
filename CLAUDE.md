@@ -4,12 +4,16 @@
 
 **EXECUTING.** Per-task branching strategy. On `main`, clean state. Remote: `https://github.com/BeckhamLe/unpack`
 
-**Done:** TASK-001 (prompt caching), TASK-002 (OAuth), TASK-003 (streaming), TASK-004 (UI polish), TASK-005 (system prompt), TASK-007 (user testing — feedback captured), TASK-008 (structured output + prompt tuning), TASK-009 (UI transformation + slide design system + export), TASK-010 (color theme), TASK-011 (local prod build), TASK-012 (AWS infra), TASK-013 (server provisioning), TASK-014 (deploy + smoke test), TASK-015 (in-app feedback). TASK-006 archived (replaced by TASK-011–014).
+**Done:** TASK-001 through TASK-015, TASK-006 archived (replaced by TASK-011–014). TASK-018 (slide CSS polish) is in PR #11 — awaiting merge.
 
-**Next:** Deploy TASK-008+009 to production. Then discuss with Beckham:
-- **TASK-017 (image slides):** Add an image slide type to the design system so slides can include uploaded images. Beckham wants to discuss scope/approach before planning.
-- **New task TBD (slide CSS polish):** The current slide CSS design system (`src/client/styles/slides.css`) looks too plain. Needs visual polish — better typography, spacing, accent usage, backgrounds, etc. to make exported slides look professional. Discuss scope with Beckham before creating task.
-- TASK-016 (PDF export) is also queued but lower priority.
+**In progress:** TASK-018 (slide CSS design system polish) — PR #11 open, branch `task/018-slide-css-polish`. Adds decorative geometric elements, polished typography, accent treatments to all 5 slide types. Also synced the export template (`src/client/lib/slideExport.ts`) with the polished CSS. Beckham needs to review and merge.
+
+**Immediate priority:** Beckham has a demo in ~2 hours. He needs a 3-minute demo rehearsal script. See handoff file for full context on the demo angle, slide content, and talking points.
+
+**After demo:**
+- Deploy TASK-008+009+018 to production
+- TASK-017 (image slides) — discuss scope with Beckham
+- TASK-016 (PDF export) — lower priority
 
 **Deployed:** https://unpack.pro (EC2 + nginx + PM2, Supabase DB via connection pooler)
 
@@ -23,7 +27,8 @@ Unpack — an AI presentation coach that interviews users to build their present
 - **Pitch**: `unpack-pitch.md`
 - **Competitive research**: `presentation-builder-research.md`
 - **Execution plan**: `.harness/plans/TASK-008-009-plan.md` (APPROVED)
-- **Session handoff**: `.harness/agents/handoffs/session-handoff-2026-03-07.json`
+- **Session handoff (latest)**: `.harness/agents/handoffs/session-handoff-2026-03-07-b.json`
+- **Previous handoff**: `.harness/agents/handoffs/session-handoff-2026-03-07.json`
 - **Knowledge tracker**: `/Users/beckhamle/Documents/Fractal_Bootcamp/weekly_projects/beckham-claudebook-main/knowledge-tracker.md`
 - **Working agreement (full)**: `/Users/beckhamle/Documents/Fractal_Bootcamp/weekly_projects/beckham-claudebook-main/CLAUDE.md`
 - **Slash commands**: `~/.claude/commands/`
