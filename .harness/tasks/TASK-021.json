@@ -1,0 +1,18 @@
+{
+  "id": "TASK-021",
+  "title": "Google Slides API export",
+  "status": "in-progress",
+  "priority": "high",
+  "mode": "Direct",
+  "description": "Add 'Export to Google Slides' functionality. User clicks export after conversation, structured outline gets created as a Google Slides presentation in their Drive. Uses existing Google OAuth via Supabase with added drive.file scope. Simplified v1: no token storage or refresh — re-auth if expired.",
+  "acceptance_criteria": [
+    "User can click 'Export to Google Slides' and a presentation appears in their Google Drive",
+    "Presentation has correct slide titles and bullet point content from the outline",
+    "Uses drive.file scope (non-sensitive, no Google verification needed)",
+    "Graceful handling if provider_token is expired (prompt re-auth)",
+    "No raw Google tokens stored in database",
+    "bunx vite build passes cleanly"
+  ],
+  "created": "2026-03-08",
+  "branch": "task/021-google-slides-export"
+}

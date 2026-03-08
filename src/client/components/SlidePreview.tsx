@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react'
 import { SlideData } from '../../shared/types'
 import SlideRenderer from './SlideRenderer.js'
-import ThemePicker from './ThemePicker.js'
 import ExportButton from './ExportButton.js'
 import LayoutSwapper from './LayoutSwapper.js'
 
@@ -10,23 +8,10 @@ interface SlidePreviewProps {
   previousSlides: SlideData[]
   onSlidesChange: (slides: SlideData[]) => void
   isStreaming: boolean
+  title: string
 }
 
-export default function SlidePreview({ slides, previousSlides, onSlidesChange, isStreaming }: SlidePreviewProps) {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    return (localStorage.getItem('unpack-slide-theme') as 'light' | 'dark') || 'light'
-  })
-  const [accent, setAccent] = useState<'blue' | 'violet' | 'teal' | 'orange'>(() => {
-    return (localStorage.getItem('unpack-slide-accent') as 'blue' | 'violet' | 'teal' | 'orange') || 'blue'
-  })
-
-  useEffect(() => {
-    localStorage.setItem('unpack-slide-theme', theme)
-  }, [theme])
-
-  useEffect(() => {
-    localStorage.setItem('unpack-slide-accent', accent)
-  }, [accent])
+export default function SlidePreview({ slides, previousSlides, onSlidesChange, isStreaming, title }: SlidePreviewProps) {
 
   const handleSlideSwap = (index: number, newSlide: SlideData) => {
     const updated = [...slides]
@@ -52,14 +37,8 @@ export default function SlidePreview({ slides, previousSlides, onSlidesChange, i
   return (
     <div className="flex-1 flex flex-col min-h-0">
       {/* Preview toolbar */}
-      <div className="px-4 py-2 border-b border-border flex items-center justify-between flex-shrink-0">
-        <ThemePicker
-          theme={theme}
-          accent={accent}
-          onThemeChange={setTheme}
-          onAccentChange={setAccent}
-        />
-        <ExportButton slides={slides} theme={theme} accent={accent} />
+      <div className="px-4 py-2 border-b border-border flex items-center justify-end flex-shrink-0">
+        <ExportButton slides={slides} title={title} />
       </div>
 
       {/* Streaming overlay */}
@@ -87,8 +66,6 @@ export default function SlidePreview({ slides, previousSlides, onSlidesChange, i
             </div>
             <SlideRenderer
               slides={[slide]}
-              theme={theme}
-              accent={accent}
               previousSlides={previousSlides}
             />
           </div>

@@ -485,6 +485,7 @@ function App() {
                 previousSlides={previousSlides}
                 onSlidesChange={setLatestSlides}
                 isStreaming={isStreaming}
+                title={currConvo.title || 'Unpack Presentation'}
               />
             </div>
           )}

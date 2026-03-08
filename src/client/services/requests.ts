@@ -135,4 +135,28 @@ const submitFeedback = async (data: {
     return response.json()
 }
 
-export default { createConvo, getConvo, getConvos, sendMsg, streamMsg, submitFeedback }
+// Export slides to Google Slides via provider token
+const exportToGoogleSlides = async (slides: import("../../shared/types.js").SlideData[], title: string): Promise<{ url: string }> => {
+    // Get the Google provider token from the current session
+    const { data: { session } } = await supabase.auth.getSession()
+    const googleToken = session?.provider_token
+
+    const response = await authFetch('/export/google-slides', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        slides,
+        title,
+        googleToken: googleToken || null,
+      })
+    })
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({ error: 'Export failed' }))
+      throw new Error(body.error || 'Export failed')
+    }
+
+    return response.json()
+}
+
+export default { createConvo, getConvo, getConvos, sendMsg, streamMsg, submitFeedback, exportToGoogleSlides }

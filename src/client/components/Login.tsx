@@ -4,7 +4,13 @@ export default function Login() {
   const signIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin }
+      options: {
+        redirectTo: window.location.origin,
+        scopes: 'https://www.googleapis.com/auth/drive.file',
+        queryParams: {
+          access_type: 'offline',
+        },
+      }
     })
     if (error) console.error('OAuth sign-in failed:', error.message)
   }
