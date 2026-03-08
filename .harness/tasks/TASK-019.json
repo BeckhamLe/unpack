@@ -1,0 +1,17 @@
+{
+  "id": "TASK-019",
+  "title": "Redesign login page to be compelling and on-brand",
+  "status": "in-progress",
+  "priority": "high",
+  "mode": "Direct",
+  "description": "The current login page looks bare and unpolished. Redesign it to sell Unpack's value proposition — conversational presentation coaching — so users are convinced to sign in and try it. Should feel professional, warm, and confident (matching the existing Unpack design system). Think landing page energy, not just a login form.",
+  "acceptance_criteria": [
+    "Login page communicates what Unpack does and why it's different",
+    "Visual design matches the warm/confident Unpack brand (dark bg, gold accent, clean typography)",
+    "Responsive — looks good on mobile and desktop",
+    "Google OAuth sign-in button is prominent and clear",
+    "Page loads fast — no heavy assets"
+  ],
+  "created": "2026-03-07",
+  "branch": "task/019-login-redesign"
+}
