@@ -10,6 +10,7 @@ import { drizzle, PostgresJsDatabase } from 'drizzle-orm/postgres-js'  // import
 import postgres from 'postgres'      // the Postgres driver; establishes network connection to supabase database
 import * as schema from './schema.js'   // imports everything from schema file
 import { requireAuth } from './middleware/auth.js'
+import { createGooglePresentation } from './lib/googleSlides.js'
 
 // configure dotenv 
 dotenv.config() 
@@ -556,6 +557,36 @@ app.post('/feedback', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Failed to save feedback:', error)
     res.status(500).json({ error: 'Failed to save feedback' })
+  }
+})
+
+// Export to Google Slides Endpoint
+app.post('/export/google-slides', requireAuth, async (req, res) => {
+  const { slides, title, googleToken } = req.body
+
+  if (!slides || !Array.isArray(slides) || slides.length === 0) {
+    res.status(400).json({ error: 'Missing or empty slides array' })
+    return
+  }
+  if (!googleToken || typeof googleToken !== 'string') {
+    res.status(400).json({ error: 'google_reauth_needed' })
+    return
+  }
+
+  try {
+    const presentationTitle = (typeof title === 'string' && title.trim())
+      ? title.trim()
+      : 'Unpack Presentation'
+    const url = await createGooglePresentation(slides, presentationTitle, googleToken)
+    res.json({ url })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Export failed'
+    if (message === 'google_reauth_needed') {
+      res.status(401).json({ error: 'google_reauth_needed' })
+      return
+    }
+    console.error('Google Slides export failed:', error)
+    res.status(500).json({ error: message })
   }
 })
 

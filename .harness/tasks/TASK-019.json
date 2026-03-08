@@ -1,7 +1,7 @@
 {
   "id": "TASK-019",
   "title": "Redesign login page to be compelling and on-brand",
-  "status": "in-progress",
+  "status": "done",
   "priority": "high",
   "mode": "Direct",
   "description": "The current login page looks bare and unpolished. Redesign it to sell Unpack's value proposition — conversational presentation coaching — so users are convinced to sign in and try it. Should feel professional, warm, and confident (matching the existing Unpack design system). Think landing page energy, not just a login form.",

@@ -10,9 +10,10 @@ interface SlidePreviewProps {
   previousSlides: SlideData[]
   onSlidesChange: (slides: SlideData[]) => void
   isStreaming: boolean
+  title: string
 }
 
-export default function SlidePreview({ slides, previousSlides, onSlidesChange, isStreaming }: SlidePreviewProps) {
+export default function SlidePreview({ slides, previousSlides, onSlidesChange, isStreaming, title }: SlidePreviewProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('unpack-slide-theme') as 'light' | 'dark') || 'light'
   })
@@ -59,7 +60,7 @@ export default function SlidePreview({ slides, previousSlides, onSlidesChange, i
           onThemeChange={setTheme}
           onAccentChange={setAccent}
         />
-        <ExportButton slides={slides} theme={theme} accent={accent} />
+        <ExportButton slides={slides} title={title} />
       </div>
 
       {/* Streaming overlay */}
