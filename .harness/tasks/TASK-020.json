@@ -1,0 +1,16 @@
+{
+  "id": "TASK-020",
+  "title": "Create Unpack logo favicon to replace Vite default",
+  "status": "in-progress",
+  "priority": "high",
+  "mode": "Design",
+  "description": "Replace the default Vite favicon with a custom Unpack logo icon. Should work as a favicon (16x16, 32x32) and be recognizable at small sizes. SVG format for scalability.",
+  "acceptance_criteria": [
+    "Custom SVG favicon replaces vite.svg in public/ and index.html",
+    "Icon is recognizable at 16x16 favicon size",
+    "Matches Unpack brand (gold accent #E6A329, dark background #111111)",
+    "Concept reflects the 'unpack' metaphor"
+  ],
+  "created": "2026-03-07",
+  "branch": "task/020-favicon"
+}
