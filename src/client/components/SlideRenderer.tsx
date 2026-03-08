@@ -3,10 +3,7 @@ import { SlideData } from '../../shared/types'
 
 interface SlideRendererProps {
   slides: SlideData[]
-  theme: 'light' | 'dark'
-  accent: 'blue' | 'violet' | 'teal' | 'orange'
   previousSlides?: SlideData[]
-  onSlideUpdate?: (index: number, slide: SlideData) => void
 }
 
 const ALLOWED_TAGS = ['div', 'span', 'h1', 'h2', 'h3', 'p', 'ul', 'ol', 'li', 'pre', 'code', 'a', 'strong', 'em']
@@ -102,9 +99,9 @@ function renderSlide(slide: SlideData, index: number, previousSlides: SlideData[
   }
 }
 
-export default function SlideRenderer({ slides, theme, accent, previousSlides = [] }: SlideRendererProps) {
+export default function SlideRenderer({ slides, previousSlides = [] }: SlideRendererProps) {
   return (
-    <div className={`slide-container theme-${theme} accent-${accent}`}>
+    <div className="slide-container">
       {slides.map((slide, i) => renderSlide(slide, i, previousSlides))}
     </div>
   )

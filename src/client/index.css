@@ -19,3 +19,12 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* Pointer cursor for all interactive elements */
+button,
+[role="button"],
+a,
+select,
+summary {
+  cursor: pointer;
+}
