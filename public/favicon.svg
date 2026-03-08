@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Slide 1 (back, tilted left) -->
+  <rect x="6" y="1" width="12" height="8" rx="0.8" fill="#E6A329" opacity="0.45" transform="rotate(-12, 12, 5)"/>
+  <!-- Slide 2 (middle, straight) -->
+  <rect x="10" y="0" width="12" height="8" rx="0.8" fill="#E6A329" opacity="0.7"/>
+  <!-- Slide 3 (front, tilted right) -->
+  <rect x="14" y="1" width="12" height="8" rx="0.8" fill="#E6A329" opacity="1" transform="rotate(12, 20, 5)"/>
+  <!-- Content lines on front slide -->
+  <line x1="16" y1="3.5" x2="24" y2="4.5" stroke="#111111" stroke-width="1" stroke-linecap="round" transform="rotate(12, 20, 5)"/>
+  <line x1="16" y1="6" x2="21" y2="6.7" stroke="#111111" stroke-width="0.7" stroke-linecap="round" opacity="0.5" transform="rotate(12, 20, 5)"/>
+  <!-- Box left flap (open) -->
+  <path d="M 3 15 L 3 12 L 9 9 L 9 13 Z" fill="#E6A329" opacity="0.35"/>
+  <!-- Box right flap (open) -->
+  <path d="M 29 15 L 29 12 L 23 9 L 23 13 Z" fill="#E6A329" opacity="0.35"/>
+  <!-- Box rim -->
+  <path d="M 3 15 L 16 20 L 29 15" fill="none" stroke="#E6A329" stroke-width="0.8" opacity="0.85"/>
+  <!-- Box front-left face -->
+  <path d="M 3 15 L 16 20 L 16 29 L 3 24 Z" fill="#E6A329" opacity="0.3"/>
+  <!-- Box front-right face -->
+  <path d="M 29 15 L 16 20 L 16 29 L 29 24 Z" fill="#E6A329" opacity="0.2"/>
+  <!-- Box bottom edges -->
+  <path d="M 3 15 L 3 24 L 16 29 L 29 24 L 29 15" fill="none" stroke="#E6A329" stroke-width="0.6" opacity="0.5"/>
+  <line x1="16" y1="20" x2="16" y2="29" stroke="#E6A329" stroke-width="0.5" opacity="0.4"/>
+</svg>
