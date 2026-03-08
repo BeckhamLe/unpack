@@ -1,7 +1,7 @@
 {
   "id": "TASK-021",
   "title": "Google Slides API export",
-  "status": "in-progress",
+  "status": "done",
   "priority": "high",
   "mode": "Direct",
   "description": "Add 'Export to Google Slides' functionality. User clicks export after conversation, structured outline gets created as a Google Slides presentation in their Drive. Uses existing Google OAuth via Supabase with added drive.file scope. Simplified v1: no token storage or refresh — re-auth if expired.",
