@@ -1,7 +1,7 @@
 {
   "id": "TASK-020",
   "title": "Create Unpack logo favicon to replace Vite default",
-  "status": "in-progress",
+  "status": "done",
   "priority": "high",
   "mode": "Design",
   "description": "Replace the default Vite favicon with a custom Unpack logo icon. Should work as a favicon (16x16, 32x32) and be recognizable at small sizes. SVG format for scalability.",
