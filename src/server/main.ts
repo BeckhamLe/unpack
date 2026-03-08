@@ -568,6 +568,12 @@ app.post('/export/google-slides', requireAuth, async (req, res) => {
     res.status(400).json({ error: 'Missing or empty slides array' })
     return
   }
+  const validTypes = ['title', 'content', 'code', 'metrics', 'closing']
+  const invalidSlide = slides.find((s: { type?: string }) => !s.type || !validTypes.includes(s.type))
+  if (invalidSlide) {
+    res.status(400).json({ error: `Invalid slide type: ${invalidSlide.type || 'missing'}` })
+    return
+  }
   if (!googleToken || typeof googleToken !== 'string') {
     res.status(400).json({ error: 'google_reauth_needed' })
     return

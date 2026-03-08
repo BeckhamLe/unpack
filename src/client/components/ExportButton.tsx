@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { SlideData } from '../../shared/types'
 import { supabase } from '../lib/supabase.js'
 import requestServices from '../services/requests'
+import { toast } from 'sonner'
 
 interface ExportButtonProps {
   slides: SlideData[]
@@ -24,7 +25,7 @@ export default function ExportButton({ slides, title }: ExportButtonProps) {
       if (message === 'google_reauth_needed') {
         setShowReauthModal(true)
       } else {
-        console.error('Export failed:', message)
+        toast.error('Export failed: ' + message)
       }
     } finally {
       setLoading(false)
@@ -35,7 +36,7 @@ export default function ExportButton({ slides, title }: ExportButtonProps) {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: window.location.href,
         scopes: 'https://www.googleapis.com/auth/drive.file',
         queryParams: {
           access_type: 'offline',
