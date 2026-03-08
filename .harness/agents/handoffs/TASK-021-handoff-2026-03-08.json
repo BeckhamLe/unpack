@@ -1,0 +1,74 @@
+{
+  "task_id": "TASK-021",
+  "timestamp": "2026-03-08T18:30:00Z",
+  "handoff_type": "context_window_continuation",
+  "task_summary": "Google Slides API export — user clicks 'Export to Google Slides' after conversation, structured outline gets created as a Google Slides presentation in their Drive.",
+
+  "current_status": "PR open, functionally working, needs UX polish before merge",
+  "pr_url": "https://github.com/BeckhamLe/unpack/pull/14",
+  "branch": "task/021-google-slides-export",
+
+  "what_works": [
+    "OAuth sign-in requests drive.file scope",
+    "Server endpoint POST /export/google-slides creates presentations via 2 Google API calls",
+    "All 5 slide types (title, content, code, metrics, closing) map correctly to Google Slides layouts",
+    "Re-auth modal shows when provider_token is missing/expired with clear context",
+    "Export button replaces old HTML download in SlidePreview toolbar",
+    "Build passes clean (bunx vite build)",
+    "Beckham tested and confirmed: export creates Google Slides successfully",
+    "Google Cloud Console configured: Slides API enabled, drive.file scope added, app published to production"
+  ],
+
+  "remaining_work": [
+    {
+      "issue": "Slide preview shows polished CSS (geometric shapes, accent treatments, decorative elements) but Google Slides export outputs clean structured content only. This mismatch could mislead users into thinking the export will look like the preview.",
+      "options": [
+        "Option A (recommended): Add a visual note near the export button like 'Exports structure and content — customize the design in Google Slides'. Quick, honest, minimal code change.",
+        "Option B: Simplify the slide preview to be more of an outline view that matches what the export actually produces. Bigger change, removes the polished CSS work from TASK-018."
+      ],
+      "beckham_preference": "Discussed both options. No explicit pick yet — next agent should confirm with Beckham."
+    }
+  ],
+
+  "key_files": [
+    {"path": "src/server/lib/googleSlides.ts", "role": "SlideData[] → Google Slides API request builder (create + batchUpdate)"},
+    {"path": "src/server/main.ts", "role": "Express server — new POST /export/google-slides endpoint (lines ~563-590)"},
+    {"path": "src/client/components/ExportButton.tsx", "role": "Export button + re-auth modal component"},
+    {"path": "src/client/components/SlidePreview.tsx", "role": "Slide preview panel — toolbar has ExportButton"},
+    {"path": "src/client/components/Login.tsx", "role": "Updated OAuth to request drive.file scope"},
+    {"path": "src/client/services/requests.ts", "role": "Client API service — exportToGoogleSlides function"},
+    {"path": "src/shared/types.ts", "role": "SlideData union type (5 slide types)"},
+    {"path": "src/client/lib/slideExport.ts", "role": "OLD HTML export — no longer imported, can be deleted as cleanup"}
+  ],
+
+  "code_review_completed": true,
+  "code_review_findings_addressed": [
+    "Re-auth redirectTo uses window.location.href (preserves conversation)",
+    "prompt:consent removed from initial login (only on re-auth)",
+    "Toast shown on non-reauth export failures",
+    "Server-side slide type validation added"
+  ],
+
+  "decisions_made_this_session": [
+    "Product positioning shifted from 'for software engineers' to 'outline-first presentations through guided conversation'",
+    "Google Slides export chosen over PPTX/PDF — uses existing Google OAuth, zero-friction UX",
+    "drive.file scope (non-sensitive) — avoids Google verification process",
+    "v1 simplified: no token storage/refresh — re-auth modal if token expired",
+    "HTML export removed entirely — Google Slides is the primary export",
+    "Login page redesigned with Hero 3 layout (PR #13, merged)",
+    "Slide preview stays as-is for now — just needs expectation-setting copy near export button"
+  ],
+
+  "related_completed_tasks": [
+    "TASK-019 (login page redesign) — merged via PR #13",
+    "TASK-018 (slide CSS polish) — closed"
+  ],
+
+  "launch_readiness": {
+    "done": ["Login page redesign", "Google Slides export", "Google Cloud Console setup", "App published on OAuth consent screen"],
+    "remaining": ["Fix preview/export mismatch UX", "Merge PR #14", "Deploy to production (unpack.pro)", "Copy/positioning update across the app (optional)"],
+    "deferred": ["Token refresh logic", "PPTX export", "PDF export (TASK-016)", "Presentation coaching features", "Design coaching features"]
+  },
+
+  "recommended_first_action": "Confirm with Beckham which option for the preview/export mismatch (Option A: add note near export button, or Option B: simplify preview). Implement the chosen fix, then proceed through remaining task lifecycle gates: commit fix → code review → update PR → Beckham merges → close task → deploy."
+}
