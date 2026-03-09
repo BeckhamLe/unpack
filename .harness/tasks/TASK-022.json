@@ -1,0 +1,25 @@
+{
+  "id": "TASK-022",
+  "title": "Coaching summary / presentation insight card",
+  "status": "needs-planning",
+  "priority": "high",
+  "mode": "Direct",
+  "description": "After slides are generated, show a coaching insight card above the slide preview — deck overview (slide count, topics covered), strongest section, weakest section, and one specific improvement suggestion. Adds summary field to metadata, updates system prompt to generate coaching insights, and builds a new CoachingInsight UI component. This is the most differentiated feature — no competitor does this.",
+  "acceptance_criteria": [
+    "Coaching insight card appears above slides when summary metadata is present",
+    "Summary includes: deck overview, strongest section, weakest section, specific improvement suggestion",
+    "Model generates specific/opinionated coaching, not generic praise",
+    "Updates on each slide regeneration in Structure/Refine phases",
+    "Works on mobile (tab view)",
+    "bunx vite build passes cleanly"
+  ],
+  "files_to_change": [
+    "src/shared/types.ts",
+    "src/server/main.ts",
+    "src/client/components/CoachingInsight.tsx (new)",
+    "src/client/components/SlidePreview.tsx",
+    "src/client/App.tsx"
+  ],
+  "notes": "NEEDS PLANNING — do not implement until plan is approved by Beckham.",
+  "created": "2026-03-08"
+}

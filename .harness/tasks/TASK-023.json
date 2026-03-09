@@ -1,0 +1,22 @@
+{
+  "id": "TASK-023",
+  "title": "Styled Google Slides export",
+  "status": "needs-planning",
+  "priority": "high",
+  "mode": "Direct",
+  "description": "Add visual styling to the Google Slides export so it doesn't look like a blank doc. Title slide gets accent-colored background, headings get proper font sizing and weight, code blocks use monospace font, metrics get styled number treatment, proper spacing/alignment throughout. All done via Google Slides API updateTextStyle/updateShapeProperties/updateParagraphStyle requests. Server-side only change — no frontend work.",
+  "acceptance_criteria": [
+    "Exported title slide has colored background and centered large heading",
+    "Content slide headings are visually distinct from body text (size, weight, color)",
+    "Code slides use monospace font in the code block area",
+    "Metrics slides have styled large numbers with accent color",
+    "Consistent font family across all slides (not Google Slides default)",
+    "Exported slides look polished enough that users only need to add branding/images",
+    "bunx vite build passes cleanly"
+  ],
+  "files_to_change": [
+    "src/server/lib/googleSlides.ts"
+  ],
+  "notes": "NEEDS PLANNING — do not implement until plan is approved by Beckham.",
+  "created": "2026-03-08"
+}

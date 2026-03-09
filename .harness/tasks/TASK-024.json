@@ -1,0 +1,23 @@
+{
+  "id": "TASK-024",
+  "title": "Earlier slide generation during Brainstorm phase",
+  "status": "needs-planning",
+  "priority": "medium",
+  "mode": "Direct",
+  "description": "Generate rough outline slides during the Brainstorm phase instead of waiting for Structure. User sees their thinking take shape earlier, increasing engagement. Requires system prompt changes to allow provisional slides in Brainstorm, client-side gating update to show preview panel earlier, and careful prompt wording so rough outlines don't confuse users.",
+  "acceptance_criteria": [
+    "Rough 2-3 slide outline appears during Brainstorm phase",
+    "Slides are clearly framed as provisional (visual treatment or copy)",
+    "Full deck replaces rough outline when entering Structure phase",
+    "Preview panel shows during Brainstorm (not just Structure/Refine)",
+    "Empty state text updated to reflect earlier availability",
+    "bunx vite build passes cleanly"
+  ],
+  "files_to_change": [
+    "src/server/main.ts (system prompt + tool schema)",
+    "src/client/App.tsx",
+    "src/client/components/SlidePreview.tsx"
+  ],
+  "notes": "NEEDS PLANNING — do not implement until plan is approved by Beckham. Highest prompt engineering risk of the three — needs careful wording so early slides feel helpful, not half-baked.",
+  "created": "2026-03-08"
+}
