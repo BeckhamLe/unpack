@@ -1,7 +1,7 @@
 import "./App.css";
 import "./styles/slides.css";
 import requestServices from './services/requests'
-import { Message, Conversation, MessageMetadata, SlideData, Phase } from '../shared/types'
+import { Message, Conversation, MessageMetadata, SlideData, Phase, DeliveryBrief } from '../shared/types'
 import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +35,7 @@ function App() {
   const [latestSlides, setLatestSlides] = useState<SlideData[]>([])
   const [latestSuggestions, setLatestSuggestions] = useState<string[]>([])
   const [previousSlides, setPreviousSlides] = useState<SlideData[]>([])
+  const [deliveryBrief, setDeliveryBrief] = useState<DeliveryBrief | null>(null)
   const [mobileTab, setMobileTab] = useState<'chat' | 'slides'>('chat')
   const rafIdRef = useRef<number | null>(null)
   const streamingFullTextRef = useRef("")
@@ -210,6 +211,7 @@ function App() {
             return metadata.slides!
           })
         }
+        if (metadata.deliveryBrief) setDeliveryBrief(metadata.deliveryBrief)
       }
     )
   };
@@ -223,6 +225,7 @@ function App() {
       setLatestSlides([])
       setLatestSuggestions([])
       setPreviousSlides([])
+      setDeliveryBrief(null)
       return requestServices.getConvos()
     }).then((convoArray) => {
       if (convoArray) setSidebarConvos(convoArray)
@@ -253,6 +256,7 @@ function App() {
     setLatestSlides(state.latestSlides)
     setLatestSuggestions(state.latestSuggestions)
     setPreviousSlides([])
+    setDeliveryBrief(state.latestDeliveryBrief)
   }
 
   const clickConvo = (convoId: string) => {
@@ -486,6 +490,7 @@ function App() {
                 onSlidesChange={setLatestSlides}
                 isStreaming={isStreaming}
                 title={currConvo.title || 'Unpack Presentation'}
+                deliveryBrief={deliveryBrief}
               />
             </div>
           )}

@@ -74,7 +74,15 @@ When generating slides, output them in the slides[] array of your tool call. Eac
 
 IMPORTANT: When regenerating the full deck, output unchanged slides EXACTLY as they appeared in your previous response. Only modify slides the user specifically asked about. Stability matters — don't silently rephrase or reorder.
 
-After generating, rate quality and flag the weakest section.
+After generating slides, also provide a deliveryBrief — a cheat sheet the user can reference when presenting:
+- overview: One sentence describing the deck's arc (slide count + flow, e.g. "7 slides: problem → solution → demo → impact")
+- audienceHook: The opening 30 seconds. What to say before the first slide to grab attention. Be specific to their topic and audience — not generic advice.
+- coreMoment: The single strongest slide or point that drives the core takeaway home. Name it and explain WHY it's the power moment.
+- closingGuide: How to land the ending. Not just what's on the last slide — what to actually say, and what action to leave the audience with.
+
+Be direct and specific in the delivery brief. "Start with a question" is bad. "Open with: 'How many of you have waited 10+ seconds for a dashboard to load?' — then pause" is good. Write it like you're coaching them backstage 5 minutes before they go on.
+
+Update the deliveryBrief whenever slides change significantly.
 
 === REFINE PHASE ===
 Polish and prepare for delivery:
@@ -166,6 +174,17 @@ const PRESENTATION_METADATA_TOOL: Tool = {
         description: "Overall quality score 1-10 (only after generating slide outline)",
         minimum: 1,
         maximum: 10
+      },
+      deliveryBrief: {
+        type: "object",
+        description: "Delivery cheat sheet for the user (only in structure/refine phases, when slides are present). Helps them prepare to present.",
+        properties: {
+          overview: { type: "string", description: "One-sentence arc of the deck: slide count + flow (e.g. '7 slides: problem → solution → demo → impact')" },
+          audienceHook: { type: "string", description: "How to open the first 30 seconds — what to say before the first slide to grab attention" },
+          coreMoment: { type: "string", description: "The single strongest slide/point that drives the core takeaway home. Name it and explain why it hits." },
+          closingGuide: { type: "string", description: "How to land the ending — not just what's on the last slide, but what to say and what action to leave the audience with" }
+        },
+        required: ["overview", "audienceHook", "coreMoment", "closingGuide"]
       }
     },
     required: ["phase", "messageType", "suggestions"]

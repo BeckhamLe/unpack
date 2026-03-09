@@ -1,7 +1,8 @@
-import { SlideData } from '../../shared/types'
+import { SlideData, DeliveryBrief } from '../../shared/types'
 import SlideRenderer from './SlideRenderer.js'
 import ExportButton from './ExportButton.js'
 import LayoutSwapper from './LayoutSwapper.js'
+import DeliveryBriefCard from './DeliveryBriefCard.js'
 
 interface SlidePreviewProps {
   slides: SlideData[]
@@ -9,9 +10,10 @@ interface SlidePreviewProps {
   onSlidesChange: (slides: SlideData[]) => void
   isStreaming: boolean
   title: string
+  deliveryBrief: DeliveryBrief | null
 }
 
-export default function SlidePreview({ slides, previousSlides, onSlidesChange, isStreaming, title }: SlidePreviewProps) {
+export default function SlidePreview({ slides, previousSlides, onSlidesChange, isStreaming, title, deliveryBrief }: SlidePreviewProps) {
 
   const handleSlideSwap = (index: number, newSlide: SlideData) => {
     const updated = [...slides]
@@ -40,6 +42,9 @@ export default function SlidePreview({ slides, previousSlides, onSlidesChange, i
       <div className="px-4 py-2 border-b border-border flex items-center justify-end flex-shrink-0">
         <ExportButton slides={slides} title={title} />
       </div>
+
+      {/* Delivery brief */}
+      {deliveryBrief && !isStreaming && <DeliveryBriefCard brief={deliveryBrief} />}
 
       {/* Streaming overlay */}
       {isStreaming && (

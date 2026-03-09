@@ -50,12 +50,20 @@ export type Phase = "context" | "brainstorm" | "structure" | "refine"
 
 export type MessageType = "question" | "checklist" | "tip" | "summary" | "slide_content"
 
+export interface DeliveryBrief {
+    overview: string
+    audienceHook: string
+    coreMoment: string
+    closingGuide: string
+}
+
 export interface MessageMetadata {
     phase: Phase
     messageType: MessageType
     suggestions: string[]
     slides?: SlideData[]
     qualityScore?: number
+    deliveryBrief?: DeliveryBrief
 }
 
 // --- Message & Conversation ---
