@@ -1,7 +1,7 @@
 {
   "id": "TASK-022",
   "title": "Coaching summary / presentation insight card",
-  "status": "in-progress",
+  "status": "done",
   "priority": "high",
   "mode": "Direct",
   "description": "After slides are generated, show a coaching insight card above the slide preview — deck overview (slide count, topics covered), strongest section, weakest section, and one specific improvement suggestion. Adds summary field to metadata, updates system prompt to generate coaching insights, and builds a new CoachingInsight UI component. This is the most differentiated feature — no competitor does this.",
