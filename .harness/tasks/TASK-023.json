@@ -1,22 +1,26 @@
 {
   "id": "TASK-023",
-  "title": "Styled Google Slides export",
-  "status": "needs-planning",
+  "title": "Slide visual redesign \u2014 make slides look actually good",
+  "status": "in-progress",
   "priority": "high",
-  "mode": "Direct",
-  "description": "Add visual styling to the Google Slides export so it doesn't look like a blank doc. Title slide gets accent-colored background, headings get proper font sizing and weight, code blocks use monospace font, metrics get styled number treatment, proper spacing/alignment throughout. All done via Google Slides API updateTextStyle/updateShapeProperties/updateParagraphStyle requests. Server-side only change — no frontend work.",
+  "mode": "Design",
+  "description": "Apply the two polished template designs from TASK-028 (Geometric Deco dark + Architectural Editorial light) to the in-app slide preview. Pure CSS + component work \u2014 update slides.css and SlideRenderer.tsx to match the visual quality of the standalone templates in docs/slide_deck_templates/. Key challenge: make the designs flexible enough to handle variable user content (different bullet counts, text lengths, stat counts) without breaking layout.",
   "acceptance_criteria": [
-    "Exported title slide has colored background and centered large heading",
-    "Content slide headings are visually distinct from body text (size, weight, color)",
-    "Code slides use monospace font in the code block area",
-    "Metrics slides have styled large numbers with accent color",
-    "Consistent font family across all slides (not Google Slides default)",
-    "Exported slides look polished enough that users only need to add branding/images",
+    "Slides look visually impressive enough to screenshot and post on X",
+    "Title slides have strong visual presence (gradient/color bg, bold typography)",
+    "Content slides use cards/containers with depth, not just floating text on white",
+    "Code slides have polished dark theme treatment",
+    "Metrics slides have visually striking number presentation",
+    "Closing slides feel like a strong ending, not an afterthought",
+    "Multiple theme options that all look professional",
+    "Slides render well at 16:9 aspect ratio",
     "bunx vite build passes cleanly"
   ],
   "files_to_change": [
-    "src/server/lib/googleSlides.ts"
+    "src/client/styles/slides.css",
+    "src/client/components/SlideRenderer.tsx"
   ],
-  "notes": "NEEDS PLANNING — do not implement until plan is approved by Beckham.",
+  "blocks": [],
+  "notes": "NEEDS PLANNING. Design research done in TASK-028 \u2014 two templates finalized (Geometric Deco dark + Architectural Editorial light) covering all 5 slide types. Direction approved by Beckham. Next: plan the CSS + component changes to bring the template visuals into the in-app preview. Key flexibility issues to solve: content slides need to handle N bullets (not just 3 horizontal cards), metrics grid needs to reflow for 2-5 stats, subtitle white-space:nowrap will clip long text. No Reveal.js integration \u2014 that's TASK-026 scope.",
   "created": "2026-03-08"
 }
