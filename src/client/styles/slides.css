@@ -82,13 +82,13 @@
 .slide-shimmer-skeleton {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.04) 100%
+    rgba(128, 128, 128, 0.08) 0%,
+    rgba(128, 128, 128, 0.16) 50%,
+    rgba(128, 128, 128, 0.08) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(128, 128, 128, 0.12);
 }
 
 @keyframes shimmer {
@@ -160,48 +160,6 @@
   background: linear-gradient(90deg, var(--cyan-2), var(--indigo-light));
   margin-top: 0.6rem;
   border-radius: 2px;
-}
-
-/* --- Highlight text — cyan gradient --- */
-[data-theme="geometric-deco"] .slide-highlight {
-  background: linear-gradient(135deg, var(--cyan-1), var(--cyan-2), var(--cyan-3));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* --- Label pill --- */
-[data-theme="geometric-deco"] .slide-label {
-  display: inline-block;
-  font-family: var(--body-font);
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  color: rgba(165, 180, 252, 0.8);
-  border: 1px solid rgba(165, 180, 252, 0.3);
-  padding: 0.3em 1em;
-  border-radius: 100px;
-  margin-bottom: 1rem;
-}
-
-/* --- Glass card utility --- */
-[data-theme="geometric-deco"] .glass-card {
-  background: var(--surface);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 12px;
-  border: 1px solid var(--surface-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  position: relative;
-}
-
-[data-theme="geometric-deco"] .glass-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  border-radius: 12px 12px 0 0;
 }
 
 /* ── Geo Deco: Title Slide ── */
@@ -765,42 +723,6 @@
   background: linear-gradient(90deg, var(--terracotta-deep), var(--terracotta));
   margin-top: 0.5rem;
   border-radius: 2px;
-}
-
-/* --- Label pill (Editorial) --- */
-[data-theme="architectural-editorial"] .slide-label {
-  display: inline-block;
-  font-family: var(--body-font);
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--text-muted);
-  background: rgba(100, 116, 139, 0.08);
-  padding: 0.35em 1em;
-  border-radius: 4px;
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
-/* --- Divider (Editorial) --- */
-[data-theme="architectural-editorial"] .slide-divider {
-  width: 60px;
-  height: 4px;
-  background: linear-gradient(90deg, var(--terracotta-deep), var(--terracotta));
-  border-radius: 2px;
-  margin-top: 1rem;
-}
-
-/* --- Cream halo for text readability over shapes --- */
-[data-theme="architectural-editorial"] .cream-halo {
-  text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
-}
-
-/* --- White elevated card --- */
-[data-theme="architectural-editorial"] .white-card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 16px rgba(30, 41, 59, 0.06), 0 1px 4px rgba(30, 41, 59, 0.04);
 }
 
 /* ── Editorial: Title Slide ── */
