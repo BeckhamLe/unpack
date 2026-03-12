@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architectural Editorial — AI-Powered Spaced Repetition</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --r-background-color: #faf8f5;
+      --r-main-font: 'Inter', system-ui, sans-serif;
+      --r-heading-font: 'Playfair Display', Georgia, serif;
+      --r-main-font-size: 28px;
+      --r-heading-text-transform: none;
+      --r-heading-font-weight: 900;
+      --r-heading-letter-spacing: -0.02em;
+      --r-heading-line-height: 1.1;
+      --r-heading1-size: 2.6em;
+      --r-heading2-size: 1.8em;
+      --r-heading-color: #0f172a;
+      --r-main-color: #1e293b;
+
+      --cream: #faf8f5;
+      --slate-dark: #1e293b;
+      --slate-mid: #334155;
+      --terracotta: #b45309;
+      --terracotta-deep: #92400e;
+      --sage: #6b7f5e;
+      --gold: #d4a254;
+      --cool-gray: #94a3b8;
+      --cool-gray-light: #cbd5e1;
+      --accent: #1e3a5f;
+      --text-muted: #64748b;
+    }
+
+    .reveal .slides section {
+      padding: 0;
+      width: 960px;
+      height: 700px;
+      overflow: hidden;
+      background: var(--cream) !important;
+    }
+
+    .reveal .slide-number {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      background: rgba(30, 41, 59, 0.06);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+
+    /* ── Shared utilities ── */
+
+    .geo-canvas {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .slide-content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+      padding: 3rem 5rem;
+    }
+
+    .slide-content.centered {
+      align-items: center;
+      text-align: center;
+    }
+
+    .label {
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+      background: rgba(100, 116, 139, 0.08);
+      padding: 0.4em 1.1em;
+      border-radius: 4px;
+      margin-bottom: 1.2rem;
+      font-weight: 600;
+    }
+
+    .divider {
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--terracotta-deep), var(--terracotta));
+      border-radius: 2px;
+      margin-top: 1.2rem;
+    }
+
+    .cream-halo {
+      text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+    }
+
+    .cream-pill {
+      background: rgba(250, 248, 245, 0.85);
+      padding: 0.3em 0.8em;
+      border-radius: 4px;
+    }
+
+    /* Elevated white card */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 16px rgba(30, 41, 59, 0.06), 0 1px 4px rgba(30, 41, 59, 0.04);
+    }
+
+
+    /* ═══════════════════════════════════════════
+       SLIDE 1: TITLE
+       Diagonal corner clusters, centered text
+       ═══════════════════════════════════════════ */
+
+    /* -- Top-right cluster -- */
+    .slide-title .geo-canvas .tr-rect-1 {
+      position: absolute;
+      width: 240px; height: 160px;
+      background: var(--slate-dark);
+      top: 0; right: 0;
+    }
+    .slide-title .geo-canvas .tr-rect-2 {
+      position: absolute;
+      width: 140px; height: 110px;
+      background: var(--terracotta);
+      top: 30px; right: 170px;
+      opacity: 0.7;
+    }
+    .slide-title .geo-canvas .tr-half-circle {
+      position: absolute;
+      width: 120px; height: 60px;
+      border-radius: 0 0 120px 120px;
+      background: var(--cool-gray);
+      top: 0; right: 50px;
+      opacity: 0.5;
+    }
+    .slide-title .geo-canvas .tr-square {
+      position: absolute;
+      width: 50px; height: 50px;
+      background: var(--sage);
+      top: 120px; right: 240px;
+      opacity: 0.5;
+    }
+    .slide-title .geo-canvas .tr-stripe {
+      position: absolute;
+      width: 8px; height: 140px;
+      background: var(--gold);
+      top: 10px; right: 300px;
+      opacity: 0.35;
+    }
+    .slide-title .geo-canvas .tr-circle {
+      position: absolute;
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #475569, var(--slate-mid));
+      top: -20px; right: 210px;
+      opacity: 0.4;
+    }
+
+    /* -- Bottom-left cluster -- */
+    .slide-title .geo-canvas .bl-rect-1 {
+      position: absolute;
+      width: 260px; height: 140px;
+      background: var(--slate-dark);
+      bottom: 0; left: 0;
+    }
+    .slide-title .geo-canvas .bl-rect-2 {
+      position: absolute;
+      width: 160px; height: 90px;
+      background: var(--terracotta);
+      bottom: 40px; left: 160px;
+      opacity: 0.6;
+    }
+    .slide-title .geo-canvas .bl-arc {
+      position: absolute;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      border: 35px solid rgba(100, 116, 139, 0.25);
+      bottom: -60px; left: -50px;
+      clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 100%);
+    }
+    .slide-title .geo-canvas .bl-circle {
+      position: absolute;
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      background: var(--cool-gray);
+      bottom: 100px; left: 220px;
+      opacity: 0.3;
+    }
+    .slide-title .geo-canvas .bl-lines {
+      position: absolute;
+      left: 30px; bottom: 15px;
+      width: 130px; height: 60px;
+      background: repeating-linear-gradient(0deg, rgba(250, 248, 245, 0.2) 0px, rgba(250, 248, 245, 0.2) 2px, transparent 2px, transparent 12px);
+    }
+    .slide-title .geo-canvas .bl-square {
+      position: absolute;
+      width: 40px; height: 40px;
+      background: var(--sage);
+      bottom: 130px; left: 80px;
+      opacity: 0.4;
+      transform: rotate(12deg);
+    }
+
+    /* Scattered */
+    .slide-title .geo-canvas .dot-accent {
+      position: absolute;
+      width: 100px; height: 100px;
+      background-image: radial-gradient(circle, rgba(212, 162, 84, 0.3) 3px, transparent 3px);
+      background-size: 18px 18px;
+      top: 220px; right: 40px;
+    }
+    .slide-title .geo-canvas .diagonal-line {
+      position: absolute;
+      width: 700px; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(30, 41, 59, 0.08), transparent);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+    }
+
+    .slide-title .slide-content h1 {
+      font-size: 2.6em;
+      text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+      margin: 0;
+    }
+    .slide-title .slide-content h1 .accent-line {
+      display: block;
+      color: var(--accent);
+    }
+    .slide-title .subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.6em;
+      color: var(--slate-dark);
+      margin-top: 1.5rem;
+      font-weight: 500;
+      white-space: nowrap;
+      background: rgba(250, 248, 245, 0.85);
+      padding: 0.3em 0.8em;
+      border-radius: 4px;
+    }
+
+
+    /* ═══════════════════════════════════════════
+       SLIDE 2: CONTENT — "The Problem"
+       Minimal corner accents, left-aligned
+       ═══════════════════════════════════════════ */
+
+    .slide-content-type .geo-canvas .tr-rect {
+      position: absolute;
+      width: 140px; height: 90px;
+      background: var(--slate-dark);
+      top: 0; right: 0;
+      opacity: 0.7;
+    }
+    .slide-content-type .geo-canvas .tr-terracotta {
+      position: absolute;
+      width: 70px; height: 55px;
+      background: var(--terracotta);
+      top: 15px; right: 110px;
+      opacity: 0.45;
+    }
+    .slide-content-type .geo-canvas .tr-circle {
+      position: absolute;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--cool-gray);
+      top: 60px; right: 140px;
+      opacity: 0.3;
+    }
+    .slide-content-type .geo-canvas .bl-stripe {
+      position: absolute;
+      width: 80px; height: 6px;
+      background: var(--gold);
+      bottom: 30px; left: 30px;
+      opacity: 0.3;
+      border-radius: 3px;
+    }
+    .slide-content-type .geo-canvas .bl-sage {
+      position: absolute;
+      width: 30px; height: 30px;
+      background: var(--sage);
+      bottom: 0; left: 0;
+      opacity: 0.35;
+    }
+
+    .slide-content-type .slide-content {
+      padding: 3rem 5rem;
+      justify-content: flex-start;
+      padding-top: 3.5rem;
+    }
+
+    .slide-content-type .slide-content h2 {
+      font-size: 1.8em;
+      margin: 0 0 0.3rem 0;
+      text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+    }
+
+    .slide-content-type .slide-content h2::after {
+      content: '';
+      display: block;
+      width: 3rem;
+      height: 3px;
+      background: linear-gradient(90deg, var(--terracotta-deep), var(--terracotta));
+      margin-top: 0.5rem;
+      border-radius: 2px;
+    }
+
+    .slide-content-type .big-stat {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 4em;
+      font-weight: 900;
+      color: var(--accent);
+      margin: 0.3em 0 0.1em;
+      line-height: 1;
+    }
+
+    .slide-content-type .stat-caption {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75em;
+      color: var(--text-muted);
+      font-weight: 400;
+      margin-bottom: 1.5rem;
+    }
+
+    .slide-content-type .bullet-row {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .slide-content-type .bullet-card {
+      flex: 1;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(30, 41, 59, 0.06), 0 1px 3px rgba(30, 41, 59, 0.03);
+      padding: 1rem 1.2rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.55em;
+      color: var(--slate-dark);
+      line-height: 1.5;
+      font-weight: 400;
+    }
+
+    .slide-content-type .bullet-card strong {
+      color: var(--terracotta-deep);
+      font-weight: 600;
+    }
+
+    .slide-content-type .footnote {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.42em;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+      font-weight: 300;
+      font-style: italic;
+    }
+
+
+    /* ═══════════════════════════════════════════
+       SLIDE 3: CODE — "Under the Hood"
+       Minimal geo, code block dominates
+       ═══════════════════════════════════════════ */
+
+    .slide-code .geo-canvas .corner-rect {
+      position: absolute;
+      width: 90px; height: 60px;
+      background: var(--slate-dark);
+      top: 0; right: 0;
+      opacity: 0.5;
+    }
+    .slide-code .geo-canvas .corner-gold {
+      position: absolute;
+      width: 6px; height: 60px;
+      background: var(--gold);
+      top: 0; right: 90px;
+      opacity: 0.3;
+    }
+
+    .slide-code .slide-content {
+      padding: 3rem 4.5rem;
+      justify-content: flex-start;
+      padding-top: 3.5rem;
+    }
+
+    .slide-code .slide-content h2 {
+      font-size: 1.6em;
+      margin: 0 0 0.3rem 0;
+      text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+    }
+
+    .slide-code .slide-content h2::after {
+      content: '';
+      display: block;
+      width: 3rem;
+      height: 3px;
+      background: linear-gradient(90deg, var(--terracotta-deep), var(--terracotta));
+      margin-top: 0.5rem;
+      border-radius: 2px;
+    }
+
+    .slide-code .code-description {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.55em;
+      color: var(--text-muted);
+      margin: 0.8rem 0 1.2rem;
+      font-weight: 300;
+    }
+
+    .slide-code .code-card {
+      background: #f1efe9;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(30, 41, 59, 0.06), 0 1px 4px rgba(30, 41, 59, 0.04);
+      padding: 1.5rem 1.8rem;
+      width: 100%;
+      max-width: 780px;
+    }
+
+    .slide-code .code-card .file-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.4em;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      margin-bottom: 0.8rem;
+      display: block;
+    }
+
+    .slide-code .code-card pre {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.5em;
+      line-height: 1.65;
+      color: var(--slate-dark);
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    .slide-code .code-card .kw { color: var(--terracotta-deep); font-weight: 500; }
+    .slide-code .code-card .fn { color: var(--accent); }
+    .slide-code .code-card .type { color: #6d28d9; }
+    .slide-code .code-card .str { color: var(--sage); }
+    .slide-code .code-card .cm { color: var(--cool-gray); font-style: italic; }
+    .slide-code .code-card .num { color: var(--terracotta); }
+    .slide-code .code-card .op { color: var(--text-muted); }
+    .slide-code .code-card .prop { color: var(--slate-mid); }
+
+
+    /* ═══════════════════════════════════════════
+       SLIDE 4: METRICS — "Impact"
+       Moderate corner shapes, stat grid
+       ═══════════════════════════════════════════ */
+
+    .slide-metrics .geo-canvas .edge-rect-tr {
+      position: absolute;
+      width: 160px; height: 100px;
+      background: var(--slate-dark);
+      top: 0; right: 0;
+      opacity: 0.6;
+    }
+    .slide-metrics .geo-canvas .edge-terra-tr {
+      position: absolute;
+      width: 80px; height: 60px;
+      background: var(--terracotta);
+      top: 20px; right: 130px;
+      opacity: 0.4;
+    }
+    .slide-metrics .geo-canvas .edge-circle-tr {
+      position: absolute;
+      width: 50px; height: 50px;
+      border-radius: 50%;
+      background: var(--cool-gray);
+      top: 70px; right: 160px;
+      opacity: 0.25;
+    }
+    .slide-metrics .geo-canvas .edge-rect-bl {
+      position: absolute;
+      width: 120px; height: 70px;
+      background: var(--slate-dark);
+      bottom: 0; left: 0;
+      opacity: 0.5;
+    }
+    .slide-metrics .geo-canvas .edge-sage-bl {
+      position: absolute;
+      width: 35px; height: 35px;
+      background: var(--sage);
+      bottom: 50px; left: 100px;
+      opacity: 0.35;
+      transform: rotate(10deg);
+    }
+    .slide-metrics .geo-canvas .dot-accent {
+      position: absolute;
+      width: 80px; height: 80px;
+      background-image: radial-gradient(circle, rgba(212, 162, 84, 0.25) 2.5px, transparent 2.5px);
+      background-size: 16px 16px;
+      bottom: 40px; right: 30px;
+    }
+
+    .slide-metrics .slide-content {
+      padding: 3rem 4.5rem;
+      justify-content: flex-start;
+      padding-top: 3.5rem;
+    }
+
+    .slide-metrics .slide-content h2 {
+      font-size: 1.8em;
+      margin: 0 0 0.3rem 0;
+      text-align: center;
+      text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+    }
+
+    .slide-metrics .slide-content h2::after {
+      content: '';
+      display: block;
+      width: 3rem;
+      height: 3px;
+      background: linear-gradient(90deg, var(--terracotta-deep), var(--terracotta));
+      margin: 0.5rem auto 0;
+      border-radius: 2px;
+    }
+
+    .slide-metrics .metrics-subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.55em;
+      color: var(--text-muted);
+      text-align: center;
+      margin: 0.5rem 0 1.8rem;
+      font-weight: 300;
+    }
+
+    .slide-metrics .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      width: 100%;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .slide-metrics .stat-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 16px rgba(30, 41, 59, 0.06), 0 1px 4px rgba(30, 41, 59, 0.04);
+      padding: 1.3rem 1.5rem;
+      text-align: left;
+    }
+
+    .slide-metrics .stat-card .stat-number {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.2em;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+
+    .slide-metrics .stat-card .stat-number.warm {
+      color: var(--terracotta);
+    }
+
+    .slide-metrics .stat-card .stat-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.6em;
+      color: var(--slate-dark);
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .slide-metrics .stat-card .stat-detail {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.45em;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      font-weight: 300;
+    }
+
+
+    /* ═══════════════════════════════════════════
+       SLIDE 5: CLOSING
+       Bold corner clusters, centered text
+       ═══════════════════════════════════════════ */
+
+    /* -- Top-right cluster -- */
+    .slide-closing .geo-canvas .tr-rect-1 {
+      position: absolute;
+      width: 220px; height: 150px;
+      background: var(--slate-dark);
+      top: 0; right: 0;
+    }
+    .slide-closing .geo-canvas .tr-rect-2 {
+      position: absolute;
+      width: 130px; height: 100px;
+      background: var(--terracotta);
+      top: 25px; right: 155px;
+      opacity: 0.65;
+    }
+    .slide-closing .geo-canvas .tr-half-circle {
+      position: absolute;
+      width: 110px; height: 55px;
+      border-radius: 0 0 110px 110px;
+      background: var(--cool-gray);
+      top: 0; right: 45px;
+      opacity: 0.45;
+    }
+    .slide-closing .geo-canvas .tr-square {
+      position: absolute;
+      width: 45px; height: 45px;
+      background: var(--sage);
+      top: 110px; right: 220px;
+      opacity: 0.45;
+    }
+    .slide-closing .geo-canvas .tr-stripe {
+      position: absolute;
+      width: 7px; height: 120px;
+      background: var(--gold);
+      top: 10px; right: 280px;
+      opacity: 0.3;
+    }
+
+    /* -- Bottom-left cluster -- */
+    .slide-closing .geo-canvas .bl-rect-1 {
+      position: absolute;
+      width: 240px; height: 130px;
+      background: var(--slate-dark);
+      bottom: 0; left: 0;
+    }
+    .slide-closing .geo-canvas .bl-rect-2 {
+      position: absolute;
+      width: 150px; height: 80px;
+      background: var(--terracotta);
+      bottom: 35px; left: 150px;
+      opacity: 0.55;
+    }
+    .slide-closing .geo-canvas .bl-arc {
+      position: absolute;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      border: 30px solid rgba(100, 116, 139, 0.22);
+      bottom: -50px; left: -40px;
+      clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 100%);
+    }
+    .slide-closing .geo-canvas .bl-lines {
+      position: absolute;
+      left: 25px; bottom: 12px;
+      width: 120px; height: 55px;
+      background: repeating-linear-gradient(0deg, rgba(250, 248, 245, 0.2) 0px, rgba(250, 248, 245, 0.2) 2px, transparent 2px, transparent 12px);
+    }
+
+    /* Scattered */
+    .slide-closing .geo-canvas .dot-accent {
+      position: absolute;
+      width: 90px; height: 90px;
+      background-image: radial-gradient(circle, rgba(212, 162, 84, 0.28) 3px, transparent 3px);
+      background-size: 18px 18px;
+      top: 210px; right: 35px;
+    }
+    .slide-closing .geo-canvas .diagonal-line {
+      position: absolute;
+      width: 650px; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(30, 41, 59, 0.07), transparent);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+    }
+
+    .slide-closing .slide-content h1 {
+      font-size: 2.4em;
+      text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+      margin: 0;
+    }
+    .slide-closing .slide-content h1 .accent-line {
+      display: block;
+      color: var(--accent);
+    }
+    .slide-closing .subtitle {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.6em;
+      color: var(--slate-dark);
+      margin-top: 1.5rem;
+      font-weight: 500;
+      white-space: nowrap;
+      background: rgba(250, 248, 245, 0.85);
+      padding: 0.3em 0.8em;
+      border-radius: 4px;
+    }
+    .slide-closing .contact-row {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1.8rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.5em;
+      color: var(--text-muted);
+    }
+    .slide-closing .contact-row span {
+      background: rgba(250, 248, 245, 0.85);
+      padding: 0.25em 0.6em;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ═══ SLIDE 1: TITLE ═══ -->
+      <section class="slide-title">
+        <div class="geo-canvas">
+          <div class="tr-rect-1"></div>
+          <div class="tr-rect-2"></div>
+          <div class="tr-half-circle"></div>
+          <div class="tr-square"></div>
+          <div class="tr-stripe"></div>
+          <div class="tr-circle"></div>
+          <div class="bl-rect-1"></div>
+          <div class="bl-rect-2"></div>
+          <div class="bl-arc"></div>
+          <div class="bl-circle"></div>
+          <div class="bl-lines"></div>
+          <div class="bl-square"></div>
+          <div class="dot-accent"></div>
+          <div class="diagonal-line"></div>
+        </div>
+        <div class="slide-content centered">
+          <div class="label">AI + Education</div>
+          <h1>AI-Powered<br><span class="accent-line">Spaced Repetition</span></h1>
+          <div class="divider"></div>
+          <p class="subtitle">Learning that adapts to how your brain actually works</p>
+        </div>
+      </section>
+
+      <!-- ═══ SLIDE 2: CONTENT — The Problem ═══ -->
+      <section class="slide-content-type">
+        <div class="geo-canvas">
+          <div class="tr-rect"></div>
+          <div class="tr-terracotta"></div>
+          <div class="tr-circle"></div>
+          <div class="bl-stripe"></div>
+          <div class="bl-sage"></div>
+        </div>
+        <div class="slide-content">
+          <h2>The Problem</h2>
+          <div class="big-stat">70%</div>
+          <div class="stat-caption">of learned material forgotten within 24 hours</div>
+          <div class="bullet-row">
+            <div class="bullet-card">
+              <strong>Static schedules</strong> treat every concept the same — your brain doesn't work that way
+            </div>
+            <div class="bullet-card">
+              <strong>Manual card creation</strong> is tedious — most learners quit before building a useful deck
+            </div>
+            <div class="bullet-card">
+              <strong>No adaptation</strong> to how you struggle — current tools track if, not why
+            </div>
+          </div>
+          <div class="footnote">Ebbinghaus Forgetting Curve, 1885 — still the #1 unsolved problem in self-directed learning</div>
+        </div>
+      </section>
+
+      <!-- ═══ SLIDE 3: CODE — Under the Hood ═══ -->
+      <section class="slide-code">
+        <div class="geo-canvas">
+          <div class="corner-rect"></div>
+          <div class="corner-gold"></div>
+        </div>
+        <div class="slide-content">
+          <h2>Under the Hood</h2>
+          <p class="code-description">The AI scheduling engine adapts intervals based on real-time recall patterns</p>
+          <div class="code-card">
+            <span class="file-label">core/scheduler.ts</span>
+            <pre><span class="kw">interface</span> <span class="type">ReviewSignal</span> {
+  <span class="prop">cardId</span><span class="op">:</span> <span class="type">string</span><span class="op">;</span>
+  <span class="prop">responseTime</span><span class="op">:</span> <span class="type">number</span><span class="op">;</span>     <span class="cm">// ms to answer</span>
+  <span class="prop">confidence</span><span class="op">:</span> <span class="num">1</span> <span class="op">|</span> <span class="num">2</span> <span class="op">|</span> <span class="num">3</span> <span class="op">|</span> <span class="num">4</span><span class="op">;</span>  <span class="cm">// self-reported</span>
+}
+
+<span class="kw">async function</span> <span class="fn">computeNextReview</span>(
+  <span class="prop">signal</span><span class="op">:</span> <span class="type">ReviewSignal</span><span class="op">,</span>
+  <span class="prop">history</span><span class="op">:</span> <span class="type">ReviewSignal</span>[]
+)<span class="op">:</span> <span class="type">Promise</span>&lt;<span class="type">Date</span>&gt; {
+  <span class="kw">const</span> <span class="prop">decay</span> <span class="op">=</span> <span class="fn">estimateDecayRate</span>(history)<span class="op">;</span>
+  <span class="kw">const</span> <span class="prop">boost</span> <span class="op">=</span> signal.<span class="prop">confidence</span> <span class="op">&gt;=</span> <span class="num">3</span> <span class="op">?</span> <span class="num">1.8</span> <span class="op">:</span> <span class="num">0.6</span><span class="op">;</span>
+  <span class="kw">const</span> <span class="prop">interval</span> <span class="op">=</span> <span class="prop">decay</span> <span class="op">*</span> <span class="prop">boost</span> <span class="op">*</span> <span class="fn">difficultyWeight</span>(signal)<span class="op">;</span>
+
+  <span class="kw">return</span> <span class="fn">addHours</span>(<span class="kw">new</span> <span class="type">Date</span>()<span class="op">,</span> <span class="prop">interval</span>)<span class="op">;</span>
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ SLIDE 4: METRICS — Impact ═══ -->
+      <section class="slide-metrics">
+        <div class="geo-canvas">
+          <div class="edge-rect-tr"></div>
+          <div class="edge-terra-tr"></div>
+          <div class="edge-circle-tr"></div>
+          <div class="edge-rect-bl"></div>
+          <div class="edge-sage-bl"></div>
+          <div class="dot-accent"></div>
+        </div>
+        <div class="slide-content">
+          <h2>Impact</h2>
+          <div class="metrics-subtitle">Early beta results across 200+ active learners</div>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-number">2.4x</div>
+              <div class="stat-label">Better Long-Term Retention</div>
+              <div class="stat-detail">vs. fixed-interval flashcard apps</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number warm">40%</div>
+              <div class="stat-label">Less Study Time Required</div>
+              <div class="stat-detail">AI eliminates redundant reviews</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">92%</div>
+              <div class="stat-label">Daily Active Retention</div>
+              <div class="stat-detail">30-day active user cohort</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number warm">3.1k</div>
+              <div class="stat-label">Beta Users & Counting</div>
+              <div class="stat-detail">Organic word-of-mouth growth</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ SLIDE 5: CLOSING ═══ -->
+      <section class="slide-closing">
+        <div class="geo-canvas">
+          <div class="tr-rect-1"></div>
+          <div class="tr-rect-2"></div>
+          <div class="tr-half-circle"></div>
+          <div class="tr-square"></div>
+          <div class="tr-stripe"></div>
+          <div class="bl-rect-1"></div>
+          <div class="bl-rect-2"></div>
+          <div class="bl-arc"></div>
+          <div class="bl-lines"></div>
+          <div class="dot-accent"></div>
+          <div class="diagonal-line"></div>
+        </div>
+        <div class="slide-content centered">
+          <div class="label">Thank You</div>
+          <h1>Let's Build Smarter<br><span class="accent-line">Learning Together</span></h1>
+          <div class="divider"></div>
+          <p class="subtitle">Questions, feedback, or partnership inquiries welcome</p>
+          <div class="contact-row">
+            <span>hello@spacedai.com</span>
+            <span>spacedai.com</span>
+            <span>@spacedai</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: 'c/t',
+      controls: true,
+      progress: false,
+      transition: 'fade',
+      width: 960,
+      height: 700,
+      center: false,
+    });
+  </script>
+</body>
+</html>
