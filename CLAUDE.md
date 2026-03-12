@@ -8,12 +8,7 @@
 
 **In progress:** TASK-018 (slide CSS design system polish) — PR #11 open, branch `task/018-slide-css-polish`. Adds decorative geometric elements, polished typography, accent treatments to all 5 slide types. Also synced the export template (`src/client/lib/slideExport.ts`) with the polished CSS. Beckham needs to review and merge.
 
-**Immediate priority:** Beckham has a demo in ~2 hours. He needs a 3-minute demo rehearsal script. See handoff file for full context on the demo angle, slide content, and talking points.
-
-**After demo:**
-- Deploy TASK-008+009+018 to production
-- TASK-017 (image slides) — discuss scope with Beckham
-- TASK-016 (PDF export) — lower priority
+**Stage:** Preparing to ship publicly — posting on X and social media to acquire real users. The bar is "presentable and confidence-inspiring," not "demo/v1." Every feature should feel complete enough that a stranger would use it.
 
 **Deployed:** https://unpack.pro (EC2 + nginx + PM2, Supabase DB via connection pooler)
 
@@ -70,7 +65,7 @@ Every task goes through these gates. Each gate requires explicit approval from B
 2. **PLAN** — Present a flat step-by-step plan (files to change, what each step does). **GATE: Stop and wait for Beckham to approve the plan.** Do not write any code until approved.
 3. **MODE** — Confirm working mode (Direct/Design/Learn). Default to what's in the task file.
 4. **EXECUTE** — Create task branch. Implement the approved plan. Commit as you go.
-5. **CODE REVIEW** — Run build (`bunx vite build`). Launch a separate agent to review the diff (`git diff main`) for correctness, security, error handling, race conditions, and state bugs. Fix all High/Medium issues. **GATE: Do not proceed until review passes.**
+5. **CODE REVIEW** — Run build (`bunx vite build`). Then run `/simplify` which launches three parallel review agents (code reuse, code quality, efficiency) against the diff. Fix all High/Medium issues; skip overengineering suggestions with a note. **GATE: Do not proceed until review passes.**
 6. **PR** — Rebase on `main`, push branch, open PR via `gh pr create` (title: `TASK-XXX: <description>`, body: summary + acceptance criteria checklist). **GATE: Beckham reviews and merges on GitHub.**
 7. **CLOSE** — After merge: delete branch (remote + local), update task status to `done`, commit to `main`, push.
 
@@ -79,6 +74,7 @@ Every task goes through these gates. Each gate requires explicit approval from B
 
 ## Agent Conduct Rules (ALL Agents Must Follow)
 
+- **Genuinely evaluate alternatives before dismissing them.** When Beckham or anyone suggests a library, tool, or approach, do NOT anchor on your initial framing and dismiss it. Actually evaluate the suggestion on its merits — check the ecosystem, consider how it compounds with other tasks, and compare it honestly to the current plan. If you can't articulate a concrete, specific reason against it, you don't have one. Lazy pattern-matching ("that's a delivery tool, not a design tool") is not evaluation. Ask yourself: "Am I dismissing this because I already committed to a different approach?"
 - **Verify third-party UI instructions against current docs.** Never give dashboard navigation steps (Supabase, AWS Console, Google Cloud, etc.) from training data alone. These UIs change frequently. Search the web or official docs first to confirm the current layout before telling Beckham where to click.
 - **Surface all security-critical artifacts.** Any time an agent creates, moves, or relies on a security-sensitive file (SSH keys, .pem files, API keys, certificates, credentials), explicitly tell Beckham: what it is, where it lives, and why it matters. These are NOT implementation details — they are operational knowledge the system owner needs. This applies even in Direct mode.
 - **Security checklist on infra tasks.** Any task involving secrets, credentials, server config, or deployment must include a security review as part of code review. Check: file permissions on secrets (600, not 644/664), no secrets in git history, no shell expansion risks in scripts handling credentials, security headers in web server config, and principle of least privilege on IAM roles and firewall rules. "Does it work?" is not enough — "is it secure?" is mandatory.

@@ -1,9 +1,5 @@
 import { SlideData } from '../../shared/types'
-import DOMPurify from 'dompurify'
-
-function sanitize(text: string): string {
-  return DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
-}
+import { sanitize } from './sanitize.js'
 
 function slideToHtml(slide: SlideData, index: number): string {
   const num = `<span class="slide-number">${index + 1}</span>`

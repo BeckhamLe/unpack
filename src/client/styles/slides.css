@@ -1,45 +1,57 @@
-/* ===== Unpack Slide Design System ===== */
+/* ===== Unpack Slide Design System v2 ===== */
+/* Two themes: Geometric Deco (dark) + Architectural Editorial (light) */
 
 /* --- Font imports --- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Playfair+Display:wght@400;700;900&family=JetBrains+Mono:wght@400;500;700&family=Fira+Code:wght@400;500&display=swap');
 
-/* --- Design tokens --- */
+/* ═══════════════════════════════════════════
+   BASE SLIDE STRUCTURE (theme-agnostic)
+   ═══════════════════════════════════════════ */
+
 .slide-container {
-  --slide-bg: #ffffff;
-  --slide-text: #1a1a2e;
-  --slide-text-secondary: #64648c;
-  --slide-accent: #2563eb;
-  --slide-accent-light: #dbeafe;
-  --slide-border: #e2e8f0;
-  --slide-code-bg: #1e1e2e;
-  --slide-code-text: #cdd6f4;
-  --slide-heading-size: clamp(1.5rem, 3vw, 2.5rem);
-  --slide-body-size: clamp(0.875rem, 1.5vw, 1.25rem);
-  --slide-small-size: clamp(0.75rem, 1.2vw, 1rem);
-  --slide-spacing: clamp(1rem, 2vw, 2rem);
-
   font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* --- Base slide --- */
 .slide {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  background: var(--slide-bg);
-  color: var(--slide-text);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: var(--slide-spacing);
   border-radius: 0.75rem;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 .slide + .slide {
   margin-top: 1rem;
+}
+
+/* Geo canvas — decorative background shapes */
+.geo-canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.geo-canvas > div {
+  position: absolute;
+}
+
+/* Slide content sits above geo canvas */
+.slide-inner {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.slide-inner.centered {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 /* Slide number badge */
@@ -47,244 +59,36 @@
   position: absolute;
   bottom: 0.75rem;
   right: 1rem;
-  font-size: var(--slide-small-size);
-  color: var(--slide-text-secondary);
+  font-size: 0.75rem;
+  z-index: 20;
   opacity: 0.6;
 }
 
-/* --- Title Slide --- */
-.slide-title {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  gap: 1rem;
-}
-
-.slide-title .slide-heading {
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--slide-text);
-  letter-spacing: -0.02em;
-}
-
-.slide-title .slide-subtitle {
-  font-size: var(--slide-body-size);
-  color: var(--slide-text-secondary);
-  max-width: 70%;
-  line-height: 1.6;
-}
-
-.slide-title .slide-author {
-  font-size: var(--slide-small-size);
-  color: var(--slide-accent);
-  font-weight: 600;
-  margin-top: 0.75rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.slide-title .slide-date {
-  font-size: var(--slide-small-size);
-  color: var(--slide-text-secondary);
-  opacity: 0.7;
-}
-
-/* --- Content Slide --- */
-.slide-content {
-  gap: var(--slide-spacing);
-}
-
-.slide-content .slide-heading {
-  font-size: var(--slide-heading-size);
-  font-weight: 600;
-  color: var(--slide-text);
-  letter-spacing: -0.01em;
-}
-
-.slide-content .slide-bullets {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  flex: 1;
-}
-
-.slide-content .slide-bullets li {
-  font-size: var(--slide-body-size);
-  line-height: 1.6;
-  padding-left: 1.75rem;
-  position: relative;
-}
-
-.slide-content .slide-bullets li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.45em;
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 2px;
-  background: var(--slide-accent);
-  opacity: 0.8;
-}
-
-/* --- Code Slide --- */
-.slide-code {
-  gap: 0.75rem;
-}
-
-.slide-code .slide-heading {
-  font-size: var(--slide-heading-size);
-  font-weight: 600;
-  color: var(--slide-text);
-}
-
-.slide-code .slide-code-block {
-  flex: 1;
-  background: var(--slide-code-bg);
-  color: var(--slide-code-text);
-  border-radius: 0.625rem;
-  padding: 0 1.25rem 1rem;
-  overflow: auto;
-  font-family: 'Fira Code', monospace;
-  font-size: var(--slide-small-size);
-  line-height: 1.7;
-  white-space: pre;
-  tab-size: 2;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.slide-code .slide-caption {
-  font-size: var(--slide-small-size);
-  color: var(--slide-text-secondary);
-  text-align: center;
-  font-style: italic;
-  opacity: 0.8;
-}
-
-/* --- Metrics Slide --- */
-.slide-metrics {
-  justify-content: center;
-  gap: var(--slide-spacing);
-}
-
-.slide-metrics .slide-heading {
-  font-size: var(--slide-heading-size);
-  font-weight: 600;
-  color: var(--slide-text);
-  text-align: center;
-  letter-spacing: -0.01em;
-}
-
-.slide-metrics .slide-stats {
-  display: flex;
-  justify-content: center;
-  gap: clamp(1rem, 2vw, 2rem);
-  flex-wrap: wrap;
-}
-
-.slide-metrics .slide-stat {
-  text-align: center;
-  min-width: 130px;
-  padding: clamp(0.75rem, 1.5vw, 1.25rem) clamp(1rem, 2vw, 1.5rem);
-  background: var(--slide-accent-light);
-  border-radius: 0.75rem;
-  border: 1px solid var(--slide-border);
-}
-
-.slide-metrics .slide-stat-number {
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 700;
-  color: var(--slide-accent);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-.slide-metrics .slide-stat-label {
-  font-size: var(--slide-small-size);
-  color: var(--slide-text-secondary);
-  margin-top: 0.5rem;
-  font-weight: 500;
-}
-
-/* --- Closing Slide --- */
-.slide-closing {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  gap: 1.25rem;
-}
-
-.slide-closing .slide-heading {
-  font-size: clamp(1.75rem, 3.5vw, 3rem);
-  font-weight: 700;
-  color: var(--slide-text);
-  letter-spacing: -0.02em;
-}
-
-.slide-closing .slide-cta {
-  font-size: var(--slide-body-size);
-  color: var(--slide-accent);
-  font-weight: 600;
-  padding: 0.5rem 1.5rem;
-  border: 2px solid var(--slide-accent);
-  border-radius: 9999px;
-  display: inline-block;
-}
-
-.slide-closing .slide-links {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  margin-top: 0.25rem;
-}
-
-.slide-closing .slide-links a,
-.slide-closing .slide-links span {
-  font-size: var(--slide-small-size);
-  color: var(--slide-text-secondary);
-  opacity: 0.8;
-}
-
-/* --- Transition --- */
-.slide-fade-enter {
-  opacity: 0;
-  transition: opacity 200ms ease;
-}
-
-.slide-fade-enter-active {
-  opacity: 1;
-}
-
-/* --- Changed badge --- */
+/* Changed badge */
 .slide-changed-badge {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background: var(--slide-accent);
-  color: var(--slide-bg);
   font-size: 0.625rem;
   font-weight: 600;
   padding: 0.125rem 0.5rem;
   border-radius: 9999px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  z-index: 20;
 }
 
-/* --- Shimmer skeleton for slide generation --- */
+/* Shimmer skeleton for slide generation */
 .slide-shimmer-skeleton {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.04) 100%
+    rgba(128, 128, 128, 0.08) 0%,
+    rgba(128, 128, 128, 0.16) 50%,
+    rgba(128, 128, 128, 0.08) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(128, 128, 128, 0.12);
 }
 
 @keyframes shimmer {
@@ -292,11 +96,1175 @@
   100% { background-position: -200% 0; }
 }
 
-/* --- Syntax tokens (basic highlight classes) --- */
-.token-keyword { color: #c678dd; }
-.token-string { color: #98c379; }
-.token-comment { color: #5c6370; font-style: italic; }
-.token-function { color: #61afef; }
-.token-number { color: #d19a66; }
-.token-operator { color: #56b6c2; }
-.token-punctuation { color: #abb2bf; }
+/* Transition */
+.slide-fade-enter {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.slide-fade-enter-active {
+  opacity: 1;
+}
+
+
+/* ═══════════════════════════════════════════
+   THEME: GEOMETRIC DECO (dark)
+   Indigo/violet/cyan palette, Space Grotesk headings
+   ═══════════════════════════════════════════ */
+
+[data-theme="geometric-deco"] {
+  --bg: #0c0a1a;
+  --indigo: #4338ca;
+  --indigo-light: #6366f1;
+  --indigo-lighter: #818cf8;
+  --violet: #7c3aed;
+  --violet-light: #a78bfa;
+  --violet-muted: #c4b5fd;
+  --cyan-1: #67e8f9;
+  --cyan-2: #22d3ee;
+  --cyan-3: #a5f3fc;
+  --text-body: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --text-heading: #fff;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-border: rgba(255, 255, 255, 0.1);
+  --heading-font: 'Space Grotesk', system-ui, sans-serif;
+  --body-font: 'Inter', system-ui, sans-serif;
+  --code-font: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* --- Base slide (Geo Deco) --- */
+[data-theme="geometric-deco"] .slide {
+  background: var(--bg);
+  color: var(--text-body);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="geometric-deco"] .slide-number {
+  color: rgba(255, 255, 255, 0.4);
+  font-family: var(--body-font);
+}
+
+[data-theme="geometric-deco"] .slide-changed-badge {
+  background: var(--indigo-light);
+  color: #fff;
+}
+
+/* --- Heading underline (shared across content/code/metrics) --- */
+[data-theme="geometric-deco"] .heading-underline::after {
+  content: '';
+  display: block;
+  width: 3rem;
+  height: 3px;
+  background: linear-gradient(90deg, var(--cyan-2), var(--indigo-light));
+  margin-top: 0.6rem;
+  border-radius: 2px;
+}
+
+/* ── Geo Deco: Title Slide ── */
+
+[data-theme="geometric-deco"] .slide-title .slide-inner {
+  padding: 3rem;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+[data-theme="geometric-deco"] .slide-title .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin: 0;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="geometric-deco"] .slide-title .slide-subtitle {
+  font-family: var(--body-font);
+  font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 1.25rem;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+[data-theme="geometric-deco"] .slide-title .slide-author {
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
+  color: var(--cyan-1);
+  font-weight: 600;
+  margin-top: 1rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+[data-theme="geometric-deco"] .slide-title .slide-date {
+  font-size: clamp(0.6rem, 0.9vw, 0.8rem);
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 0.25rem;
+}
+
+/* Geo shapes — Title */
+[data-theme="geometric-deco"] .slide-title .geo-circle-1 {
+  width: 40%; height: 0; padding-bottom: 40%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4338ca, #6366f1);
+  top: -12%; right: -8%;
+  opacity: 0.7;
+}
+[data-theme="geometric-deco"] .slide-title .geo-half-circle {
+  width: 30%; height: 0; padding-bottom: 15%;
+  border-radius: 0 0 999px 999px;
+  background: linear-gradient(180deg, #7c3aed, #a78bfa);
+  bottom: 6%; left: -5%;
+  opacity: 0.5;
+  transform: rotate(30deg);
+}
+[data-theme="geometric-deco"] .slide-title .geo-rect-1 {
+  width: 10%; height: 55%;
+  background: linear-gradient(180deg, #312e81, #4338ca);
+  top: 12%; left: 15%;
+  opacity: 0.6;
+  border-radius: 8px;
+}
+[data-theme="geometric-deco"] .slide-title .geo-rect-2 {
+  width: 35%; height: 12%;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  top: 43%; right: -4%;
+  opacity: 0.35;
+  border-radius: 8px;
+  transform: rotate(-5deg);
+}
+[data-theme="geometric-deco"] .slide-title .geo-square-1 {
+  width: 7%; height: 0; padding-bottom: 7%;
+  background: #c4b5fd;
+  bottom: 17%; right: 20%;
+  opacity: 0.4;
+  border-radius: 6px;
+  transform: rotate(15deg);
+}
+[data-theme="geometric-deco"] .slide-title .geo-arc-1 {
+  width: 25%; height: 0; padding-bottom: 25%;
+  border-radius: 0 0 999px 0;
+  border-right: 3px solid rgba(139, 92, 246, 0.3);
+  border-bottom: 3px solid rgba(139, 92, 246, 0.3);
+  top: -3%; left: -2%;
+}
+[data-theme="geometric-deco"] .slide-title .geo-dot-grid {
+  width: 18%; height: 25%;
+  bottom: 25%; left: 35%;
+  background-image: radial-gradient(circle, rgba(165, 180, 252, 0.25) 2px, transparent 2px);
+  background-size: 20px 20px;
+}
+[data-theme="geometric-deco"] .slide-title .geo-ring {
+  width: 12%; height: 0; padding-bottom: 12%;
+  border-radius: 50%;
+  border: 4px solid rgba(99, 102, 241, 0.25);
+  bottom: -4%; right: 30%;
+}
+
+/* ── Geo Deco: Content Slide ── */
+
+[data-theme="geometric-deco"] .slide-content .slide-inner {
+  padding: 2.5rem 3rem;
+  justify-content: flex-start;
+  padding-top: 2.5rem;
+}
+
+[data-theme="geometric-deco"] .slide-content .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1.3rem, 2.8vw, 2rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.03em;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+  margin: 0 0 0.2rem 0;
+}
+
+[data-theme="geometric-deco"] .slide-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+[data-theme="geometric-deco"] .slide-bullets li {
+  font-family: var(--body-font);
+  font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  font-weight: 400;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+[data-theme="geometric-deco"] .slide-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  background: linear-gradient(135deg, var(--cyan-1), var(--cyan-2));
+  opacity: 0.8;
+}
+
+/* Geo shapes — Content */
+[data-theme="geometric-deco"] .slide-content .geo-arc-tl {
+  width: 18%; height: 0; padding-bottom: 18%;
+  border-radius: 0 0 999px 0;
+  border-right: 3px solid rgba(99, 102, 241, 0.25);
+  border-bottom: 3px solid rgba(99, 102, 241, 0.25);
+  top: -1%; left: -1%;
+}
+[data-theme="geometric-deco"] .slide-content .geo-dots-br {
+  width: 14%; height: 15%;
+  bottom: 3%; right: 2%;
+  background-image: radial-gradient(circle, rgba(165, 180, 252, 0.2) 2px, transparent 2px);
+  background-size: 18px 18px;
+}
+[data-theme="geometric-deco"] .slide-content .geo-line-tr {
+  width: 28%; height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.15));
+  top: 9%; right: 0;
+  border-radius: 2px;
+}
+[data-theme="geometric-deco"] .slide-content .geo-circle-bl {
+  width: 7%; height: 0; padding-bottom: 7%;
+  border-radius: 50%;
+  border: 3px solid rgba(124, 58, 237, 0.2);
+  bottom: 4%; left: 3%;
+}
+[data-theme="geometric-deco"] .slide-content .geo-square-tr {
+  width: 5%; height: 0; padding-bottom: 5%;
+  background: rgba(99, 102, 241, 0.15);
+  top: 6%; right: 4%;
+  border-radius: 4px;
+  transform: rotate(12deg);
+}
+
+/* ── Geo Deco: Code Slide ── */
+
+[data-theme="geometric-deco"] .slide-code .slide-inner {
+  padding: 2.5rem 3rem;
+  justify-content: flex-start;
+  padding-top: 2.5rem;
+}
+
+[data-theme="geometric-deco"] .slide-code .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.3rem 0;
+}
+
+[data-theme="geometric-deco"] .slide-code .slide-caption {
+  font-family: var(--body-font);
+  font-size: clamp(0.6rem, 1vw, 0.8rem);
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0.5rem 0 0.8rem;
+  font-weight: 300;
+  text-align: center;
+  font-style: italic;
+}
+
+[data-theme="geometric-deco"] .slide-code .slide-code-block {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  position: relative;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(99, 102, 241, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: auto;
+  max-height: 70%;
+  font-family: var(--code-font);
+  font-size: clamp(0.6rem, 1vw, 0.8rem);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: pre;
+  tab-size: 2;
+}
+
+[data-theme="geometric-deco"] .slide-code .slide-code-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+  border-radius: 14px 14px 0 0;
+}
+
+/* Syntax tokens — Geo Deco */
+[data-theme="geometric-deco"] .token-keyword { color: #a78bfa; }
+[data-theme="geometric-deco"] .token-string { color: #86efac; }
+[data-theme="geometric-deco"] .token-comment { color: rgba(255, 255, 255, 0.3); font-style: italic; }
+[data-theme="geometric-deco"] .token-function { color: #67e8f9; }
+[data-theme="geometric-deco"] .token-number { color: #fbbf24; }
+[data-theme="geometric-deco"] .token-operator { color: rgba(255, 255, 255, 0.5); }
+[data-theme="geometric-deco"] .token-punctuation { color: #c4b5fd; }
+
+/* Geo shapes — Code */
+[data-theme="geometric-deco"] .slide-code .geo-line-left {
+  width: 3px; height: 65%;
+  background: linear-gradient(180deg, transparent, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.2), transparent);
+  top: 15%; left: 3%;
+  border-radius: 2px;
+}
+[data-theme="geometric-deco"] .slide-code .geo-corner-tr {
+  width: 10%; height: 0; padding-bottom: 10%;
+  border-right: 3px solid rgba(99, 102, 241, 0.25);
+  border-top: 3px solid rgba(99, 102, 241, 0.25);
+  border-radius: 0 12px 0 0;
+  top: 4%; right: 3%;
+}
+[data-theme="geometric-deco"] .slide-code .geo-dots-bl {
+  width: 9%; height: 10%;
+  bottom: 4%; left: 5%;
+  background-image: radial-gradient(circle, rgba(165, 180, 252, 0.15) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
+}
+[data-theme="geometric-deco"] .slide-code .geo-code-glow {
+  width: 70%; height: 55%;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -45%);
+  background: radial-gradient(ellipse, rgba(67, 56, 202, 0.08) 0%, transparent 70%);
+}
+
+/* ── Geo Deco: Metrics Slide ── */
+
+[data-theme="geometric-deco"] .slide-metrics .slide-inner {
+  padding: 2.5rem 3rem;
+  justify-content: flex-start;
+  padding-top: 2.5rem;
+}
+
+[data-theme="geometric-deco"] .slide-metrics .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.03em;
+  text-align: center;
+  margin: 0 0 0.2rem 0;
+}
+
+[data-theme="geometric-deco"] .slide-metrics .heading-underline::after {
+  margin: 0.6rem auto 0;
+}
+
+[data-theme="geometric-deco"] .slide-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 0.8rem;
+  width: 100%;
+  margin-top: 1rem;
+  flex: 1;
+  align-items: stretch;
+}
+
+[data-theme="geometric-deco"] .slide-stat {
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  padding: clamp(0.75rem, 1.5vw, 1.5rem) 0.75rem;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="geometric-deco"] .slide-stat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  border-radius: 14px 14px 0 0;
+}
+
+[data-theme="geometric-deco"] .slide-stat-number {
+  font-family: var(--heading-font);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+  background: linear-gradient(135deg, var(--cyan-1), var(--cyan-2), var(--cyan-3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 20px rgba(34, 211, 238, 0.2));
+  overflow-wrap: break-word;
+  word-break: break-word;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 1.2em;
+}
+
+[data-theme="geometric-deco"] .slide-stat-number.stat-number-long {
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+}
+
+[data-theme="geometric-deco"] .slide-stat-label {
+  font-family: var(--body-font);
+  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+  color: rgba(255, 255, 255, 0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Geo shapes — Metrics */
+[data-theme="geometric-deco"] .slide-metrics .geo-circle-left {
+  width: 30%; height: 0; padding-bottom: 30%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(67, 56, 202, 0.25), rgba(99, 102, 241, 0.08));
+  top: 50%; left: -8%;
+  transform: translateY(-50%);
+}
+[data-theme="geometric-deco"] .slide-metrics .geo-rect-br {
+  width: 28%; height: 10%;
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.2), rgba(167, 139, 250, 0.08));
+  bottom: 9%; right: -4%;
+  border-radius: 8px;
+  transform: rotate(-6deg);
+}
+[data-theme="geometric-deco"] .slide-metrics .geo-arc-tr {
+  width: 20%; height: 0; padding-bottom: 20%;
+  border-radius: 0 0 0 999px;
+  border-left: 3px solid rgba(99, 102, 241, 0.2);
+  border-bottom: 3px solid rgba(99, 102, 241, 0.2);
+  top: -1%; right: -1%;
+}
+[data-theme="geometric-deco"] .slide-metrics .geo-dots-tl {
+  width: 12%; height: 12%;
+  top: 4%; left: 3%;
+  background-image: radial-gradient(circle, rgba(165, 180, 252, 0.18) 2px, transparent 2px);
+  background-size: 18px 18px;
+}
+[data-theme="geometric-deco"] .slide-metrics .geo-square-accent {
+  width: 5%; height: 0; padding-bottom: 5%;
+  background: rgba(124, 58, 237, 0.2);
+  bottom: 23%; right: 8%;
+  border-radius: 6px;
+  transform: rotate(20deg);
+}
+
+/* ── Geo Deco: Closing Slide ── */
+
+[data-theme="geometric-deco"] .slide-closing .slide-inner {
+  padding: 3rem;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+[data-theme="geometric-deco"] .slide-closing .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin: 0;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="geometric-deco"] .slide-closing .slide-cta {
+  font-family: var(--body-font);
+  font-size: clamp(0.9rem, 1.5vw, 1.15rem);
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 1.5rem;
+  font-weight: 300;
+  letter-spacing: 0.03em;
+}
+
+[data-theme="geometric-deco"] .slide-closing .slide-qr-code {
+  width: clamp(80px, 12vw, 140px);
+  height: auto;
+  margin-top: 1rem;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="geometric-deco"] .slide-closing .slide-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+[data-theme="geometric-deco"] .slide-closing .slide-links span {
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  color: var(--cyan-1);
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.35em 0.75em;
+  border-radius: 6px;
+}
+
+/* Geo shapes — Closing */
+[data-theme="geometric-deco"] .slide-closing .geo-circle-bl {
+  width: 40%; height: 0; padding-bottom: 40%;
+  border-radius: 50%;
+  background: linear-gradient(225deg, #4338ca, #6366f1);
+  bottom: -18%; left: -10%;
+  opacity: 0.65;
+}
+[data-theme="geometric-deco"] .slide-closing .geo-half-top {
+  width: 26%; height: 0; padding-bottom: 13%;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(0deg, #7c3aed, #a78bfa);
+  top: -4%; right: 8%;
+  opacity: 0.45;
+  transform: rotate(-15deg);
+}
+[data-theme="geometric-deco"] .slide-closing .geo-rect-right {
+  width: 9%; height: 50%;
+  background: linear-gradient(180deg, #312e81, #4338ca);
+  top: 22%; right: 4%;
+  opacity: 0.5;
+  border-radius: 8px;
+}
+[data-theme="geometric-deco"] .slide-closing .geo-rect-low {
+  width: 40%; height: 10%;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  bottom: 17%; left: -3%;
+  opacity: 0.3;
+  border-radius: 8px;
+  transform: rotate(4deg);
+}
+[data-theme="geometric-deco"] .slide-closing .geo-square-tl {
+  width: 6%; height: 0; padding-bottom: 6%;
+  background: #c4b5fd;
+  top: 14%; left: 8%;
+  opacity: 0.35;
+  border-radius: 6px;
+  transform: rotate(-12deg);
+}
+[data-theme="geometric-deco"] .slide-closing .geo-arc-br {
+  width: 22%; height: 0; padding-bottom: 22%;
+  border-radius: 999px 0 0 0;
+  border-left: 3px solid rgba(139, 92, 246, 0.3);
+  border-top: 3px solid rgba(139, 92, 246, 0.3);
+  bottom: -2%; right: -1%;
+}
+[data-theme="geometric-deco"] .slide-closing .geo-dots {
+  width: 16%; height: 22%;
+  top: 9%; right: 20%;
+  background-image: radial-gradient(circle, rgba(165, 180, 252, 0.2) 2px, transparent 2px);
+  background-size: 20px 20px;
+}
+[data-theme="geometric-deco"] .slide-closing .geo-ring {
+  width: 14%; height: 0; padding-bottom: 14%;
+  border-radius: 50%;
+  border: 4px solid rgba(99, 102, 241, 0.2);
+  top: 40%; left: 12%;
+}
+
+
+/* ═══════════════════════════════════════════
+   THEME: ARCHITECTURAL EDITORIAL (light)
+   Cream/slate/terracotta palette, Playfair Display headings
+   ═══════════════════════════════════════════ */
+
+[data-theme="architectural-editorial"] {
+  --cream: #faf8f5;
+  --slate-dark: #1e293b;
+  --slate-mid: #334155;
+  --terracotta: #b45309;
+  --terracotta-deep: #92400e;
+  --sage: #6b7f5e;
+  --gold: #d4a254;
+  --cool-gray: #94a3b8;
+  --cool-gray-light: #cbd5e1;
+  --accent: #1e3a5f;
+  --text-muted: #64748b;
+  --heading-font: 'Playfair Display', Georgia, serif;
+  --body-font: 'Inter', system-ui, sans-serif;
+  --code-font: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* --- Base slide (Editorial) --- */
+[data-theme="architectural-editorial"] .slide {
+  background: var(--cream);
+  color: var(--slate-dark);
+  box-shadow:
+    0 2px 16px rgba(30, 41, 59, 0.06),
+    0 1px 4px rgba(30, 41, 59, 0.04);
+}
+
+[data-theme="architectural-editorial"] .slide-number {
+  color: var(--text-muted);
+  font-family: var(--body-font);
+}
+
+[data-theme="architectural-editorial"] .slide-changed-badge {
+  background: var(--terracotta);
+  color: #fff;
+}
+
+/* --- Heading underline (Editorial) --- */
+[data-theme="architectural-editorial"] .heading-underline::after {
+  content: '';
+  display: block;
+  width: 3rem;
+  height: 3px;
+  background: linear-gradient(90deg, var(--terracotta-deep), var(--terracotta));
+  margin-top: 0.5rem;
+  border-radius: 2px;
+}
+
+/* ── Editorial: Title Slide ── */
+
+[data-theme="architectural-editorial"] .slide-title .slide-inner {
+  padding: 3rem 5rem;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+[data-theme="architectural-editorial"] .slide-title .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+  font-weight: 900;
+  color: var(--slate-dark);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+}
+
+[data-theme="architectural-editorial"] .slide-title .slide-subtitle {
+  font-family: var(--body-font);
+  font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+  color: var(--slate-dark);
+  margin-top: 1.25rem;
+  font-weight: 500;
+  max-width: 80%;
+  line-height: 1.5;
+  background: rgba(250, 248, 245, 0.85);
+  padding: 0.3em 0.8em;
+  border-radius: 4px;
+}
+
+[data-theme="architectural-editorial"] .slide-title .slide-author {
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
+  color: var(--terracotta);
+  font-weight: 600;
+  margin-top: 0.75rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+[data-theme="architectural-editorial"] .slide-title .slide-date {
+  font-size: clamp(0.55rem, 0.85vw, 0.75rem);
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* Geo shapes — Title (Editorial) */
+[data-theme="architectural-editorial"] .slide-title .geo-tr-rect-1 {
+  width: 22%; height: 22%;
+  background: var(--slate-dark);
+  top: 0; right: 0;
+}
+[data-theme="architectural-editorial"] .slide-title .geo-tr-rect-2 {
+  width: 13%; height: 15%;
+  background: var(--terracotta);
+  top: 4%; right: 17%;
+  opacity: 0.7;
+}
+[data-theme="architectural-editorial"] .slide-title .geo-tr-half-circle {
+  width: 11%; height: 0; padding-bottom: 5.5%;
+  border-radius: 0 0 999px 999px;
+  background: var(--cool-gray);
+  top: 0; right: 5%;
+  opacity: 0.5;
+}
+[data-theme="architectural-editorial"] .slide-title .geo-tr-square {
+  width: 5%; height: 0; padding-bottom: 5%;
+  background: var(--sage);
+  top: 17%; right: 24%;
+  opacity: 0.5;
+}
+[data-theme="architectural-editorial"] .slide-title .geo-tr-stripe {
+  width: 0.7%; height: 18%;
+  background: var(--gold);
+  top: 1.5%; right: 30%;
+  opacity: 0.35;
+}
+[data-theme="architectural-editorial"] .slide-title .geo-bl-rect-1 {
+  width: 24%; height: 19%;
+  background: var(--slate-dark);
+  bottom: 0; left: 0;
+}
+[data-theme="architectural-editorial"] .slide-title .geo-bl-rect-2 {
+  width: 15%; height: 12%;
+  background: var(--terracotta);
+  bottom: 6%; left: 16%;
+  opacity: 0.6;
+}
+[data-theme="architectural-editorial"] .slide-title .geo-bl-arc {
+  width: 18%; height: 0; padding-bottom: 18%;
+  border-radius: 50%;
+  border: 4px solid rgba(100, 116, 139, 0.25);
+  bottom: -8%; left: -5%;
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 100%);
+}
+[data-theme="architectural-editorial"] .slide-title .geo-dot-accent {
+  width: 9%; height: 12%;
+  top: 32%; right: 4%;
+  background-image: radial-gradient(circle, rgba(212, 162, 84, 0.3) 3px, transparent 3px);
+  background-size: 18px 18px;
+}
+[data-theme="architectural-editorial"] .slide-title .geo-diagonal-line {
+  width: 65%; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(30, 41, 59, 0.08), transparent);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+}
+
+/* ── Editorial: Content Slide ── */
+
+[data-theme="architectural-editorial"] .slide-content .slide-inner {
+  padding: 2.5rem 3.5rem;
+  justify-content: flex-start;
+  padding-top: 2.5rem;
+}
+
+[data-theme="architectural-editorial"] .slide-content .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1.3rem, 2.8vw, 2rem);
+  font-weight: 900;
+  color: var(--slate-dark);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.2rem 0;
+  text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+}
+
+[data-theme="architectural-editorial"] .slide-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  overflow: hidden;
+}
+
+[data-theme="architectural-editorial"] .slide-bullets li {
+  font-family: var(--body-font);
+  font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+  color: var(--slate-dark);
+  line-height: 1.6;
+  font-weight: 400;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+[data-theme="architectural-editorial"] .slide-bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  background: linear-gradient(135deg, var(--terracotta-deep), var(--terracotta));
+  opacity: 0.8;
+}
+
+/* Geo shapes — Content (Editorial) */
+[data-theme="architectural-editorial"] .slide-content .geo-tr-rect {
+  width: 13%; height: 12%;
+  background: var(--slate-dark);
+  top: 0; right: 0;
+  opacity: 0.7;
+}
+[data-theme="architectural-editorial"] .slide-content .geo-tr-terracotta {
+  width: 7%; height: 7%;
+  background: var(--terracotta);
+  top: 2%; right: 11%;
+  opacity: 0.45;
+}
+[data-theme="architectural-editorial"] .slide-content .geo-tr-circle {
+  width: 4%; height: 0; padding-bottom: 4%;
+  border-radius: 50%;
+  background: var(--cool-gray);
+  top: 9%; right: 14%;
+  opacity: 0.3;
+}
+[data-theme="architectural-editorial"] .slide-content .geo-bl-stripe {
+  width: 8%; height: 0.8%;
+  background: var(--gold);
+  bottom: 4%; left: 3%;
+  opacity: 0.3;
+  border-radius: 3px;
+}
+[data-theme="architectural-editorial"] .slide-content .geo-bl-sage {
+  width: 3%; height: 0; padding-bottom: 3%;
+  background: var(--sage);
+  bottom: 0; left: 0;
+  opacity: 0.35;
+}
+
+/* ── Editorial: Code Slide ── */
+
+[data-theme="architectural-editorial"] .slide-code .slide-inner {
+  padding: 2.5rem 3.5rem;
+  justify-content: flex-start;
+  padding-top: 2.5rem;
+}
+
+[data-theme="architectural-editorial"] .slide-code .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-weight: 900;
+  color: var(--slate-dark);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.3rem 0;
+  text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+}
+
+[data-theme="architectural-editorial"] .slide-code .slide-caption {
+  font-family: var(--body-font);
+  font-size: clamp(0.6rem, 1vw, 0.8rem);
+  color: var(--text-muted);
+  margin: 0.5rem 0 0.8rem;
+  font-weight: 300;
+  text-align: center;
+  font-style: italic;
+}
+
+[data-theme="architectural-editorial"] .slide-code .slide-code-block {
+  flex: 1;
+  background: #f1efe9;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(30, 41, 59, 0.06), 0 1px 4px rgba(30, 41, 59, 0.04);
+  padding: 1rem 1.25rem;
+  overflow: auto;
+  max-height: 70%;
+  font-family: var(--code-font);
+  font-size: clamp(0.6rem, 1vw, 0.8rem);
+  line-height: 1.7;
+  color: var(--slate-dark);
+  white-space: pre;
+  tab-size: 2;
+}
+
+/* Syntax tokens — Editorial */
+[data-theme="architectural-editorial"] .token-keyword { color: #92400e; font-weight: 500; }
+[data-theme="architectural-editorial"] .token-string { color: #6b7f5e; }
+[data-theme="architectural-editorial"] .token-comment { color: #94a3b8; font-style: italic; }
+[data-theme="architectural-editorial"] .token-function { color: #1e3a5f; }
+[data-theme="architectural-editorial"] .token-number { color: #b45309; }
+[data-theme="architectural-editorial"] .token-operator { color: #64748b; }
+[data-theme="architectural-editorial"] .token-punctuation { color: #334155; }
+
+/* Geo shapes — Code (Editorial) */
+[data-theme="architectural-editorial"] .slide-code .geo-corner-rect {
+  width: 8%; height: 8%;
+  background: var(--slate-dark);
+  top: 0; right: 0;
+  opacity: 0.5;
+}
+[data-theme="architectural-editorial"] .slide-code .geo-corner-gold {
+  width: 0.6%; height: 8%;
+  background: var(--gold);
+  top: 0; right: 8%;
+  opacity: 0.3;
+}
+
+/* ── Editorial: Metrics Slide ── */
+
+[data-theme="architectural-editorial"] .slide-metrics .slide-inner {
+  padding: 2.5rem 3.5rem;
+  justify-content: flex-start;
+  padding-top: 2.5rem;
+}
+
+[data-theme="architectural-editorial"] .slide-metrics .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  font-weight: 900;
+  color: var(--slate-dark);
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 0.2rem 0;
+  text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+}
+
+[data-theme="architectural-editorial"] .slide-metrics .heading-underline::after {
+  margin: 0.5rem auto 0;
+}
+
+[data-theme="architectural-editorial"] .slide-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  gap: 0.7rem;
+  width: 100%;
+  max-width: none;
+  margin: 0.8rem 0 0;
+  flex: 1;
+  align-items: stretch;
+}
+
+[data-theme="architectural-editorial"] .slide-stat {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px rgba(30, 41, 59, 0.06), 0 1px 4px rgba(30, 41, 59, 0.04);
+  padding: clamp(0.6rem, 1.2vw, 1.2rem) 0.8rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme="architectural-editorial"] .slide-stat-number {
+  font-family: var(--heading-font);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 0.2rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 1.2em;
+}
+
+[data-theme="architectural-editorial"] .slide-stat-number.stat-number-long {
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+}
+
+[data-theme="architectural-editorial"] .slide-stat-label {
+  font-family: var(--body-font);
+  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
+  color: var(--slate-dark);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Geo shapes — Metrics (Editorial) */
+[data-theme="architectural-editorial"] .slide-metrics .geo-edge-rect-tr {
+  width: 15%; height: 14%;
+  background: var(--slate-dark);
+  top: 0; right: 0;
+  opacity: 0.6;
+}
+[data-theme="architectural-editorial"] .slide-metrics .geo-edge-terra-tr {
+  width: 7.5%; height: 8%;
+  background: var(--terracotta);
+  top: 3%; right: 13%;
+  opacity: 0.4;
+}
+[data-theme="architectural-editorial"] .slide-metrics .geo-edge-circle-tr {
+  width: 4.5%; height: 0; padding-bottom: 4.5%;
+  border-radius: 50%;
+  background: var(--cool-gray);
+  top: 10%; right: 16%;
+  opacity: 0.25;
+}
+[data-theme="architectural-editorial"] .slide-metrics .geo-edge-rect-bl {
+  width: 11%; height: 9%;
+  background: var(--slate-dark);
+  bottom: 0; left: 0;
+  opacity: 0.5;
+}
+[data-theme="architectural-editorial"] .slide-metrics .geo-edge-sage-bl {
+  width: 3%; height: 0; padding-bottom: 3%;
+  background: var(--sage);
+  bottom: 7%; left: 10%;
+  opacity: 0.35;
+  transform: rotate(10deg);
+}
+[data-theme="architectural-editorial"] .slide-metrics .geo-dot-accent {
+  width: 7%; height: 10%;
+  bottom: 6%; right: 3%;
+  background-image: radial-gradient(circle, rgba(212, 162, 84, 0.25) 2.5px, transparent 2.5px);
+  background-size: 16px 16px;
+}
+
+/* ── Editorial: Closing Slide ── */
+
+[data-theme="architectural-editorial"] .slide-closing .slide-inner {
+  padding: 3rem 5rem;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+[data-theme="architectural-editorial"] .slide-closing .slide-heading {
+  font-family: var(--heading-font);
+  font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+  font-weight: 900;
+  color: var(--slate-dark);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-shadow: 0 0 20px rgba(250, 248, 245, 0.9), 0 0 40px rgba(250, 248, 245, 0.6);
+}
+
+[data-theme="architectural-editorial"] .slide-closing .slide-cta {
+  font-family: var(--body-font);
+  font-size: clamp(0.9rem, 1.5vw, 1.15rem);
+  color: var(--slate-dark);
+  margin-top: 1.25rem;
+  font-weight: 500;
+  background: rgba(250, 248, 245, 0.85);
+  padding: 0.3em 0.8em;
+  border-radius: 4px;
+}
+
+[data-theme="architectural-editorial"] .slide-closing .slide-qr-code {
+  width: clamp(80px, 12vw, 140px);
+  height: auto;
+  margin-top: 1rem;
+  border-radius: 8px;
+  border: 2px solid rgba(30, 41, 59, 0.1);
+}
+
+[data-theme="architectural-editorial"] .slide-closing .slide-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+  justify-content: center;
+}
+
+[data-theme="architectural-editorial"] .slide-closing .slide-links span {
+  font-family: var(--body-font);
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  color: var(--slate-dark);
+  background: rgba(250, 248, 245, 0.85);
+  padding: 0.35em 0.75em;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+/* Geo shapes — Closing (Editorial) */
+[data-theme="architectural-editorial"] .slide-closing .geo-tr-rect-1 {
+  width: 20%; height: 20%;
+  background: var(--slate-dark);
+  top: 0; right: 0;
+}
+[data-theme="architectural-editorial"] .slide-closing .geo-tr-rect-2 {
+  width: 12%; height: 13%;
+  background: var(--terracotta);
+  top: 4%; right: 15%;
+  opacity: 0.65;
+}
+[data-theme="architectural-editorial"] .slide-closing .geo-tr-half-circle {
+  width: 10%; height: 0; padding-bottom: 5%;
+  border-radius: 0 0 999px 999px;
+  background: var(--cool-gray);
+  top: 0; right: 4%;
+  opacity: 0.45;
+}
+[data-theme="architectural-editorial"] .slide-closing .geo-tr-square {
+  width: 4%; height: 0; padding-bottom: 4%;
+  background: var(--sage);
+  top: 16%; right: 22%;
+  opacity: 0.45;
+}
+[data-theme="architectural-editorial"] .slide-closing .geo-tr-stripe {
+  width: 0.6%; height: 16%;
+  background: var(--gold);
+  top: 1.5%; right: 28%;
+  opacity: 0.3;
+}
+[data-theme="architectural-editorial"] .slide-closing .geo-bl-rect-1 {
+  width: 22%; height: 17%;
+  background: var(--slate-dark);
+  bottom: 0; left: 0;
+}
+[data-theme="architectural-editorial"] .slide-closing .geo-bl-rect-2 {
+  width: 14%; height: 10%;
+  background: var(--terracotta);
+  bottom: 5%; left: 15%;
+  opacity: 0.55;
+}
+[data-theme="architectural-editorial"] .slide-closing .geo-bl-arc {
+  width: 16%; height: 0; padding-bottom: 16%;
+  border-radius: 50%;
+  border: 4px solid rgba(100, 116, 139, 0.22);
+  bottom: -7%; left: -4%;
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 100%, 0 100%);
+}
+[data-theme="architectural-editorial"] .slide-closing .geo-dot-accent {
+  width: 8%; height: 11%;
+  top: 30%; right: 4%;
+  background-image: radial-gradient(circle, rgba(212, 162, 84, 0.28) 3px, transparent 3px);
+  background-size: 18px 18px;
+}
+[data-theme="architectural-editorial"] .slide-closing .geo-diagonal-line {
+  width: 60%; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(30, 41, 59, 0.07), transparent);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+}
+
+
+/* ═══════════════════════════════════════════
+   THEME TOGGLE UI
+   ═══════════════════════════════════════════ */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.theme-toggle-btn {
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
+  border: 1px solid hsl(var(--border));
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-family: inherit;
+  transition: all 150ms ease;
+}
+
+.theme-toggle-btn:hover {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.theme-toggle-btn.active {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+}

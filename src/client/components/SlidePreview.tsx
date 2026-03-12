@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { SlideData, DeliveryBrief } from '../../shared/types'
-import SlideRenderer from './SlideRenderer.js'
+import SlideRenderer, { SlideTheme } from './SlideRenderer.js'
 import ExportButton from './ExportButton.js'
 import LayoutSwapper from './LayoutSwapper.js'
 import DeliveryBriefCard from './DeliveryBriefCard.js'
+import { cn } from '../lib/utils.js'
 
 interface SlidePreviewProps {
   slides: SlideData[]
@@ -16,6 +17,7 @@ interface SlidePreviewProps {
 
 export default function SlidePreview({ slides, previousSlides, onSlidesChange, isStreaming, title, deliveryBrief }: SlidePreviewProps) {
   const [slidesVisible, setSlidesVisible] = useState(true)
+  const [theme, setTheme] = useState<SlideTheme>('geometric-deco')
   const wasStreamingRef = useRef(false)
 
   // When streaming ends and we have a delivery brief, stagger the slides in
@@ -55,7 +57,21 @@ export default function SlidePreview({ slides, previousSlides, onSlidesChange, i
   return (
     <div className="flex-1 flex flex-col min-h-0">
       {/* Preview toolbar */}
-      <div className="px-4 py-2 border-b border-border flex items-center justify-end flex-shrink-0">
+      <div className="px-4 py-2 border-b border-border flex items-center justify-between flex-shrink-0">
+        <div className="theme-toggle">
+          <button
+            className={cn('theme-toggle-btn', theme === 'geometric-deco' && 'active')}
+            onClick={() => setTheme('geometric-deco')}
+          >
+            Dark
+          </button>
+          <button
+            className={cn('theme-toggle-btn', theme === 'architectural-editorial' && 'active')}
+            onClick={() => setTheme('architectural-editorial')}
+          >
+            Light
+          </button>
+        </div>
         <ExportButton slides={slides} title={title} />
       </div>
 
@@ -92,6 +108,7 @@ export default function SlidePreview({ slides, previousSlides, onSlidesChange, i
             <SlideRenderer
               slides={[slide]}
               previousSlides={previousSlides}
+              theme={theme}
             />
           </div>
         ))}
