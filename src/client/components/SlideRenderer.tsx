@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import DOMPurify from 'dompurify'
+import QRCode from 'qrcode'
 import { SlideData } from '../../shared/types'
 
 export type SlideTheme = 'geometric-deco' | 'architectural-editorial'
@@ -20,6 +22,29 @@ function isSlideChanged(slide: SlideData, previousSlides: SlideData[]): boolean 
   const prev = previousSlides.find(s => s.slideId === slide.slideId)
   if (!prev) return true
   return JSON.stringify(slide) !== JSON.stringify(prev)
+}
+
+/* ═══════════════════════════════════════════
+   QR CODE COMPONENT
+   ═══════════════════════════════════════════ */
+
+function QRCodeImage({ url, theme }: { url: string; theme: SlideTheme }) {
+  const [dataUrl, setDataUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    const isDark = theme === 'geometric-deco'
+    QRCode.toDataURL(url, {
+      width: 160,
+      margin: 1,
+      color: {
+        dark: isDark ? '#ffffff' : '#1e293b',
+        light: isDark ? '#0c0a1a' : '#faf8f5',
+      },
+    }).then(setDataUrl).catch(() => setDataUrl(null))
+  }, [url, theme])
+
+  if (!dataUrl) return null
+  return <img src={dataUrl} alt="QR Code" className="slide-qr-code" />
 }
 
 /* ═══════════════════════════════════════════
@@ -161,8 +186,6 @@ function ClosingGeo({ theme }: { theme: SlideTheme }) {
 
 function renderSlide(slide: SlideData, index: number, previousSlides: SlideData[], theme: SlideTheme) {
   const changed = previousSlides.length > 0 && isSlideChanged(slide, previousSlides)
-  // Use grid layout for content bullets when there are 4+
-  const useGrid = slide.type === 'content' && slide.bullets.length >= 4
 
   switch (slide.type) {
     case 'title':
@@ -187,7 +210,7 @@ function renderSlide(slide: SlideData, index: number, previousSlides: SlideData[
           {changed && <span className="slide-changed-badge">Updated</span>}
           <div className="slide-inner">
             <h2 className="slide-heading heading-underline">{sanitize(slide.heading)}</h2>
-            <ul className={`slide-bullets${useGrid ? ' grid-layout' : ''}`}>
+            <ul className="slide-bullets">
               {slide.bullets.map((bullet, i) => (
                 <li key={i}>{sanitize(bullet)}</li>
               ))}
@@ -211,7 +234,7 @@ function renderSlide(slide: SlideData, index: number, previousSlides: SlideData[
         </div>
       )
 
-    case 'metrics':
+    case 'metrics': {
       return (
         <div key={slide.slideId} className="slide slide-metrics">
           <MetricsGeo theme={theme} />
@@ -219,17 +242,23 @@ function renderSlide(slide: SlideData, index: number, previousSlides: SlideData[
           <div className="slide-inner">
             {slide.heading && <h2 className="slide-heading heading-underline">{sanitize(slide.heading)}</h2>}
             <div className="slide-stats">
-              {slide.stats.map((stat, i) => (
-                <div key={i} className="slide-stat">
-                  <div className="slide-stat-number">{sanitize(stat.number)}</div>
-                  <div className="slide-stat-label">{sanitize(stat.label)}</div>
-                </div>
-              ))}
+              {slide.stats.map((stat, i) => {
+                const isLong = stat.number.length > 5
+                return (
+                  <div key={i} className="slide-stat">
+                    <div className={`slide-stat-number${isLong ? ' stat-number-long' : ''}`}>
+                      {sanitize(stat.number)}
+                    </div>
+                    <div className="slide-stat-label">{sanitize(stat.label)}</div>
+                  </div>
+                )
+              })}
             </div>
           </div>
           <span className="slide-number">{index + 1}</span>
         </div>
       )
+    }
 
     case 'closing':
       return (
@@ -239,6 +268,7 @@ function renderSlide(slide: SlideData, index: number, previousSlides: SlideData[
           <div className="slide-inner centered">
             <h1 className="slide-heading">{sanitize(slide.heading)}</h1>
             {slide.cta && <p className="slide-cta">{sanitize(slide.cta)}</p>}
+            {slide.qrCode && <QRCodeImage url={slide.qrCode} theme={theme} />}
             {slide.links && slide.links.length > 0 && (
               <div className="slide-links">
                 {slide.links.map((link, i) => (

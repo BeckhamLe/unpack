@@ -40,6 +40,7 @@ export interface ClosingSlide {
     heading: string
     links?: string[]
     cta?: string
+    qrCode?: string
 }
 
 export type SlideData = TitleSlide | ContentSlide | CodeSlide | MetricsSlide | ClosingSlide
