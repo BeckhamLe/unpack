@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import DOMPurify from 'dompurify'
 import QRCode from 'qrcode'
 import { SlideData } from '../../shared/types'
+import { sanitize } from '../lib/sanitize.js'
+import { cn } from '../lib/utils.js'
 
 export type SlideTheme = 'geometric-deco' | 'architectural-editorial'
 
@@ -9,13 +10,6 @@ interface SlideRendererProps {
   slides: SlideData[]
   previousSlides?: SlideData[]
   theme?: SlideTheme
-}
-
-const ALLOWED_TAGS = ['div', 'span', 'h1', 'h2', 'h3', 'p', 'ul', 'ol', 'li', 'pre', 'code', 'a', 'strong', 'em']
-const ALLOWED_ATTR = ['class', 'href']
-
-function sanitize(text: string): string {
-  return DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
 }
 
 function isSlideChanged(slide: SlideData, previousSlides: SlideData[]): boolean {
@@ -246,7 +240,7 @@ function renderSlide(slide: SlideData, index: number, previousSlides: SlideData[
                 const isLong = stat.number.length > 5
                 return (
                   <div key={i} className="slide-stat">
-                    <div className={`slide-stat-number${isLong ? ' stat-number-long' : ''}`}>
+                    <div className={cn('slide-stat-number', isLong && 'stat-number-long')}>
                       {sanitize(stat.number)}
                     </div>
                     <div className="slide-stat-label">{sanitize(stat.label)}</div>

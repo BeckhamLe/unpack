@@ -173,7 +173,7 @@
 
 [data-theme="geometric-deco"] .slide-title .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.8rem, 4vw, 3.2rem);
+  font-size: clamp(2.2rem, 5vw, 4rem);
   font-weight: 700;
   color: #fff;
   line-height: 1.1;
@@ -184,7 +184,7 @@
 
 [data-theme="geometric-deco"] .slide-title .slide-subtitle {
   font-family: var(--body-font);
-  font-size: clamp(0.75rem, 1.2vw, 1rem);
+  font-size: clamp(0.9rem, 1.5vw, 1.2rem);
   color: rgba(255, 255, 255, 0.5);
   margin-top: 1.25rem;
   font-weight: 300;
@@ -194,7 +194,7 @@
 }
 
 [data-theme="geometric-deco"] .slide-title .slide-author {
-  font-size: clamp(0.65rem, 1vw, 0.85rem);
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
   color: var(--cyan-1);
   font-weight: 600;
   margin-top: 1rem;
@@ -277,7 +277,7 @@
 
 [data-theme="geometric-deco"] .slide-content .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.2rem, 2.5vw, 1.75rem);
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.03em;
@@ -296,7 +296,7 @@
 
 [data-theme="geometric-deco"] .slide-bullets li {
   font-family: var(--body-font);
-  font-size: clamp(0.75rem, 1.3vw, 1rem);
+  font-size: clamp(0.95rem, 1.8vw, 1.35rem);
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.6;
   font-weight: 400;
@@ -455,7 +455,7 @@
 
 [data-theme="geometric-deco"] .slide-metrics .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.2rem, 2.5vw, 1.75rem);
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.03em;
@@ -474,7 +474,7 @@
   width: 100%;
   margin-top: 1rem;
   flex: 1;
-  align-content: center;
+  align-items: stretch;
 }
 
 [data-theme="geometric-deco"] .slide-stat {
@@ -487,6 +487,10 @@
   text-align: center;
   position: relative;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 [data-theme="geometric-deco"] .slide-stat::before {
@@ -500,7 +504,7 @@
 
 [data-theme="geometric-deco"] .slide-stat-number {
   font-family: var(--heading-font);
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
   font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -512,15 +516,19 @@
   filter: drop-shadow(0 0 20px rgba(34, 211, 238, 0.2));
   overflow-wrap: break-word;
   word-break: break-word;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 1.2em;
 }
 
 [data-theme="geometric-deco"] .slide-stat-number.stat-number-long {
-  font-size: clamp(1rem, 2vw, 1.6rem);
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
 }
 
 [data-theme="geometric-deco"] .slide-stat-label {
   font-family: var(--body-font);
-  font-size: clamp(0.55rem, 0.9vw, 0.75rem);
+  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
   color: rgba(255, 255, 255, 0.55);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -575,7 +583,7 @@
 
 [data-theme="geometric-deco"] .slide-closing .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
   font-weight: 700;
   color: #fff;
   line-height: 1.15;
@@ -586,7 +594,7 @@
 
 [data-theme="geometric-deco"] .slide-closing .slide-cta {
   font-family: var(--body-font);
-  font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+  font-size: clamp(0.9rem, 1.5vw, 1.15rem);
   color: rgba(255, 255, 255, 0.5);
   margin-top: 1.5rem;
   font-weight: 300;
@@ -610,7 +618,7 @@
 }
 
 [data-theme="geometric-deco"] .slide-closing .slide-links span {
-  font-size: clamp(0.8rem, 1.3vw, 1.05rem);
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
   color: var(--cyan-1);
   font-weight: 500;
   background: rgba(255, 255, 255, 0.06);
@@ -741,7 +749,7 @@
 
 [data-theme="architectural-editorial"] .slide-title .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  font-size: clamp(2.2rem, 5vw, 4rem);
   font-weight: 900;
   color: var(--slate-dark);
   line-height: 1.1;
@@ -752,7 +760,7 @@
 
 [data-theme="architectural-editorial"] .slide-title .slide-subtitle {
   font-family: var(--body-font);
-  font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+  font-size: clamp(0.9rem, 1.5vw, 1.2rem);
   color: var(--slate-dark);
   margin-top: 1.25rem;
   font-weight: 500;
@@ -764,7 +772,7 @@
 }
 
 [data-theme="architectural-editorial"] .slide-title .slide-author {
-  font-size: clamp(0.6rem, 0.9vw, 0.8rem);
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
   color: var(--terracotta);
   font-weight: 600;
   margin-top: 0.75rem;
@@ -850,7 +858,7 @@
 
 [data-theme="architectural-editorial"] .slide-content .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
   font-weight: 900;
   color: var(--slate-dark);
   letter-spacing: -0.02em;
@@ -869,7 +877,7 @@
 
 [data-theme="architectural-editorial"] .slide-bullets li {
   font-family: var(--body-font);
-  font-size: clamp(0.75rem, 1.3vw, 1rem);
+  font-size: clamp(0.95rem, 1.8vw, 1.35rem);
   color: var(--slate-dark);
   line-height: 1.6;
   font-weight: 400;
@@ -1000,7 +1008,7 @@
 
 [data-theme="architectural-editorial"] .slide-metrics .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
   font-weight: 900;
   color: var(--slate-dark);
   letter-spacing: -0.02em;
@@ -1018,10 +1026,10 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
   gap: 0.7rem;
   width: 100%;
-  max-width: 760px;
-  margin: 0.8rem auto 0;
+  max-width: none;
+  margin: 0.8rem 0 0;
   flex: 1;
-  align-content: center;
+  align-items: stretch;
 }
 
 [data-theme="architectural-editorial"] .slide-stat {
@@ -1029,27 +1037,35 @@
   border-radius: 10px;
   box-shadow: 0 2px 16px rgba(30, 41, 59, 0.06), 0 1px 4px rgba(30, 41, 59, 0.04);
   padding: clamp(0.6rem, 1.2vw, 1.2rem) 0.8rem;
-  text-align: left;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 [data-theme="architectural-editorial"] .slide-stat-number {
   font-family: var(--heading-font);
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
   font-weight: 900;
   color: var(--accent);
   line-height: 1;
   margin-bottom: 0.2rem;
   overflow-wrap: break-word;
   word-break: break-word;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 1.2em;
 }
 
 [data-theme="architectural-editorial"] .slide-stat-number.stat-number-long {
-  font-size: clamp(1rem, 2vw, 1.6rem);
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
 }
 
 [data-theme="architectural-editorial"] .slide-stat-label {
   font-family: var(--body-font);
-  font-size: clamp(0.55rem, 0.9vw, 0.75rem);
+  font-size: clamp(0.7rem, 1.2vw, 0.95rem);
   color: var(--slate-dark);
   font-weight: 500;
   line-height: 1.4;
@@ -1106,7 +1122,7 @@
 
 [data-theme="architectural-editorial"] .slide-closing .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.4rem, 3vw, 2.4rem);
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
   font-weight: 900;
   color: var(--slate-dark);
   line-height: 1.15;
@@ -1117,7 +1133,7 @@
 
 [data-theme="architectural-editorial"] .slide-closing .slide-cta {
   font-family: var(--body-font);
-  font-size: clamp(0.65rem, 1vw, 0.85rem);
+  font-size: clamp(0.9rem, 1.5vw, 1.15rem);
   color: var(--slate-dark);
   margin-top: 1.25rem;
   font-weight: 500;
@@ -1144,7 +1160,7 @@
 
 [data-theme="architectural-editorial"] .slide-closing .slide-links span {
   font-family: var(--body-font);
-  font-size: clamp(0.8rem, 1.3vw, 1.05rem);
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
   color: var(--slate-dark);
   background: rgba(250, 248, 245, 0.85);
   padding: 0.35em 0.75em;
