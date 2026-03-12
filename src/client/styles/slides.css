@@ -173,7 +173,7 @@
 
 [data-theme="geometric-deco"] .slide-title .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-size: clamp(1.8rem, 3.8vw, 2.8rem);
   font-weight: 700;
   color: #fff;
   line-height: 1.1;
@@ -277,7 +277,7 @@
 
 [data-theme="geometric-deco"] .slide-content .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  font-size: clamp(1.3rem, 2.8vw, 2rem);
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.03em;
@@ -292,11 +292,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  flex: 1;
+  overflow: hidden;
 }
 
 [data-theme="geometric-deco"] .slide-bullets li {
   font-family: var(--body-font);
-  font-size: clamp(0.95rem, 1.8vw, 1.35rem);
+  font-size: clamp(0.85rem, 1.5vw, 1.1rem);
   color: rgba(255, 255, 255, 0.85);
   line-height: 1.6;
   font-weight: 400;
@@ -583,7 +585,7 @@
 
 [data-theme="geometric-deco"] .slide-closing .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-size: clamp(1.8rem, 3.8vw, 2.8rem);
   font-weight: 700;
   color: #fff;
   line-height: 1.15;
@@ -749,7 +751,7 @@
 
 [data-theme="architectural-editorial"] .slide-title .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-size: clamp(1.8rem, 3.8vw, 2.8rem);
   font-weight: 900;
   color: var(--slate-dark);
   line-height: 1.1;
@@ -858,7 +860,7 @@
 
 [data-theme="architectural-editorial"] .slide-content .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(1.5rem, 3.2vw, 2.4rem);
+  font-size: clamp(1.3rem, 2.8vw, 2rem);
   font-weight: 900;
   color: var(--slate-dark);
   letter-spacing: -0.02em;
@@ -873,11 +875,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  flex: 1;
+  overflow: hidden;
 }
 
 [data-theme="architectural-editorial"] .slide-bullets li {
   font-family: var(--body-font);
-  font-size: clamp(0.95rem, 1.8vw, 1.35rem);
+  font-size: clamp(0.85rem, 1.5vw, 1.1rem);
   color: var(--slate-dark);
   line-height: 1.6;
   font-weight: 400;
@@ -1122,7 +1126,7 @@
 
 [data-theme="architectural-editorial"] .slide-closing .slide-heading {
   font-family: var(--heading-font);
-  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-size: clamp(1.8rem, 3.8vw, 2.8rem);
   font-weight: 900;
   color: var(--slate-dark);
   line-height: 1.15;
