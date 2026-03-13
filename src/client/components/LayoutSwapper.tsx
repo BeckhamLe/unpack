@@ -27,6 +27,10 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
   const heading = 'heading' in slide ? slide.heading || '' : ''
+
+  const updateStat = (idx: number, field: 'number' | 'label', value: string) => {
+    setStatsInput(prev => prev.map((item, i) => i === idx ? { ...item, [field]: value } : item))
+  }
   const currentLabel = LAYOUT_OPTIONS.find(o => o.type === slide.type)?.label ?? slide.type
 
   // Close dropdown on outside click
@@ -143,13 +147,13 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
               <div key={i} className="flex gap-2">
                 <input
                   value={stat.number}
-                  onChange={e => { const s = statsInput.map((item, idx) => idx === i ? { ...item, number: e.target.value } : item); setStatsInput(s) }}
+                  onChange={e => updateStat(i, 'number', e.target.value)}
                   placeholder="Number"
                   className="flex-1 bg-background border border-border rounded px-2 py-1 text-sm text-foreground"
                 />
                 <input
                   value={stat.label}
-                  onChange={e => { const s = statsInput.map((item, idx) => idx === i ? { ...item, label: e.target.value } : item); setStatsInput(s) }}
+                  onChange={e => updateStat(i, 'label', e.target.value)}
                   placeholder="Label"
                   className="flex-1 bg-background border border-border rounded px-2 py-1 text-sm text-foreground"
                 />
