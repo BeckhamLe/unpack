@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { SlideData, SlideType } from '../../shared/types'
+import { cn } from '../lib/utils.js'
 
 interface LayoutSwapperProps {
   slide: SlideData
@@ -15,6 +16,7 @@ const LAYOUT_OPTIONS: { type: SlideType; label: string }[] = [
 ]
 
 export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
+  const [open, setOpen] = useState(false)
   const [showModal, setShowModal] = useState<'code' | 'metrics' | null>(null)
   const [codeInput, setCodeInput] = useState('')
   const [codeLang, setCodeLang] = useState('javascript')
@@ -22,10 +24,25 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
     { number: '', label: '' },
     { number: '', label: '' },
   ])
+  const menuRef = useRef<HTMLDivElement>(null)
 
   const heading = 'heading' in slide ? slide.heading || '' : ''
+  const currentLabel = LAYOUT_OPTIONS.find(o => o.type === slide.type)?.label ?? slide.type
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!open) return
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
 
   const handleSwap = (targetType: SlideType) => {
+    setOpen(false)
     if (targetType === slide.type) return
 
     if (targetType === 'code') {
@@ -67,16 +84,31 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
   }
 
   return (
-    <div className="relative">
-      <select
-        value={slide.type}
-        onChange={(e) => handleSwap(e.target.value as SlideType)}
-        className="text-xs bg-card border border-border rounded px-1.5 py-0.5 text-foreground"
+    <div className={cn('layout-swapper', open && 'open')} ref={menuRef}>
+      <button
+        className="layout-swapper-trigger"
+        onClick={() => setOpen(!open)}
       >
-        {LAYOUT_OPTIONS.map(opt => (
-          <option key={opt.type} value={opt.type}>{opt.label}</option>
-        ))}
-      </select>
+        {currentLabel}
+        <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M1 1l4 4 4-4" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="layout-swapper-menu">
+          {LAYOUT_OPTIONS.map(opt => (
+            <button
+              key={opt.type}
+              className={cn('layout-swapper-option', opt.type === slide.type && 'active')}
+              onClick={() => handleSwap(opt.type)}
+            >
+              <span>{opt.label}</span>
+              <span className="check">&#10003;</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Code modal */}
       {showModal === 'code' && (
