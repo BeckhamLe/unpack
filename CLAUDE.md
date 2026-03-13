@@ -93,3 +93,9 @@ Every task goes through these gates. Each gate requires explicit approval from B
 - [ ] Configure Google Cloud Console OAuth consent screen + credentials
 - [ ] Ensure `ANTHROPIC_API_KEY` is set in `.env` (Haiku 4.5)
 - [ ] Add Supabase redirect URI for OAuth callback
+
+## CSS & UI Gotchas (ALL Agents Must Follow)
+
+- **CSS variables are hex, not HSL channels.** The `:root` variables in `App.css` are defined as hex values (e.g. `--muted: #252222`). Never wrap them in `hsl()` — `hsl(#252222)` is invalid CSS that browsers silently drop, making styles invisible. Use `var(--muted)` directly. For opacity variants use `color-mix(in srgb, var(--muted) 50%, transparent)`.
+- **Dropdowns inside `overflow-y-auto` containers get clipped.** Any absolutely-positioned dropdown inside the slide scroll area (or any `overflow: auto/hidden` parent) will be invisible or cut off. Use `createPortal(menu, document.body)` with `position: fixed` and calculate position from `getBoundingClientRect()` on the trigger element. This applies to any popover, tooltip, or dropdown rendered inside a scrollable container.
+- **Visually verify UI changes before marking done.** A passing `vite build` only proves the code compiles — it says nothing about whether styles render correctly or interactions work. For any UI task, the CODE REVIEW gate must include running the dev server and manually testing the changed components in the browser. "It builds" is not "it works."

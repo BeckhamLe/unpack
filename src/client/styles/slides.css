@@ -1320,9 +1320,6 @@
 }
 
 .layout-swapper-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
   min-width: 120px;
   padding: 4px;
   border-radius: 8px;

@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { SlideData, SlideType } from '../../shared/types'
 import { cn } from '../lib/utils.js'
 
@@ -17,6 +18,7 @@ const LAYOUT_OPTIONS: { type: SlideType; label: string }[] = [
 
 export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
   const [open, setOpen] = useState(false)
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null)
   const [showModal, setShowModal] = useState<'code' | 'metrics' | null>(null)
   const [codeInput, setCodeInput] = useState('')
   const [codeLang, setCodeLang] = useState('javascript')
@@ -24,6 +26,7 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
     { number: '', label: '' },
     { number: '', label: '' },
   ])
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const heading = 'heading' in slide ? slide.heading || '' : ''
@@ -33,13 +36,26 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
   }
   const currentLabel = LAYOUT_OPTIONS.find(o => o.type === slide.type)?.label ?? slide.type
 
+  const handleOpen = useCallback(() => {
+    if (open) {
+      setOpen(false)
+      return
+    }
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setMenuPos({ top: rect.bottom + 4, left: rect.left })
+    }
+    setOpen(true)
+  }, [open])
+
   // Close dropdown on outside click
   useEffect(() => {
     if (!open) return
     const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      const target = e.target as Node
+      if (triggerRef.current?.contains(target)) return
+      if (menuRef.current?.contains(target)) return
+      setOpen(false)
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
@@ -88,19 +104,27 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
   }
 
   return (
-    <div className={cn('layout-swapper', open && 'open')} ref={menuRef}>
-      <button
-        className="layout-swapper-trigger"
-        onClick={() => setOpen(!open)}
-      >
-        {currentLabel}
-        <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M1 1l4 4 4-4" />
-        </svg>
-      </button>
+    <>
+      <div className={cn('layout-swapper', open && 'open')}>
+        <button
+          ref={triggerRef}
+          className="layout-swapper-trigger"
+          onClick={handleOpen}
+        >
+          {currentLabel}
+          <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M1 1l4 4 4-4" />
+          </svg>
+        </button>
+      </div>
 
-      {open && (
-        <div className="layout-swapper-menu">
+      {/* Portal the dropdown to body so it escapes overflow:auto containers */}
+      {open && menuPos && createPortal(
+        <div
+          ref={menuRef}
+          className="layout-swapper-menu"
+          style={{ position: 'fixed', top: menuPos.top, left: menuPos.left }}
+        >
           {LAYOUT_OPTIONS.map(opt => (
             <button
               key={opt.type}
@@ -111,7 +135,8 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
               <span className="check">&#10003;</span>
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Code modal */}
@@ -174,6 +199,6 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
