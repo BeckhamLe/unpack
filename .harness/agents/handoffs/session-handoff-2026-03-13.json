@@ -1,0 +1,62 @@
+{
+  "task_id": "TASK-029",
+  "timestamp": "2026-03-13T21:30:00-05:00",
+  "task_summary": "Polish the slide preview toolbar: theme toggle (Dark/Light) into a segmented control, layout swapper (slide type dropdown) into a custom styled dropdown replacing the raw <select>.",
+  "current_state": "PR #18 is open on branch task/029-toolbar-polish. 9 commits. Beckham needs to visually verify in browser before proceeding. The task hit a long debugging cycle — multiple CSS/DOM issues stacked on top of each other.",
+
+  "what_works": [
+    "Theme toggle — segmented control CSS (pill background, active elevation, hover states) using var() directly (not hsl())",
+    "Layout swapper — custom dropdown component with createPortal to document.body, inline styles on portal content, outside-click-to-close, close-on-scroll",
+    "Layout swapper overlay z-index is z-20 (above .slide-inner z-index:10)",
+    "Build passes cleanly (bunx vite build)",
+    "Code review via /simplify passed — extracted inline stats handler"
+  ],
+
+  "what_failed_and_why": [
+    {
+      "approach": "Used hsl(var(--muted)) for CSS colors",
+      "why_it_failed": "Project CSS variables are hex values (#252222), not HSL channels. hsl(#252222) is invalid CSS — browsers silently drop the property, making styles invisible.",
+      "fix_applied": "Replaced all hsl(var(--X)) with var(--X), opacity variants use color-mix(in srgb, ...)"
+    },
+    {
+      "approach": "Used position:absolute for dropdown menu inside overflow-y-auto scroll container",
+      "why_it_failed": "overflow:auto clips absolutely-positioned children. Menu was clipped/invisible.",
+      "fix_applied": "Portaled menu to document.body via createPortal with position:fixed + getBoundingClientRect"
+    },
+    {
+      "approach": "Used CSS classes for portaled menu styling",
+      "why_it_failed": "Tailwind global resets (button { color:inherit; background:transparent }) competed with CSS classes on portaled elements outside the component tree.",
+      "fix_applied": "Moved all critical styles to inline React style props on portal content"
+    },
+    {
+      "approach": "Overlay wrapper had z-10, same as .slide-inner",
+      "why_it_failed": ".slide has position:relative without z-index, so .slide-inner's z-index:10 escapes into parent stacking context and ties with overlay z-10. DOM order breaks tie — slide-inner paints on top, making button unclickable.",
+      "fix_applied": "Bumped overlay to z-20 in SlidePreview.tsx"
+    }
+  ],
+
+  "key_files": [
+    {"path": "src/client/components/LayoutSwapper.tsx", "role": "Custom dropdown component with portal, outside-click, modals for code/metrics input"},
+    {"path": "src/client/components/SlidePreview.tsx", "role": "Toolbar with theme toggle + overlay wrapper for layout swapper (z-20)"},
+    {"path": "src/client/styles/slides.css", "role": "Theme toggle segmented control CSS + keyframes for dropdown animation"},
+    {"path": "CLAUDE.md", "role": "Updated with CSS & UI Gotchas section + UI Debugging Protocol"}
+  ],
+
+  "pr_url": "https://github.com/BeckhamLe/unpack/pull/18",
+  "branch": "task/029-toolbar-polish",
+
+  "where_we_left_off": "PR gate. Beckham needs to restart dev server, visually verify the dropdown is clickable and shows 5 layout options, and that the theme toggle looks like a proper segmented control. If both work → Beckham merges PR → agent runs CLOSE gate (delete branch, update task status to done, commit to main, push).",
+
+  "important_context": [
+    "This task had a painful 4-round debugging cycle because the agent kept guessing at CSS issues without visually verifying in the browser. CLAUDE.md now has a 'UI Debugging Protocol' section to prevent this.",
+    "CLAUDE.md also has a 'CSS & UI Gotchas' section with 5 rules learned from this task — all future agents must read these before touching UI code.",
+    "If Beckham reports the dropdown STILL doesn't work, do NOT guess. Ask him to Inspect Element in DevTools and report what's on top of the button or what error appears in console."
+  ],
+
+  "remaining_tasks_in_needs_planning": [
+    "TASK-024: Earlier slide generation during Brainstorm phase",
+    "TASK-025: Update landing/login page to reflect new product capabilities",
+    "TASK-026: Shareable presentation URLs",
+    "TASK-027: Strengthen system prompt with proven coaching frameworks"
+  ]
+}
