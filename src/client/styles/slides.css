@@ -1319,52 +1319,8 @@
   transform: rotate(180deg);
 }
 
-.layout-swapper-menu {
-  min-width: 120px;
-  padding: 4px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--card);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
-  z-index: 50;
-  animation: swapper-menu-in 120ms ease-out;
-}
-
+/* Menu + options use inline styles (portaled to document.body, CSS classes unreliable there) */
 @keyframes swapper-menu-in {
   from { opacity: 0; transform: translateY(-4px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.layout-swapper-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0.375rem 0.5rem;
-  border-radius: 5px;
-  border: none;
-  background: transparent;
-  color: var(--foreground);
-  cursor: pointer;
-  font-size: 0.7rem;
-  font-family: inherit;
-  transition: background 100ms ease;
-}
-
-.layout-swapper-option:hover {
-  background: var(--accent);
-}
-
-.layout-swapper-option.active {
-  color: var(--primary);
-  font-weight: 500;
-}
-
-.layout-swapper-option .check {
-  font-size: 0.65rem;
-  opacity: 0;
-}
-
-.layout-swapper-option.active .check {
-  opacity: 1;
 }

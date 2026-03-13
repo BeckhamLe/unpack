@@ -48,7 +48,7 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
     setOpen(true)
   }, [open])
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click or scroll
   useEffect(() => {
     if (!open) return
     const handleClick = (e: MouseEvent) => {
@@ -57,8 +57,13 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
       if (menuRef.current?.contains(target)) return
       setOpen(false)
     }
+    const handleScroll = () => setOpen(false)
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('scroll', handleScroll, true)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('scroll', handleScroll, true)
+    }
   }, [open])
 
   const handleSwap = (targetType: SlideType) => {
@@ -118,23 +123,53 @@ export default function LayoutSwapper({ slide, onSwap }: LayoutSwapperProps) {
         </button>
       </div>
 
-      {/* Portal the dropdown to body so it escapes overflow:auto containers */}
+      {/* Portal to body — inline styles for everything critical so CSS cascade can't break it */}
       {open && menuPos && createPortal(
         <div
           ref={menuRef}
-          className="layout-swapper-menu"
-          style={{ position: 'fixed', top: menuPos.top, left: menuPos.left }}
+          style={{
+            position: 'fixed',
+            top: menuPos.top,
+            left: menuPos.left,
+            zIndex: 9999,
+            minWidth: 130,
+            padding: 4,
+            borderRadius: 8,
+            border: '1px solid var(--border)',
+            background: 'var(--card)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1)',
+            animation: 'swapper-menu-in 120ms ease-out',
+          }}
         >
-          {LAYOUT_OPTIONS.map(opt => (
-            <button
-              key={opt.type}
-              className={cn('layout-swapper-option', opt.type === slide.type && 'active')}
-              onClick={() => handleSwap(opt.type)}
-            >
-              <span>{opt.label}</span>
-              <span className="check">&#10003;</span>
-            </button>
-          ))}
+          {LAYOUT_OPTIONS.map(opt => {
+            const isActive = opt.type === slide.type
+            return (
+              <button
+                key={opt.type}
+                onClick={() => handleSwap(opt.type)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  padding: '6px 8px',
+                  borderRadius: 5,
+                  border: 'none',
+                  background: 'transparent',
+                  color: isActive ? 'var(--primary)' : 'var(--foreground)',
+                  fontWeight: isActive ? 500 : 400,
+                  cursor: 'pointer',
+                  fontSize: '0.7rem',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--accent)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                <span>{opt.label}</span>
+                {isActive && <span style={{ fontSize: '0.65rem' }}>&#10003;</span>}
+              </button>
+            )
+          })}
         </div>,
         document.body
       )}
