@@ -1,7 +1,7 @@
 {
   "id": "TASK-029",
   "title": "Polish slide toolbar controls — layout swapper + theme toggle",
-  "status": "todo",
+  "status": "in-progress",
   "priority": "medium",
   "mode": "Direct",
   "description": "The slide type dropdown (layout swapper) and the Dark/Light theme toggle buttons in the slide preview toolbar don't look polished or button-like. They need visual treatment to feel like intentional UI controls rather than unstyled defaults. Should match the overall design quality of the slide themes themselves.",
