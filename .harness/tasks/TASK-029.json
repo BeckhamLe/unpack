@@ -1,0 +1,24 @@
+{
+  "id": "TASK-029",
+  "title": "Polish slide toolbar controls — layout swapper + theme toggle",
+  "status": "todo",
+  "priority": "medium",
+  "mode": "Direct",
+  "description": "The slide type dropdown (layout swapper) and the Dark/Light theme toggle buttons in the slide preview toolbar don't look polished or button-like. They need visual treatment to feel like intentional UI controls rather than unstyled defaults. Should match the overall design quality of the slide themes themselves.",
+  "acceptance_criteria": [
+    "Theme toggle buttons look like proper toggle/segmented control — clear active state, hover state, visual weight",
+    "Slide type dropdown looks styled and intentional, not like a raw HTML select",
+    "Both controls are visually cohesive with each other and the toolbar",
+    "Controls work correctly on both themes",
+    "bunx vite build passes cleanly"
+  ],
+  "files_to_change": [
+    "src/client/styles/slides.css",
+    "src/client/components/SlidePreview.tsx",
+    "src/client/components/LayoutSwapper.tsx"
+  ],
+  "blocks": [],
+  "blocked_by": ["TASK-023"],
+  "notes": "Depends on TASK-023 merging first since it introduces the theme toggle. The layout swapper dropdown already exists but is unstyled.",
+  "created": "2026-03-12"
+}

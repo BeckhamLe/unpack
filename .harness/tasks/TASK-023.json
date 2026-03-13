@@ -1,7 +1,7 @@
 {
   "id": "TASK-023",
   "title": "Slide visual redesign \u2014 make slides look actually good",
-  "status": "in-progress",
+  "status": "done",
   "priority": "high",
   "mode": "Design",
   "description": "Apply the two polished template designs from TASK-028 (Geometric Deco dark + Architectural Editorial light) to the in-app slide preview. Pure CSS + component work \u2014 update slides.css and SlideRenderer.tsx to match the visual quality of the standalone templates in docs/slide_deck_templates/. Key challenge: make the designs flexible enough to handle variable user content (different bullet counts, text lengths, stat counts) without breaking layout.",
