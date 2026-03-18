@@ -93,3 +93,20 @@ Every task goes through these gates. Each gate requires explicit approval from B
 - [ ] Configure Google Cloud Console OAuth consent screen + credentials
 - [ ] Ensure `ANTHROPIC_API_KEY` is set in `.env` (Haiku 4.5)
 - [ ] Add Supabase redirect URI for OAuth callback
+
+## CSS & UI Gotchas (ALL Agents Must Follow)
+
+- **CSS variables are hex, not HSL channels.** The `:root` variables in `App.css` are defined as hex values (e.g. `--muted: #252222`). Never wrap them in `hsl()` — `hsl(#252222)` is invalid CSS that browsers silently drop, making styles invisible. Use `var(--muted)` directly. For opacity variants use `color-mix(in srgb, var(--muted) 50%, transparent)`.
+- **Dropdowns inside `overflow-y-auto` containers get clipped.** Any absolutely-positioned dropdown inside the slide scroll area (or any `overflow: auto/hidden` parent) will be invisible or cut off. Use `createPortal(menu, document.body)` with `position: fixed` and calculate position from `getBoundingClientRect()` on the trigger element. This applies to any popover, tooltip, or dropdown rendered inside a scrollable container.
+- **Portaled elements must use inline styles, not CSS classes.** Elements rendered via `createPortal` to `document.body` sit outside the normal component tree. CSS classes can be unreliable due to Tailwind's global resets (`button { color: inherit; background: transparent; }`) winning on specificity or cascade order. Use inline React `style` props for all visibility-critical properties (color, background, border, z-index, position) on portaled content.
+- **Check z-index stacking across sibling trees before adding overlays.** `.slide-inner` in `slides.css` has `z-index: 10`. Any overlay positioned alongside `.slide` must have a HIGHER z-index (e.g. `z-20`) because `.slide` has `position: relative` without its own z-index — meaning `.slide-inner`'s z-index escapes and competes in the parent stacking context. When adding positioned overlays next to slides, always trace the full z-index chain: parent stacking context → which children participate → who wins.
+- **Visually verify UI changes before marking done.** A passing `vite build` only proves the code compiles — it says nothing about whether styles render correctly or interactions work. For any UI task, the CODE REVIEW gate must include running the dev server and manually testing the changed components in the browser. "It builds" is not "it works."
+
+## UI Debugging Protocol (ALL Agents Must Follow)
+
+When Beckham reports a UI bug, do NOT guess-and-commit in a loop. Follow this protocol:
+
+1. **Classify the symptom first.** "Can't see it" (rendering/CSS) vs "can't click it" (pointer-events/z-index/stacking) vs "clicks but nothing happens" (JS logic) are three completely different bugs. Ask Beckham to clarify if the report is ambiguous.
+2. **Ask for DevTools evidence before writing code.** Request: right-click → Inspect Element → what element is on top? What styles are computed? Is the element in the DOM at all? This takes 10 seconds and eliminates 90% of guesswork.
+3. **One hypothesis, one fix, one test.** Never stack speculative fixes. If fix #1 doesn't work, revert it and investigate further — don't layer fix #2 on top of a broken fix #1. Compounding speculative fixes creates complexity that makes the real bug harder to find.
+4. **Never add architectural complexity (portals, inline styles, new abstractions) as a debugging tactic.** If the simple version doesn't work, the complex version won't either — you just don't understand the problem yet. Diagnose first, then pick the simplest fix that addresses the actual cause.

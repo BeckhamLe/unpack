@@ -1236,35 +1236,91 @@
 
 
 /* ═══════════════════════════════════════════
-   THEME TOGGLE UI
+   THEME TOGGLE — SEGMENTED CONTROL
    ═══════════════════════════════════════════ */
 
 .theme-toggle {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--muted);
+  border: 1px solid var(--border);
 }
 
 .theme-toggle-btn {
-  padding: 0.25rem 0.625rem;
+  position: relative;
+  padding: 0.3rem 0.75rem;
   border-radius: 6px;
-  border: 1px solid hsl(var(--border));
+  border: none;
   background: transparent;
-  color: hsl(var(--muted-foreground));
+  color: var(--muted-foreground);
   cursor: pointer;
   font-size: 0.7rem;
+  font-weight: 500;
   font-family: inherit;
-  transition: all 150ms ease;
+  letter-spacing: 0.01em;
+  transition: all 180ms ease;
+  z-index: 1;
 }
 
-.theme-toggle-btn:hover {
-  background: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
+.theme-toggle-btn:hover:not(.active) {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--muted-foreground) 8%, transparent);
 }
 
 .theme-toggle-btn.active {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  border-color: hsl(var(--primary));
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT SWAPPER — CUSTOM DROPDOWN
+   ═══════════════════════════════════════════ */
+
+.layout-swapper {
+  position: relative;
+}
+
+.layout-swapper-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.625rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-size: 0.675rem;
+  font-weight: 500;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.layout-swapper-trigger:hover {
+  background: var(--muted);
+  color: var(--foreground);
+  border-color: color-mix(in srgb, var(--muted-foreground) 30%, transparent);
+}
+
+.layout-swapper-trigger svg {
+  width: 10px;
+  height: 10px;
+  opacity: 0.5;
+  transition: transform 150ms ease;
+}
+
+.layout-swapper.open .layout-swapper-trigger svg {
+  transform: rotate(180deg);
+}
+
+/* Menu + options use inline styles (portaled to document.body, CSS classes unreliable there) */
+@keyframes swapper-menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

@@ -99,7 +99,7 @@ export default function SlidePreview({ slides, previousSlides, onSlidesChange, i
         {slides.map((slide, i) => (
           <div key={slide.slideId} className="relative group">
             {/* Layout swapper overlay */}
-            <div className="absolute top-2 left-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute top-2 left-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
               <LayoutSwapper
                 slide={slide}
                 onSwap={(newSlide) => handleSlideSwap(i, newSlide)}
